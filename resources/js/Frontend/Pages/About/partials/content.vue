@@ -1,0 +1,27 @@
+<template>
+    <section class="container">
+        <div class="row align-items-center" style="height:80vh;">
+            <div class="col-md-6">
+                <div class=" text-center w-100">
+                    <h1 style="font-size:4rem; font-weight:700" class="about">ABOUT <span
+                            class="px-3 text-white rounded" style="background-color:#01aef0;">US</span></h1>
+                    <h5 style="font-weight:600">NIKOBA.COM</h5>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="imageCar text-center d-none d-md-block w-100">
+                    <img src="https://autodirectstagingnew.quicksite.asia/wp-content/uploads/2024/05/2024-BMW-i5.webp"
+                        alt="" width="568">
+                </div>
+            </div>
+        </div>
+    </section>
+</template>
+
+<script>
+export default {
+
+}
+</script>
+
+<style></style>
