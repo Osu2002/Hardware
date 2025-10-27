@@ -24,22 +24,43 @@ class HomeController extends Controller
     public function index(Request $request)
     {
         // dd($request->all());
-        $category_manufactures = LiveAuctionManufacturer::where(['status' => 1])->get();
-        $vehicle_types = Type::where(['status' => 1, 'featured' => 1])->get();
-        $models = VehicleModel::where(['status' => 1])->where(['manufacture_id' => $request->manufacture_id])->get();
-        $vehicles = Vehicle::where(['status' => 1]);
-        $in_stock = Vehicle::where(['availability' => 'Available', 'status' => 1, 'featured' => 1])->with('media', 'manufacture', 'vehicleModel')->get();
-        $countries = Country::all();
+          $category_manufactures = LiveAuctionManufacturer::where(['status' => 1])->get();
+    $vehicle_types = Type::where(['status' => 1, 'featured' => 1])->get();
+    $models = VehicleModel::where(['status' => 1])
+        ->where(['manufacture_id' => $request->manufacture_id])
+        ->get();
+    $vehicles = Vehicle::where(['status' => 1]);
+    $in_stock = Vehicle::where([
+            'availability' => 'Available',
+            'status' => 1,
+            'featured' => 1
+        ])
+        ->with('media', 'manufacture', 'vehicleModel')
+        ->get();
 
-        // Get Live Auction Query //////////
+    $countries = Country::all();
 
-        $live_auction_vehicles_list = [];
+    // ---- settings with safe fallback ----
+    $manufacturesSetting = Settings::where('key', 'manufactures')->first();
+    $modelsSetting       = Settings::where('key', 'models')->first();
+    $yearFromSetting     = Settings::where('key', 'year_from')->first();
+    $yearToSetting       = Settings::where('key', 'year_to')->first();
 
-        $manufactures = json_decode((Settings::where('key', 'manufactures')->first())->value);
-        $models = json_decode((Settings::where('key', 'models')->first())->value);
+    $manufactures = $manufacturesSetting
+        ? json_decode($manufacturesSetting->value, true)
+        : []; // default empty array
 
-        $year_from = (Settings::where('key', 'year_from')->first())->value;
-        $year_to = (Settings::where('key', 'year_to')->first())->value;
+    $modelsList = $modelsSetting
+        ? json_decode($modelsSetting->value, true)
+        : []; // default empty array
+
+    $year_from = $yearFromSetting
+        ? $yearFromSetting->value
+        : null; // or a sensible default like 2000
+
+    $year_to = $yearToSetting
+        ? $yearToSetting->value
+        : null; // or now() year
 
 
         $query = "SELECT * FROM main WHERE 1=1 ";
