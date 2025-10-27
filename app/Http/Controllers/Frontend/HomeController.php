@@ -40,6 +40,7 @@ class HomeController extends Controller
 
     $countries = Country::all();
 
+    
     // ---- settings with safe fallback ----
     $manufacturesSetting = Settings::where('key', 'manufactures')->first();
     $modelsSetting       = Settings::where('key', 'models')->first();
