@@ -53,7 +53,7 @@
                     <div class="text-danger">{{ form.errors.app_logo }}</div>
                   </div>
                 </div>
-                <div class="row pt-3 border-top">
+                <!-- <div class="row pt-3 border-top">
                   <div class="col-md-6">
                     <SelectInputComponent
                       class="w-100"
@@ -104,7 +104,7 @@
                     />
                     <div class="text-danger">{{ form.errors.year_to }}</div>
                   </div>
-                </div>
+                </div> -->
                 <!-- <div class="row pt-3 border-top">
                   <div class="mb-3 col-md-6">
                     <label for="affilate_point_value" class="form-label">Affiliate Points Value</label>

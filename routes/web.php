@@ -32,6 +32,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Admin\FuelPriceController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\UomController;
 
 /*
 |--------------------------------------------------------------------------
@@ -117,7 +118,22 @@ Route::group(['middleware' => ['auth:sanctum', 'verified', 'web']], function () 
     Route::post('/update',       [BrandController::class, 'update'])->middleware(['can:brand.edit'])->name('brand.update');
     Route::post('/delete',       [BrandController::class, 'destroy'])->middleware(['can:brand.delete'])->name('brand.delete');
 });
+
+
+Route::prefix('uom')->group(function () {
+    Route::get('/',              [UomController::class, 'index'])->middleware(['can:uom.view'])->name('uom.index');
+    Route::get('/get/data',      [UomController::class, 'getData'])->middleware(['can:uom.view'])->name('uom.getdata');
+    Route::get('/create',        [UomController::class, 'create'])->middleware(['can:uom.create'])->name('uom.create');
+    Route::post('/store',        [UomController::class, 'store'])->middleware(['can:uom.create'])->name('uom.store');
+    Route::put('/update/status', [UomController::class, 'updateStatus'])->middleware(['can:uom.edit'])->name('uom.change.status');
+    Route::get('/edit/{id}',     [UomController::class, 'edit'])->middleware(['can:uom.edit'])->name('uom.edit');
+    Route::post('/update',       [UomController::class, 'update'])->middleware(['can:uom.edit'])->name('uom.update');
+    Route::post('/delete',       [UomController::class, 'destroy'])->middleware(['can:uom.delete'])->name('uom.delete');
+});
+
     //Vehicle Manufacture (Live Auction)
+
+    
     Route::prefix('vehicle_manufacture_live')->group(function () {
         Route::get('/vehicle_manufacture', [LiveAuctionManufacturerController::class, 'index'])->middleware(['can:vehicle_manufacture.view'])->name('vehicle_manufacture.live.index');
         Route::get('/get/data', [LiveAuctionManufacturerController::class, 'getData'])->middleware(['can:vehicle_manufacture.view'])->name('vehicle_manufacture.live.getdata');
