@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Type; // keep using existing Type model/table/columns
 use Exception;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class CategoryController extends Controller
 
     public function getData()
     {
-        $rows = Type::with('media');
+        $rows = Category::with('media');
 
         return DataTables::of($rows)
             ->addColumn('check', function ($row) {

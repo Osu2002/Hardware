@@ -273,7 +273,17 @@
   </Link>
 </li>
 
-          <li class="menu-item" v-bind:class="{
+<li
+  class="menu-item"
+  :class="{ active: addActiveClass(['product.index','product.create','product.edit']) }"
+>
+  <Link :href="route('product.index')" class="menu-link">
+    <div data-i18n="Products">Products</div>
+  </Link>
+</li>
+
+
+          <!-- <li class="menu-item" v-bind:class="{
             active: addActiveClass([
               'vehicle.feature',
               'vehicle.feature.create',
@@ -283,8 +293,8 @@
             <Link :href="route('vehicle.feature')" class="menu-link">
             <div data-i18n="Vehicle Feature">Vehicle Feature</div>
             </Link>
-          </li>
-          <li class="menu-item" v-bind:class="{
+          </li> -->
+          <!-- <li class="menu-item" v-bind:class="{
             active: addActiveClass([
               'vehicle.index',
               'vehicle.create',
@@ -294,7 +304,7 @@
             <Link :href="route('vehicle.index')" class="menu-link">
             <div data-i18n="Vehicle">Vehicle</div>
             </Link>
-          </li>
+          </li> -->
         </ul>
       </li>
 

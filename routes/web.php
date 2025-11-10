@@ -34,6 +34,7 @@ use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\AttributeSetController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UomController;
 
 /*
@@ -151,6 +152,22 @@ Route::prefix('attribute-set')->group(function () {
   Route::post('/update', [AttributeSetController::class,'update'])->name('attribute-set.update');
   Route::post('/delete', [AttributeSetController::class,'destroy'])->name('attribute-set.delete');
 });
+
+// Products
+Route::prefix('products')->group(function () {
+    Route::get('/', [ProductController::class, 'index'])->name('product.index');
+    Route::get('/get/data', [ProductController::class, 'getData'])->name('product.getdata');
+
+    Route::get('/create', [ProductController::class, 'create'])->name('product.create');
+    Route::post('/store', [ProductController::class, 'store'])->name('product.store');
+
+    Route::get('/edit/{id}', [ProductController::class, 'edit'])->name('product.edit');
+    Route::post('/update', [ProductController::class, 'update'])->name('product.update');
+
+    Route::put('/update/status', [ProductController::class, 'updateStatus'])->name('product.change.status');
+    Route::post('/delete', [ProductController::class, 'destroy'])->name('product.delete');
+});
+
     //Vehicle Manufacture (Live Auction)
 
     
