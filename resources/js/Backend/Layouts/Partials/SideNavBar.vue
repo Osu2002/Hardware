@@ -156,7 +156,7 @@
 
           'vehicle_type.create',
           'vehicle_type.edit',
-          'vehicle.type.index',
+          'category.index',
 
           'vehicle_manufacture.create',
           'vehicle_manufacture.edit',
@@ -201,14 +201,14 @@
         <ul class="menu-sub">
           <li class="menu-item" v-bind:class="{
             active: addActiveClass([
-              'vehicle_type.users',
+              'vehicle_type.view',
               'vehicle_type.create',
               'vehicle_type.edit',
-              'vehicle.type.index',
+              'category.index',
             ]),
           }" v-if="$root.hasPermission('vehicle_type.view')">
-            <Link :href="route('vehicle.type.index')" class="menu-link">
-            <div data-i18n="Vehicle type">Vehicle type</div>
+            <Link :href="route('category.index')" class="menu-link">
+            <div data-i18n="Vehicle type">Category</div>
             </Link>
           </li>
           <!-- <li class="menu-item" v-bind:class="{
