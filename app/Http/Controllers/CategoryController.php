@@ -74,39 +74,20 @@ class CategoryController extends Controller
         return Inertia::render('VehicleCMS/Category/CreateUpdate');
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'title' => ['required'],
-            'status' => ['required'],
-            'featured' => ['required'],
-            // Keep same request field name and validation key:
-            'vehicle_type_image' => ['nullable', 'mimes:jpeg,jpg,png,webp', 'max:10000'],
-        ]);
+   public function store(Request $request)
+{
+    $category = new Category();
+    $category->title    = $request->title;
+    $category->status   = $request->status;
+    $category->featured = $request->featured;
+    $category->save();
 
-        try {
-            DB::beginTransaction();
-
-            $type = new Type();
-            $type->title = $request->title;
-            $type->status = $request->status;
-            $type->featured = $request->featured;
-            $type->save();
-
-            if ($request->hasFile('vehicle_type_image')) {
-                // Keep SAME media collection/path
-                $type->addMedia($request->file('vehicle_type_image'))->toMediaCollection('vehicle_type_image');
-                $type->save();
-            }
-
-            DB::commit();
-            return redirect()->route('category.index');
-        } catch (Exception $ex) {
-            DB::rollBack();
-            Log::error($ex);
-            return abort(500);
-        }
+    if ($request->hasFile('vehicle_type_image')) {
+        $category->addMedia($request->file('vehicle_type_image'))
+                 ->toMediaCollection('category_image');
     }
+    return redirect()->route('category.index');
+}
 
     public function edit($id)
     {
