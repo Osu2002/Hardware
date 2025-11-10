@@ -227,11 +227,11 @@
               'vehicle_manufacture',
               'vehicle_manufacture.create',
               'vehicle_manufacture.edit',
-              'vehicle_manufacture.index',
+              'vehicle_type.view',
             ]),
-          }" v-if="$root.hasPermission('vehicle_manufacture.view')">
-            <Link :href="route('vehicle_manufacture.index')" class="menu-link">
-            <div data-i18n="Vehicle Manufacture">Vehicle Manufacture</div>
+          }" v-if="$root.hasPermission('vehicle_type.view')">
+            <Link :href="route('brand.index')" class="menu-link">
+            <div data-i18n="Vehicle Manufacture">Brands</div>
             </Link>
           </li>
           <!-- <li

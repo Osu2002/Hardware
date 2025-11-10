@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ContactController;
 
 use App\Http\Controllers\Admin\FuelPriceController;
+use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 
 /*
@@ -105,17 +106,17 @@ Route::group(['middleware' => ['auth:sanctum', 'verified', 'web']], function () 
     Route::post('/update',         [CategoryController::class, 'update'])->middleware(['can:category.edit'])->name('category.update');
     Route::post('/delete',         [CategoryController::class, 'destroy'])->middleware(['can:category.delete'])->name('category.delete');
 });
-    //Vehicle Manufacture
-    Route::prefix('vehicle_manufacture_local')->group(function () {
-        Route::get('/vehicle_manufacture', [ManufactureController::class, 'index'])->middleware(['can:vehicle_manufacture.view'])->name('vehicle_manufacture.index');
-        Route::get('/get/data', [ManufactureController::class, 'getData'])->middleware(['can:vehicle_manufacture.view'])->name('vehicle_manufacture.getdata');
-        Route::get('/create', [ManufactureController::class, 'create'])->middleware(['can:vehicle_manufacture.create'])->name('vehicle_manufacture.create');
-        Route::post('/store', [ManufactureController::class, 'store'])->middleware(['can:vehicle_manufacture.create'])->name('vehicle_manufacture.store');
-        Route::put('/update/status', [ManufactureController::class, 'updateStatus'])->middleware(['can:vehicle_manufacture.edit'])->name('vehicle_manufacture.change.status');
-        Route::get('/edit/{id}', [ManufactureController::class, 'edit'])->middleware(['can:vehicle_manufacture.edit'])->name('vehicle_manufacture.edit');
-        Route::post('/update', [ManufactureController::class, 'update'])->middleware(['can:vehicle_manufacture.edit'])->name('vehicle_manufacture.update');
-        Route::post('/delete', [ManufactureController::class, 'destroy'])->middleware(['can:vehicle_manufacture.delete'])->name('vehicle_manufacture.delete');
-    });
+
+    Route::prefix('brand')->group(function () {
+    Route::get('/',              [BrandController::class, 'index'])->middleware(['can:brand.view'])->name('brand.index');
+    Route::get('/get/data',      [BrandController::class, 'getData'])->middleware(['can:brand.view'])->name('brand.getdata');
+    Route::get('/create',        [BrandController::class, 'create'])->middleware(['can:brand.create'])->name('brand.create');
+    Route::post('/store',        [BrandController::class, 'store'])->middleware(['can:brand.create'])->name('brand.store');
+    Route::put('/update/status', [BrandController::class, 'updateStatus'])->middleware(['can:brand.edit'])->name('brand.change.status');
+    Route::get('/edit/{id}',     [BrandController::class, 'edit'])->middleware(['can:brand.edit'])->name('brand.edit');
+    Route::post('/update',       [BrandController::class, 'update'])->middleware(['can:brand.edit'])->name('brand.update');
+    Route::post('/delete',       [BrandController::class, 'destroy'])->middleware(['can:brand.delete'])->name('brand.delete');
+});
     //Vehicle Manufacture (Live Auction)
     Route::prefix('vehicle_manufacture_live')->group(function () {
         Route::get('/vehicle_manufacture', [LiveAuctionManufacturerController::class, 'index'])->middleware(['can:vehicle_manufacture.view'])->name('vehicle_manufacture.live.index');
