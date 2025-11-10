@@ -256,17 +256,23 @@
             <div data-i18n="Vehicle Model">Units Of Measure</div>
             </Link>
           </li>
-          <li class="menu-item" v-bind:class="{
-            active: addActiveClass([
-              'vehicle.color',
-              'vehicle.color.create',
-              'vehicle.color.edit',
-            ]),
-          }" v-if="$root.hasPermission('vehicle_color.view')">
-            <Link :href="route('vehicle.color')" class="menu-link">
-            <div data-i18n="Vehicle Color">Vehicle Color</div>
-            </Link>
-          </li>
+          <li
+  class="menu-item"
+  :class="{ active: addActiveClass(['attribute.index','attribute.create','attribute.edit']) }"
+>
+  <Link :href="route('attribute.index')" class="menu-link">
+    <div data-i18n="Attributes">Attributes</div>
+  </Link>
+</li>
+<li
+  class="menu-item"
+  :class="{ active: addActiveClass(['attribute-set.index','attribute-set.create','attribute-set.edit']) }"
+>
+  <Link :href="route('attribute-set.index')" class="menu-link">
+    <div data-i18n="Attribute Sets">Attribute Sets</div>
+  </Link>
+</li>
+
           <li class="menu-item" v-bind:class="{
             active: addActiveClass([
               'vehicle.feature',

@@ -30,6 +30,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ContactController;
 
 use App\Http\Controllers\Admin\FuelPriceController;
+use App\Http\Controllers\AttributeController;
+use App\Http\Controllers\AttributeSetController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\UomController;
@@ -130,7 +132,25 @@ Route::prefix('uom')->group(function () {
     Route::post('/update',       [UomController::class, 'update'])->middleware(['can:uom.edit'])->name('uom.update');
     Route::post('/delete',       [UomController::class, 'destroy'])->middleware(['can:uom.delete'])->name('uom.delete');
 });
+Route::prefix('attribute')->group(function () {
+  Route::get('/', [AttributeController::class,'index'])->name('attribute.index');
+  Route::get('/get/data', [AttributeController::class,'getData'])->name('attribute.getdata');
+  Route::get('/create', [AttributeController::class,'create'])->name('attribute.create');
+  Route::post('/store', [AttributeController::class,'store'])->name('attribute.store');
+  Route::get('/edit/{attribute}', [AttributeController::class,'edit'])->name('attribute.edit');
+  Route::post('/update', [AttributeController::class,'update'])->name('attribute.update');
+  Route::post('/delete', [AttributeController::class,'destroy'])->name('attribute.delete');
+});
 
+Route::prefix('attribute-set')->group(function () {
+  Route::get('/', [AttributeSetController::class,'index'])->name('attribute-set.index');
+  Route::get('/get/data', [AttributeSetController::class,'getData'])->name('attribute-set.getdata');
+  Route::get('/create', [AttributeSetController::class,'create'])->name('attribute-set.create');
+  Route::post('/store', [AttributeSetController::class,'store'])->name('attribute-set.store');
+  Route::get('/edit/{attribute_set}', [AttributeSetController::class,'edit'])->name('attribute-set.edit');
+  Route::post('/update', [AttributeSetController::class,'update'])->name('attribute-set.update');
+  Route::post('/delete', [AttributeSetController::class,'destroy'])->name('attribute-set.delete');
+});
     //Vehicle Manufacture (Live Auction)
 
     
