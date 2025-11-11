@@ -77,7 +77,7 @@
                         @focusin="mega = true"
                         @focusout="mega = false"
                     >
-                        <span class="mtext">PRODUCT RANGE</span>
+                        <span class="mtext">Categories</span>
                         <div class="mega" v-show="mega">
                             <div class="mega-inner">
                                 <div class="mega-col">
@@ -104,18 +104,7 @@
                                         >View all categories</Link
                                     >
                                 </div>
-                                <div class="mega-col">
-                                    <h6>Popular Brands</h6>
-                                    <ul class="brandlist">
-                                        <li v-for="b in topBrands" :key="b.id">
-                                            <Link
-                                                :href="brandHref(b)"
-                                                class="brand-item"
-                                                >{{ b.title }}</Link
-                                            >
-                                        </li>
-                                    </ul>
-                                </div>
+                               
                             </div>
                         </div>
                     </div>
@@ -626,22 +615,19 @@ export default {
 .has-mega {
     position: relative;
 }
-.mega {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 720px;
-    background: #0e1e30;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    padding: 16px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+.mega{
+  position:absolute;
+  top:100%;
+  left:0;
+  /* a nice, compact width that adapts a bit */
+  width:clamp(360px, 20vw, 80px);
+  background:#0e1e30;
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:10px;
+  padding:12px 12px 14px;
+  box-shadow:0 16px 40px rgba(0,0,0,.45);
 }
-.mega-inner {
-    display: grid;
-    grid-template-columns: 1.6fr 1fr;
-    gap: 16px;
-}
+.mega-inner{ display:grid; grid-template-columns: 1fr; gap: 16px; }
 .mega-col h6 {
     color: #fff;
     font-weight: 800;
@@ -650,13 +636,9 @@ export default {
     text-transform: uppercase;
     margin: 0 0 8px;
 }
-.grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 6px 10px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+.grid{ display:grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap:8px 12px; }
+@media (max-width: 768px){
+  .grid{ grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 .grid-item {
     display: flex;
