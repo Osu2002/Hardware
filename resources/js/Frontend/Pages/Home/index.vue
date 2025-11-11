@@ -1,12 +1,10 @@
 <template>
   <AppLayout>
-    
- <div class="container px-3">
-  <br>
-  <ImageSlider />
-</div>
+    <div class="home-container">
+      <ImageSlider />
+    </div>
 
-    
+   
   </AppLayout>
 </template>
 
@@ -20,3 +18,7 @@ export default {
   props: { site_url: Object },
 };
 </script>
+
+<style>
+.home-container{ max-width: 1320px; margin: 0 auto; padding: 0 12px; }
+</style>
