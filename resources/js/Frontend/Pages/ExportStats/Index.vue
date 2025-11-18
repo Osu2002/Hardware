@@ -115,12 +115,12 @@
 <script>
 
 import { useForm } from "@inertiajs/inertia-vue3";
-import SelectInputComponent from "../Home/partials/SelectInputComponent.vue";
+// import SelectInputComponent from "../Home/partials/SelectInputComponent.vue";
 import axios from "axios";
 
 export default {
     components: {
-        SelectInputComponent
+        // SelectInputComponent
     },
 
     data() {
