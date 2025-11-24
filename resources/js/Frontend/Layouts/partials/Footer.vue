@@ -16,7 +16,7 @@
                 src="/images/logo1.png" 
                 alt="World Auto" 
                 class="footer-logo d-block mx-auto mx-md-0" /> -->
-                <h2 class="footer-logo-text">World Auto Dealers</h2>
+                <h2 class="footer-logo-text">Mahinda Hardware & Electrical </h2>
                 <p class="footer-desc">
                   Have a question, feedback, or need assistance? Fill out the form below and our team will get back to
                   you
@@ -71,9 +71,7 @@
             <div class="footer-marquee">
               <div class="marquee-wrapper">
                 <div class="marquee-content" id="marqueeText">
-                  WORLD AUTO DEALERS. WORLD AUTO DEALERS. WORLD AUTO DEALERS. WORLD AUTO DEALERS. WORLD AUTO DEALERS.
-                  WORLD AUTO
-                  DEALERS.
+                  MAHINDA HARDWARE & ELECTRICAL. MAHINDA HARDWARE & ELECTRICAL. MAHINDA HARDWARE & ELECTRICAL. MAHINDA HARDWARE & ELECTRICAL. MAHINDA HARDWARE & ELECTRICAL. MAHINDA HARDWARE & ELECTRICAL. MAHINDA HARDWARE & ELECTRICAL.MAHINDA HARDWARE & ELECTRICAL.MAHINDA HARDWARE & ELECTRICAL.
                 </div>
               </div>
             </div>
@@ -122,7 +120,7 @@
           </div> -->
 
           <!-- ▸ Vehicles Type (dynamic) -->
-          <div class="col text-start ps-0 ps-md-3">
+          <!-- <div class="col text-start ps-0 ps-md-3">
             <h6 class="links-title">Vehicles Type</h6>
             <ul class="list-unstyled mb-0">
               <li v-for="type in $page.props.vehicle_types" :key="type.id" class="mb-2">
@@ -132,7 +130,7 @@
                 </Link>
               </li>
             </ul>
-          </div>
+          </div> -->
 
 
           <!-- Contact Us + Socials -->
@@ -169,15 +167,15 @@
 
     <div class="footer-bottom">
       <!-- left: copyright -->
-      <small>© 2025 World Auto Dealers PVT Ltd. All rights reserved</small>
+      <small>© 2025 Mahinda Hardware & Electrical . All rights reserved</small>
 
       <!-- right: branded credit block -->
-      <div class="developer-credit">
+      <!-- <div class="developer-credit">
         <span>Web Design Services by</span>
         <a href="https://weblook.com/" target="_blank" rel="noopener" class="developer-logo-link">
           <img src="/images/web.png" alt="weblock.com" class="developer-logo" />
         </a>
-      </div>
+      </div> -->
 
     </div>
 

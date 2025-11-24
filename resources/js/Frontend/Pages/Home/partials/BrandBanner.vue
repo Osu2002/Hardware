@@ -48,9 +48,9 @@
                 </div>
               </div>
 
-              <div class="brand-name">
+              <!-- <div class="brand-name">
                 {{ brand.title }}
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
