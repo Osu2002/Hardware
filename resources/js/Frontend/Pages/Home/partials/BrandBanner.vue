@@ -12,7 +12,6 @@
             type="button"
             class="nav-btn"
             @click="prev"
-            :disabled="atStart"
           >
             ‹
           </button>
@@ -20,48 +19,62 @@
             type="button"
             class="nav-btn"
             @click="next"
-            :disabled="atEnd"
           >
             ›
           </button>
         </div>
       </div>
 
-      <!-- SLIDER -->
-      <div class="brand-viewport">
-        <div class="brand-track" :style="trackStyle">
-          <div
-            v-for="brand in brands"
-            :key="brand.id"
-            class="brand-card"
-          >
-            <div class="brand-card-inner">
-              <div class="brand-logo-wrapper">
-                <img
-                  v-if="brand.logo"
-                  :src="brand.logo"
-                  :alt="brand.title"
-                  class="brand-logo"
-                />
-                <div v-else class="brand-logo placeholder">
-                  {{ brand.title }}
-                </div>
-              </div>
-
-              <!-- <div class="brand-name">
+      <!-- SWIPER SLIDER -->
+      <Swiper
+        class="brand-swiper"
+        :modules="modules"
+        :loop="true"
+        :speed="600"
+        :autoplay="{
+          delay: 2000,
+          disableOnInteraction: false
+        }"
+        :slides-per-view="6"
+        :space-between="16"
+        :breakpoints="breakpoints"
+        @swiper="onSwiper"
+      >
+        <SwiperSlide
+          v-for="brand in brands"
+          :key="brand.id"
+        >
+          <div class="brand-card-inner">
+            <div class="brand-logo-wrapper">
+              <img
+                v-if="brand.logo"
+                :src="brand.logo"
+                :alt="brand.title"
+                class="brand-logo"
+              />
+              <div v-else class="brand-logo placeholder">
                 {{ brand.title }}
-              </div> -->
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </SwiperSlide>
+      </Swiper>
     </div>
   </section>
 </template>
 
 <script>
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Autoplay } from 'swiper/modules';
+import 'swiper/css';
+
 export default {
   name: 'BrandBanner',
+
+  components: {
+    Swiper,
+    SwiperSlide,
+  },
 
   props: {
     // from HomeController:
@@ -74,67 +87,41 @@ export default {
 
   data() {
     return {
-      visibleCount: 6, // will be adjusted in mounted()
-      currentIndex: 0,
+      swiperInstance: null,
+      modules: [Autoplay],
+      breakpoints: {
+        0: {
+          slidesPerView: 2,
+          spaceBetween: 8,
+        },
+        480: {
+          slidesPerView: 3,
+          spaceBetween: 10,
+        },
+        768: {
+          slidesPerView: 4,
+          spaceBetween: 12,
+        },
+        1024: {
+          slidesPerView: 6,
+          spaceBetween: 16,
+        },
+      },
     };
   },
 
-  computed: {
-    maxIndex() {
-      return Math.max(0, this.brands.length - this.visibleCount);
-    },
-    atStart() {
-      return this.currentIndex === 0;
-    },
-    atEnd() {
-      return this.currentIndex >= this.maxIndex;
-    },
-    trackStyle() {
-      // width shift in percentage steps
-      const step = 100 / this.visibleCount;
-      return {
-        transform: `translateX(-${this.currentIndex * step}%)`,
-      };
-    },
-  },
-
-  mounted() {
-    this.updateVisibleCount();
-    window.addEventListener('resize', this.updateVisibleCount);
-  },
-
-  beforeUnmount() {
-    window.removeEventListener('resize', this.updateVisibleCount);
-  },
-
   methods: {
+    onSwiper(swiper) {
+      this.swiperInstance = swiper;
+    },
     next() {
-      if (!this.atEnd) {
-        this.currentIndex += 1;
+      if (this.swiperInstance) {
+        this.swiperInstance.slideNext();
       }
     },
     prev() {
-      if (!this.atStart) {
-        this.currentIndex -= 1;
-      }
-    },
-
-    updateVisibleCount() {
-      const width = window.innerWidth || document.documentElement.clientWidth;
-
-      if (width < 480) {
-        this.visibleCount = 2;
-      } else if (width < 768) {
-        this.visibleCount = 3;
-      } else if (width < 1024) {
-        this.visibleCount = 4;
-      } else {
-        this.visibleCount = 6;
-      }
-
-      // keep index in range when resizing
-      if (this.currentIndex > this.maxIndex) {
-        this.currentIndex = this.maxIndex;
+      if (this.swiperInstance) {
+        this.swiperInstance.slidePrev();
       }
     },
   },
@@ -176,24 +163,12 @@ export default {
   gap: 8px;
 }
 
-/* Slider viewport + track */
-.brand-viewport {
-  overflow: hidden;
+/* Swiper wrapper */
+.brand-swiper {
   width: 100%;
 }
 
-.brand-track {
-  display: flex;
-  transition: transform 0.3s ease;
-}
-
 /* Brand card */
-.brand-card {
-  flex: 0 0 calc(100% / 6);
-  padding: 0 8px;
-  box-sizing: border-box;
-}
-
 .brand-card-inner {
   background: #ffffff;
   border-radius: 12px;
@@ -231,15 +206,7 @@ export default {
   text-align: center;
 }
 
-/* Brand name */
-.brand-name {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #374151;
-  text-align: center;
-}
-
-/* Slider buttons (same style as other sliders) */
+/* Slider buttons */
 .nav-btn {
   border: none;
   background: rgba(17, 24, 39, 0.06);
@@ -254,32 +221,8 @@ export default {
   transition: background 0.15s ease, transform 0.15s ease;
 }
 
-.nav-btn:hover:not(:disabled) {
+.nav-btn:hover {
   background: rgba(17, 24, 39, 0.15);
   transform: translateY(-1px);
-}
-
-.nav-btn:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-/* Responsive card widths – must match visibleCount logic */
-@media (max-width: 1023.98px) {
-  .brand-card {
-    flex: 0 0 calc(100% / 4);
-  }
-}
-
-@media (max-width: 767.98px) {
-  .brand-card {
-    flex: 0 0 calc(100% / 3);
-  }
-}
-
-@media (max-width: 479.98px) {
-  .brand-card {
-    flex: 0 0 calc(100% / 2);
-  }
 }
 </style>
