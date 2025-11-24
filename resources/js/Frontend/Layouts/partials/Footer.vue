@@ -108,7 +108,7 @@
 
 
           <!-- ▸ Our Brands (dynamic) -->
-          <div class="col text-start ps-0 ps-md-3">
+          <!-- <div class="col text-start ps-0 ps-md-3">
             <h6 class="links-title">Our Brands</h6>
             <ul class="list-unstyled mb-0">
               <li v-for="manufacture in $page.props.category_manufactures.slice(0, 8)" :key="manufacture.id"
@@ -119,7 +119,7 @@
                 </Link>
               </li>
             </ul>
-          </div>
+          </div> -->
 
           <!-- ▸ Vehicles Type (dynamic) -->
           <div class="col text-start ps-0 ps-md-3">

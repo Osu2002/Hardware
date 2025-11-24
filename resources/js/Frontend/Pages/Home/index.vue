@@ -6,7 +6,8 @@
       <CategoryNav :categories="categories" />
       <CategoriesBox :categories="categories" />
       <!-- SpecialOffers if you added it -->
-      <SpecialOffers />
+     <SpecialOffers :offers="specialOffers" />
+
 
       <!-- Category nav + product slider -->
      
@@ -26,6 +27,10 @@ export default {
   props: {
     site_url: Object,
     categories: {
+      type: Array,
+      default: () => [],
+    },
+    specialOffers: {                      // ← NEW
       type: Array,
       default: () => [],
     },

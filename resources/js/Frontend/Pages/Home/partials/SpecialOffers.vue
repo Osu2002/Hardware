@@ -37,11 +37,12 @@
               class="offer-card"
             >
               <div class="offer-image-wrapper">
+                <!-- DISCOUNT BADGE -->
                 <span
-                  v-if="offer.discountLabel"
+                  v-if="discountBadgeFor(offer)"
                   class="offer-discount"
                 >
-                  {{ offer.discountLabel }}
+                  {{ discountBadgeFor(offer) }}
                 </span>
 
                 <img
@@ -56,14 +57,17 @@
               </div>
 
               <div class="offer-price">
-                <span class="current">
-                  Rs. {{ formatCurrency(offer.price) }}
-                </span>
+                <!-- OLD PRICE (STRIKED) -->
                 <span
-                  v-if="offer.oldPrice"
+                  v-if="oldPrice(offer) !== null"
                   class="old"
                 >
-                  Rs. {{ formatCurrency(offer.oldPrice) }}
+                  Rs. {{ formatCurrency(oldPrice(offer)) }}
+                </span>
+
+                <!-- NEW / DISCOUNTED PRICE -->
+                <span class="current">
+                  Rs. {{ formatCurrency(currentPrice(offer)) }}
                 </span>
               </div>
             </div>
@@ -87,53 +91,31 @@
 export default {
   name: 'SpecialOffers',
 
+  props: {
+    // Each item can be like:
+    // {
+    //   id,
+    //   name,
+    //   image,
+    //   price,         // final price
+    //   oldPrice,      // original price
+    //   regular_price,
+    //   sale_price,
+    //   discountLabel, // "DISCOUNT 80%" etc.
+    //   discount_status,
+    //   discount_type,
+    //   discounted_amount
+    // }
+    offers: {
+      type: Array,
+      default: () => [],
+    },
+  },
+
   data() {
     return {
       visibleCount: 4, // how many cards visible at once (desktop)
       currentIndex: 0,
-      // Hard-coded demo data for now
-      offers: [
-        {
-          id: 1,
-          name: 'Men Air Compressor 1HP-38L',
-          image: 'https://via.placeholder.com/260x220?text=Offer+1',
-          price: 50588,
-          oldPrice: null,
-          discountLabel: '',
-        },
-        {
-          id: 2,
-          name: 'Waterproofing Paint Brilliance',
-          image: 'https://via.placeholder.com/260x220?text=Offer+2',
-          price: 37950,
-          oldPrice: 42000,
-          discountLabel: 'DISCOUNT 10%',
-        },
-        {
-          id: 3,
-          name: 'Dulux Aquatech Flex Brilliance',
-          image: 'https://via.placeholder.com/260x220?text=Offer+3',
-          price: 31000,
-          oldPrice: 34500,
-          discountLabel: '',
-        },
-        {
-          id: 4,
-          name: 'Sayerlack WB EX Matt Top Coat',
-          image: 'https://via.placeholder.com/260x220?text=Offer+4',
-          price: 28567,
-          oldPrice: 39676,
-          discountLabel: 'DISCOUNT 28%',
-        },
-        {
-          id: 5,
-          name: 'Extra Product Example 5',
-          image: 'https://via.placeholder.com/260x220?text=Offer+5',
-          price: 14990,
-          oldPrice: 17990,
-          discountLabel: 'DISCOUNT 17%',
-        },
-      ],
     };
   },
 
@@ -148,7 +130,6 @@ export default {
       return this.currentIndex >= this.maxIndex;
     },
     trackStyle() {
-      // Each step moves one card width (100 / visibleCount %)
       const step = 100 / this.visibleCount;
       return {
         transform: `translateX(-${this.currentIndex * step}%)`,
@@ -167,12 +148,96 @@ export default {
         this.currentIndex -= 1;
       }
     },
+
     formatCurrency(value) {
       if (value == null) return '';
       return Number(value).toLocaleString('en-LK', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
+    },
+
+    /**
+     * Final (discounted) price to display.
+     */
+    currentPrice(offer) {
+      // Prefer explicit `price` from backend mapping
+      if (offer.price != null) return Number(offer.price);
+
+      // Fallbacks if you pass sale/regular prices instead
+      if (offer.sale_price != null) return Number(offer.sale_price);
+      if (offer.regular_price != null) return Number(offer.regular_price);
+
+      return 0;
+    },
+
+    /**
+     * Original price to show as striked-through.
+     */
+    oldPrice(offer) {
+      const current = this.currentPrice(offer);
+
+      // If backend already gives oldPrice, use it
+      if (offer.oldPrice != null && Number(offer.oldPrice) > current) {
+        return Number(offer.oldPrice);
+      }
+
+      // If you pass regular_price and it's > current, use that
+      if (offer.regular_price != null && Number(offer.regular_price) > current) {
+        return Number(offer.regular_price);
+      }
+
+      // If you pass price + sale_price (standard pattern)
+      if (
+        offer.price != null &&
+        offer.sale_price != null &&
+        Number(offer.price) > Number(offer.sale_price)
+      ) {
+        return Number(offer.price);
+      }
+
+      return null;
+    },
+
+    /**
+     * Text inside the discount badge.
+     * 1. offer.discountLabel (if backend already gave a label)
+     * 2. Compute percent from oldPrice & currentPrice -> "-15%"
+     * 3. discount_type + discounted_amount (percent/amount)
+     */
+    discountBadgeFor(offer) {
+      // 1. Direct label from backend
+      if (offer.discountLabel) {
+        return offer.discountLabel;
+      }
+
+      // 2. Calculate from prices
+      const original = this.oldPrice(offer);
+      const current = this.currentPrice(offer);
+
+      if (original && current && original > current) {
+        const diff = original - current;
+        const percent = original > 0 ? Math.round((diff / original) * 100) : 0;
+        if (percent > 0) {
+          return `-${percent}%`;
+        }
+      }
+
+      // 3. Fallback using discount_type / discounted_amount
+      if (
+        offer.discount_status &&
+        offer.discount_type &&
+        offer.discounted_amount > 0
+      ) {
+        if (offer.discount_type === 'percent') {
+          return `-${offer.discounted_amount}%`;
+        }
+        if (offer.discount_type === 'amount') {
+          return `-Rs. ${this.formatCurrency(offer.discounted_amount)}`;
+        }
+      }
+
+      return null;
     },
   },
 };
@@ -187,7 +252,7 @@ export default {
   display: grid;
   grid-template-columns: 320px 18px minmax(0, 1fr);
   background: #f9fafb;
-  border-radius: 8px;
+  border-radius: 16px;
   box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
   overflow: hidden;
 }
@@ -221,18 +286,18 @@ export default {
   align-self: flex-start;
   padding: 10px 28px;
   border-radius: 999px;
-  border: 2px solid #00c0ff;
-  background: transparent;
-  color: #ffffff;
+  border: 2px solid #ffcc00;
+  background: #ffcc00;
+  color: #1f2937;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .special-cta:hover {
-  background: #00c0ff;
-  color: #001c80;
+  background: #fcd34d;
+  transform: translateY(-1px);
 }
 
 /* ARROW DIVIDER */
@@ -250,7 +315,7 @@ export default {
   height: 0;
   border-top: 18px solid transparent;
   border-bottom: 18px solid transparent;
-  border-left: 18px solid #00a2ff;
+  border-left: 18px solid #fbbf24;
 }
 
 /* SLIDER AREA */
@@ -283,8 +348,9 @@ export default {
   position: relative;
   padding-top: 70%;
   background: #f3f4f6;
-  border-radius: 8px 8px 0 0;
+  border-radius: 16px;
   overflow: hidden;
+  border: 2px solid #fbbf24;
 }
 
 .offer-image {
@@ -296,24 +362,26 @@ export default {
   background: #ffffff;
 }
 
+/* DISCOUNT BADGE */
 .offer-discount {
   position: absolute;
   top: 10px;
-  right: 10px;
-  background: #ff1f2f;
+  left: 10px;
+  background: #7c3aed; /* purple */
   color: #ffffff;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 4px;
-  text-transform: uppercase;
+  padding: 8px 12px;
+  border-radius: 999px;
+  box-shadow: 0 4px 10px rgba(76, 29, 149, 0.4);
 }
 
+/* NAME + PRICE */
 .offer-name {
   margin-top: 10px;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #374151;
+  color: #1f2937;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -325,16 +393,18 @@ export default {
   text-align: center;
 }
 
+/* NEW PRICE (purple, bold) */
 .offer-price .current {
   display: block;
-  font-weight: 600;
-  color: #111827;
+  font-weight: 700;
+  color: #4c1d95;
 }
 
+/* OLD PRICE (grey, striked) */
 .offer-price .old {
   display: block;
-  margin-top: 2px;
-  font-size: 0.8rem;
+  margin-bottom: 2px;
+  font-size: 0.85rem;
   text-decoration: line-through;
   color: #9ca3af;
 }
@@ -386,7 +456,7 @@ export default {
   }
 
   .offer-card {
-    flex: 0 0 50%; /* 2 cards visible on smaller screens (logic still works) */
+    flex: 0 0 50%; /* 2 cards visible on smaller screens */
   }
 }
 
