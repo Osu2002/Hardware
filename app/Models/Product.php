@@ -14,7 +14,7 @@ class Product extends Model implements HasMedia
     protected $fillable = [
         'name','slug','sku','status','sort_order','brand_id','uom_id',
         'attribute_set_id','primary_category_id','price','sale_price',
-        'short_description','description'
+        'short_description','description','discount_status','discount_type','discounted_amount', 
     ];
 
     // Media collection (optional)
