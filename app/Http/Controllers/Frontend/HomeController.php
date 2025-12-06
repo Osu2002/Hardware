@@ -9,6 +9,8 @@ use App\Models\Attribute;
 use App\Models\AttributeSet;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Product;
+
 
 class HomeController extends Controller
 {
@@ -132,11 +134,60 @@ class HomeController extends Controller
         })
         ->values();
 
+   $specialOffers = Product::where('status', 1)
+        ->where('discount_status', 1)
+        ->with('media')
+        ->orderBy('created_at', 'desc')
+        ->take(12) // how many to show in slider
+        ->get()
+        ->map(function ($p) {
+            $thumb = optional($p->getFirstMedia('product_images'))->getUrl();
+
+            $basePrice = $p->price ?? 0;
+            $oldPrice  = $basePrice;   // original price
+            $currentPrice  = $basePrice;
+            $discountLabel = null;
+
+            if ($p->discount_status && $p->discount_type && $p->discounted_amount > 0) {
+                if ($p->discount_type === 'percent') {
+                    // percentage discount
+                    $currentPrice = max(0, $basePrice * (1 - ($p->discounted_amount / 100)));
+                    // label like "DISCOUNT 10%"
+                    $discountLabel = 'DISCOUNT ' . rtrim(rtrim($p->discounted_amount, '0'), '.') . '%';
+                } elseif ($p->discount_type === 'amount') {
+                    // fixed amount discount
+                    $currentPrice = max(0, $basePrice - $p->discounted_amount);
+
+                    // optional: compute percent for label
+                    if ($basePrice > 0) {
+                        $percent = round(($p->discounted_amount / $basePrice) * 100);
+                        $discountLabel = 'DISCOUNT ' . $percent . '%';
+                    } else {
+                        $discountLabel = 'SAVE Rs. ' . number_format($p->discounted_amount, 2);
+                    }
+                }
+            }
+
+            return [
+                'id'            => $p->id,
+                'name'          => $p->name,
+                'slug'          => $p->slug,
+                'image'         => $thumb,
+                'price'         => round($currentPrice, 2),       // current (discounted) price
+                'oldPrice'      => $oldPrice > $currentPrice
+                                    ? round($oldPrice, 2)
+                                    : null,                       // only show old price if higher
+                'discountLabel' => $discountLabel,                 // e.g. "DISCOUNT 10%"
+            ];
+        })
+        ->values();
+
     return Inertia::render('Home/index', [
         'categories'    => $categories,
         'brands'        => $brands,
         'attributes'    => $attributes,
         'attributeSets' => $attributeSets,
+        'specialOffers' => $specialOffers,   // ← NEW
     ]);
 }
 }

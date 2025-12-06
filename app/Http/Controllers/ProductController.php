@@ -86,6 +86,9 @@ class ProductController extends Controller
             'description' => ['nullable'],
             'attributes_map' => ['array'], // [{attribute_id,value}]
             'images.*' => ['nullable','mimes:jpeg,jpg,png,webp','max:20480'],
+             'discount_status' => ['required','in:0,1'],
+    'discount_type' => ['required_if:discount_status,1','nullable','in:percent,amount'],
+    'discounted_amount' => ['required_if:discount_status,1','nullable','numeric','min:0'],
         ]);
 
         try {
@@ -110,6 +113,9 @@ class ProductController extends Controller
                 'sale_price' => $r->sale_price,
                 'short_description' => $r->short_description,
                 'description' => $r->description,
+                'discount_status'   => (int)($r->discount_status ?? 0),
+    'discount_type'     => $r->discount_status ? $r->discount_type : null,
+    'discounted_amount' => $r->discount_status ? $r->discounted_amount : null,
             ]);
 
             // categories (pivot without FK)
@@ -183,6 +189,9 @@ class ProductController extends Controller
             'description' => ['nullable'],
             'attributes_map' => ['array'],
             'images.*' => ['nullable','mimes:jpeg,jpg,png,webp','max:20480'],
+              'discount_status' => ['required','in:0,1'],
+    'discount_type' => ['required_if:discount_status,1','nullable','in:percent,amount'],
+    'discounted_amount' => ['required_if:discount_status,1','nullable','numeric','min:0'],
         ]);
 
         try {
@@ -202,6 +211,9 @@ class ProductController extends Controller
                 'sale_price' => $r->sale_price,
                 'short_description' => $r->short_description,
                 'description' => $r->description,
+                'discount_status'   => (int)($r->discount_status ?? 0),
+    'discount_type'     => $r->discount_status ? $r->discount_type : null,
+    'discounted_amount' => $r->discount_status ? $r->discounted_amount : null,
             ]);
 
             $product->categories()->sync($r->categories ?? []);
