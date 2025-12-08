@@ -12,6 +12,9 @@ use App\Http\CustomHelpers;
 use App\Services\ApiClient\ApiClient;
 use Inertia\Inertia;
 
+use App\Http\Controllers\Frontend\CategoryListController;
+
+
 use App\Http\Controllers\Frontend\ProductViewController;
 
 
@@ -123,5 +126,9 @@ Route::get('/view-stats', [PageController::class, 'viewStats'])->name('view.stat
 // Single product page for category products
 Route::get('/products/{slug}', [ProductViewController::class, 'show'])
     ->name('products.show');
+
+
+Route::get('/category/{category}', [CategoryListController::class, 'show'])
+    ->name('category.list');
 
 
