@@ -140,7 +140,7 @@
                         <span class="badge-sale">sale</span>
                     </Link>
 
-                    <a href="#" class="mitem">CAREERS</a>
+                    <!-- <a href="#" class="mitem">CAREERS</a> -->
                     <Link
                         :href="route('contact')"
                         class="mitem"
@@ -286,9 +286,9 @@
                             >Special Offers</Link
                         >
                     </li>
-                    <li>
+                    <!-- <li>
                         <a href="#" @click.prevent="drawer = false">Careers</a>
-                    </li>
+                    </li> -->
                     <li>
                         <Link :href="route('contact')" @click="drawer = false"
                             >Contact Us</Link
@@ -384,17 +384,16 @@ export default {
         formatMoney(n) {
             return (n || 0).toFixed(2);
         },
-        categoryHref(c) {
-            // adjust to your real route; using query param fallback
-            return this.$page.url.includes("?")
-                ? `${route("index")}&category=${this.slug(c.slug || c.title)}`
-                : `${route("index")}?category=${this.slug(c.slug || c.title)}`;
-        },
-        brandHref(b) {
-            return this.$page.url.includes("?")
-                ? `${route("index")}&brand=${this.slug(b.slug || b.title)}`
-                : `${route("index")}?brand=${this.slug(b.slug || b.title)}`;
-        },
+       categoryHref(c) {
+    // Use category ID for the /category/{category} route
+    return route('category.list', c.id);
+  },
+
+  brandHref(b) {
+    // This one is fine using a query param, assuming 'brand' filter exists
+    return route('index', { brand: b.slug || this.slug(b.title) });
+  },
+
         slug(s = "") {
             return String(s)
                 .trim()

@@ -7,6 +7,7 @@
         v-for="category in categories"
         :key="category.id"
         class="category-card"
+         @click="goToCategory(category)" 
       >
         <div class="category-image-wrapper">
           <img
@@ -36,6 +37,11 @@ export default {
       type: Array,
       default: () => [],
     },
+  },
+   methods: {
+    goToCategory(category) {
+    this.$inertia.visit(route('category.list', category.id));
+  },
   },
 };
 </script>

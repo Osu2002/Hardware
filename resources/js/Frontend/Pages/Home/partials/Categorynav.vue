@@ -43,6 +43,7 @@
             v-for="product in activeProducts"
             :key="product.id"
             class="product-card"
+              @click="goToProduct(product.slug)"
           >
             <div class="card-inner">
               <div class="card-image-wrapper">
@@ -159,6 +160,12 @@ export default {
         maximumFractionDigits: 2,
       });
     },
+
+     goToProduct(slug) {
+    // Using Inertia directly.
+    // If you have Ziggy route(), you could do: this.$inertia.visit(route('products.show', slug))
+    this.$inertia.visit(`/products/${slug}`);
+  },
   },
 };
 </script>
@@ -261,6 +268,7 @@ export default {
   flex: 0 0 25%; /* 4 cards visible */
   padding: 0 10px;
   box-sizing: border-box;
+  cursor: pointer;
 }
 
 .card-inner {

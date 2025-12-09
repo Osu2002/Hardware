@@ -12,6 +12,12 @@ use App\Http\CustomHelpers;
 use App\Services\ApiClient\ApiClient;
 use Inertia\Inertia;
 
+use App\Http\Controllers\Frontend\CategoryListController;
+
+
+use App\Http\Controllers\Frontend\ProductViewController;
+
+
 /*
 |--------------------------------------------------------------------------
 | Frontend Routes
@@ -113,5 +119,16 @@ Route::get('/export-test', [PageController::class, 'testexcel']);
 Route::get('/export-models-view', [PageController::class, 'exportView'])->name('export.models.view');
 Route::get('/export-models', [PageController::class, 'exportMultipleModelStats'])->name('export.models');
 Route::get('/view-stats', [PageController::class, 'viewStats'])->name('view.stats');
+
+
+
+
+// Single product page for category products
+Route::get('/products/{slug}', [ProductViewController::class, 'show'])
+    ->name('products.show');
+
+
+Route::get('/category/{category}', [CategoryListController::class, 'show'])
+    ->name('category.list');
 
 
