@@ -31,11 +31,13 @@
 
         <div class="offers-viewport">
           <div class="offers-track" :style="trackStyle">
-            <div
-              v-for="offer in offers"
-              :key="offer.id"
-              class="offer-card"
-            >
+           <div
+  v-for="offer in offers"
+  :key="offer.id"
+  class="offer-card"
+  @click="goToProduct(offer.slug)"  
+>
+
               <div class="offer-image-wrapper">
                 <!-- DISCOUNT BADGE -->
                 <span
@@ -198,6 +200,13 @@ export default {
 
       return null;
     },
+
+    goToProduct(slug) {
+    // Same style you used elsewhere
+    this.$inertia.visit(`/products/${slug}`);
+    // or, if Ziggy is available:
+    // this.$inertia.visit(route('products.show', slug));
+  },
 
     /**
      * Text inside the discount badge.
