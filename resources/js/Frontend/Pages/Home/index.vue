@@ -3,10 +3,14 @@
     <br><br>
     <div class="home-container">
       <ImageSlider />
+
+       <CategoriesBox :categories="categories" />
+
+        <SpecialOffers :offers="specialOffers" />
       <CategoryNav :categories="categories" />
-      <CategoriesBox :categories="categories" />
+     
       <!-- SpecialOffers if you added it -->
-     <SpecialOffers :offers="specialOffers" />
+    
 
 
       <!-- Category nav + product slider -->

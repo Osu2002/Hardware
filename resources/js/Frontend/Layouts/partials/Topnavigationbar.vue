@@ -1,112 +1,200 @@
 <template>
-    <header class="mh-header">
-        <!-- TOP: brand + quick actions + mobile hamburger -->
-        <div class="mh-top">
-            <div class="mh-wrap">
-                <Link :href="route('index')" class="mh-brand">
+    <div class="mh-shell">
+        <!-- ================= FULL NAVBAR (top of page) ================= -->
+        <header
+            class="mh-header mh-header-main"
+            :class="{ 'is-hidden': scrolled }"
+        >
+            <!-- TOP: logo + quick actions + mobile hamburger -->
+            <div class="mh-top">
+                <div class="mh-wrap mh-top-wrap">
+                    <Link
+                        :href="route('index')"
+                        class="mh-brand"
+                        aria-label="Mahinda Hardware &amp; Electrical"
+                    >
+                        <img
+                            :src="logoSrc"
+                            alt="Mahinda Hardware & Electrical"
+                            class="mh-logo"
+                        />
+                    </Link>
+
+                    <!-- quick actions (desktop) -->
+                    <ul class="mh-quick">
+                        <li>
+                            <Link href="#" class="mh-quick-item">
+                                <i class="fa-regular fa-heart"></i>
+                                <div class="t">
+                                    <span class="muted">WELCOME</span>
+                                    <strong>WISH LIST</strong>
+                                </div>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                :href="
+                                    loggedIn
+                                        ? route('profile')
+                                        : route('user.login')
+                                "
+                                class="mh-quick-item"
+                            >
+                                <i class="fa-regular fa-user"></i>
+                                <div class="t">
+                                    <span class="muted">HELLO</span>
+                                    <strong>YOUR ACCOUNT</strong>
+                                </div>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="#" class="mh-quick-item">
+                                <i class="fa-solid fa-cart-shopping"></i>
+                                <div class="t">
+                                    <span class="muted">MY CART</span>
+                                    <strong>Rs. {{ formatMoney(cartTotal) }}</strong>
+                                </div>
+                            </Link>
+                        </li>
+                    </ul>
+
+                    <!-- mobile burger -->
+                    <button
+                        class="mh-burger"
+                        @click="drawer = true"
+                        aria-label="Open menu"
+                    >
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- NAV + SEARCH -->
+            <div class="mh-navrow">
+                <div class="mh-wrap mh-nav-wrap">
+                    <nav class="mh-menu">
+                        <!-- Categories dropdown -->
+                        <div class="mitem has-dd">
+                            <button
+                                type="button"
+                                class="mtext-btn"
+                                @click.stop="mega = !mega"
+                            >
+                                <span>CATEGORIES</span>
+                                <i class="fa-solid fa-chevron-down dd-icon"></i>
+                            </button>
+                            <ul class="dd" v-show="mega">
+                                <li v-for="c in topCategories" :key="c.id">
+                                    <Link :href="categoryHref(c)">
+                                        {{ c.title }}
+                                    </Link>
+                                </li>
+                                <li class="all">
+                                    <Link :href="route('index')"
+                                        >View all categories</Link
+                                    >
+                                </li>
+                            </ul>
+                        </div>
+
+                        <Link
+                            :href="route('index')"
+                            class="mitem"
+                            :class="{ active: isActive('index') }"
+                        >
+                            HOME
+                        </Link>
+
+                        <!-- Brands dropdown -->
+                        <div class="mitem has-dd">
+                            <button
+                                type="button"
+                                class="mtext-btn"
+                                @click.stop="brandsOpen = !brandsOpen"
+                            >
+                                <span>BRANDS</span>
+                                <i class="fa-solid fa-chevron-down dd-icon"></i>
+                            </button>
+                            <ul class="dd" v-show="brandsOpen">
+                                <li v-for="b in brandDropdown" :key="b.id">
+                                    <Link :href="brandHref(b)">
+                                        {{ b.title }}
+                                    </Link>
+                                </li>
+                                <li class="all">
+                                    <Link :href="route('index')">All Brands</Link>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <Link :href="route('index')" class="mitem">
+                            FEATURED
+                        </Link>
+
+                       <Link :href="route('index')" class="mitem">
+    SPECIAL OFFERS
+</Link>
+
+
+                        <Link
+                            :href="route('contact')"
+                            class="mitem"
+                            :class="{ active: isActive('contact') }"
+                        >
+                            CONTACT US
+                        </Link>
+                    </nav>
+
+                    <!-- Search -->
+                    <form class="mh-search" @submit.prevent="submitSearch">
+                        <input
+                            v-model="q"
+                            type="text"
+                            placeholder="Search entire store here..."
+                            aria-label="Search"
+                        />
+                        <button
+                            class="btn-search"
+                            type="submit"
+                            aria-label="Search"
+                        >
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <!-- ================= COMPACT NAVBAR (on scroll) ================= -->
+        <header
+            class="mh-header mh-header-compact"
+            :class="{ 'is-visible': scrolled }"
+        >
+            <div class="mh-wrap mh-compact-wrap">
+                <!-- small logo -->
+                <Link
+                    :href="route('index')"
+                    class="mh-brand mini"
+                    aria-label="Mahinda Hardware &amp; Electrical"
+                >
                     <img
                         :src="logoSrc"
                         alt="Mahinda Hardware & Electrical"
-                        class="mh-logo"
+                        class="mh-logo mini"
                     />
-                    <span class="mh-brand-text"
-                        >Mahinda Hardware & Electrical</span
-                    >
                 </Link>
 
-                <!-- quick actions -->
-                <ul class="mh-quick">
-                    <li>
-                        <Link href="#" class="mh-quick-item">
-                            <i class="fa-regular fa-heart"></i>
-                            <div class="t">
-                                <span class="muted">WELCOME</span
-                                ><strong>WISH LIST</strong>
-                            </div>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link
-                            :href="
-                                loggedIn
-                                    ? route('profile')
-                                    : route('user.login')
-                            "
-                            class="mh-quick-item"
+                <!-- nav (desktop) -->
+                <nav class="mh-menu mh-menu-compact">
+                    <div class="mitem has-dd">
+                        <button
+                            type="button"
+                            class="mtext-btn"
+                            @click.stop="mega = !mega"
                         >
-                            <i class="fa-regular fa-user"></i>
-                            <div class="t">
-                                <span class="muted">HELLO</span
-                                ><strong>YOUR ACCOUNT</strong>
-                            </div>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="#" class="mh-quick-item">
-                            <i class="fa-solid fa-cart-shopping"></i>
-                            <div class="t">
-                                <span class="muted">MY CART</span
-                                ><strong
-                                    >Rs. {{ formatMoney(cartTotal) }}</strong
-                                >
-                            </div>
-                        </Link>
-                    </li>
-                </ul>
-
-                <!-- mobile burger -->
-                <button
-                    class="mh-burger"
-                    @click="drawer = true"
-                    aria-label="Open menu"
-                >
-                    <i class="fa-solid fa-bars"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- NAV + SEARCH -->
-        <div class="mh-navrow" :class="{ 'is-scrolled': scrolled }">
-            <div class="mh-wrap">
-                <nav class="mh-menu">
-                    <!-- Product Range: mega menu -->
-                    <div
-                        class="mitem has-mega"
-                        @mouseenter="mega = true"
-                        @mouseleave="mega = false"
-                        @focusin="mega = true"
-                        @focusout="mega = false"
-                    >
-                        <span class="mtext">Categories</span>
-                        <div class="mega" v-show="mega">
-                            <div class="mega-inner">
-                                <div class="mega-col">
-                                    <h6>Top Categories</h6>
-                                    <ul class="grid">
-                                        <li
-                                            v-for="c in topCategories"
-                                            :key="c.id"
-                                        >
-                                            <Link
-                                                :href="categoryHref(c)"
-                                                class="grid-item"
-                                            >
-                                                <span class="dot"></span>
-                                                <span class="label">{{
-                                                    c.title
-                                                }}</span>
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                    <Link
-                                        :href="route('index')"
-                                        class="view-all"
-                                        >View all categories</Link
-                                    >
-                                </div>
-                               
-                            </div>
-                        </div>
+                            <span>CATEGORIES</span>
+                            <i class="fa-solid fa-chevron-down dd-icon"></i>
+                        </button>
                     </div>
 
                     <Link
@@ -117,65 +205,86 @@
                         HOME
                     </Link>
 
-                    <div
-                        class="mitem has-dd"
-                        @mouseenter="brandsOpen = true"
-                        @mouseleave="brandsOpen = false"
-                    >
-                        <span class="mtext">BRANDS</span>
-                        <ul class="dd" v-show="brandsOpen">
-                            <li v-for="b in brandDropdown" :key="b.id">
-                                <Link :href="brandHref(b)">{{ b.title }}</Link>
-                            </li>
-                            <li class="all">
-                                <Link :href="route('index')">All Brands</Link>
-                            </li>
-                        </ul>
+                    <div class="mitem has-dd">
+                        <button
+                            type="button"
+                            class="mtext-btn"
+                            @click.stop="brandsOpen = !brandsOpen"
+                        >
+                            <span>BRANDS</span>
+                            <i class="fa-solid fa-chevron-down dd-icon"></i>
+                        </button>
                     </div>
 
-                    <Link :href="route('index')" class="mitem">FEATURED</Link>
-
-                    <Link :href="route('index')" class="mitem sale">
-                        SPECIAL OFFERS
-                        <span class="badge-sale">sale</span>
+                    <Link :href="route('index')" class="mitem">
+                        FEATURED
                     </Link>
 
-                    <!-- <a href="#" class="mitem">CAREERS</a> -->
+                    <Link :href="route('index')" class="mitem">
+    OFFERS
+</Link>
+
+
                     <Link
                         :href="route('contact')"
                         class="mitem"
                         :class="{ active: isActive('contact') }"
-                        >CONTACT US</Link
                     >
+                        CONTACT
+                    </Link>
                 </nav>
 
-                <!-- Search -->
-                <form class="mh-search" @submit.prevent="submitSearch">
-                    <input
-                        v-model="q"
-                        type="text"
-                        placeholder="SEARCH ENTIRE STORE HERE..."
-                        aria-label="Search"
-                    />
-                    <button
-                        class="btn-search"
-                        type="submit"
-                        aria-label="Search"
+                <!-- Search + icons -->
+                <div class="mh-compact-right">
+                    <form
+                        class="mh-search mh-search-compact"
+                        @submit.prevent="submitSearch"
                     >
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </button>
-                    <button
-                        class="btn-gear"
-                        type="button"
-                        aria-label="More filters"
-                    >
-                        <i class="fa-solid fa-gear"></i>
-                    </button>
-                </form>
-            </div>
-        </div>
+                        <input
+                            v-model="q"
+                            type="text"
+                            placeholder="Search..."
+                            aria-label="Search"
+                        />
+                        <button
+                            class="btn-search"
+                            type="submit"
+                            aria-label="Search"
+                        >
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </form>
 
-        <!-- MOBILE DRAWER -->
+                    <div class="mh-compact-actions">
+                        <Link href="#" class="icon-btn" aria-label="Cart">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                        </Link>
+                        <Link
+                            :href="
+                                loggedIn
+                                    ? route('profile')
+                                    : route('user.login')
+                            "
+                            class="icon-btn"
+                            aria-label="Your account"
+                        >
+                            <i class="fa-regular fa-user"></i>
+                        </Link>
+                    </div>
+
+                    <!-- mobile burger -->
+                    <button
+                        class="mh-burger"
+                        @click="drawer = true"
+                        aria-label="Open menu"
+                    >
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- ================= MOBILE DRAWER ================= -->
         <transition name="fade">
             <div
                 v-if="drawer"
@@ -184,7 +293,12 @@
             ></div>
         </transition>
         <transition name="slide">
-            <aside v-if="drawer" class="drawer" role="dialog" aria-modal="true">
+            <aside
+                v-if="drawer"
+                class="drawer"
+                role="dialog"
+                aria-modal="true"
+            >
                 <div class="drawer-head">
                     <span>Menu</span>
                     <button
@@ -211,7 +325,9 @@
 
                 <ul class="drawer-list">
                     <li>
-                        <Link :href="route('index')" @click="drawer = false"
+                        <Link
+                            :href="route('index')"
+                            @click="drawer = false"
                             >Home</Link
                         >
                     </li>
@@ -277,27 +393,33 @@
                     </li>
 
                     <li>
-                        <Link :href="route('index')" @click="drawer = false"
+                        <Link
+                            :href="route('index')"
+                            @click="drawer = false"
                             >Featured</Link
                         >
                     </li>
                     <li>
-                        <Link :href="route('index')" @click="drawer = false"
+                        <Link
+                            :href="route('index')"
+                            @click="drawer = false"
                             >Special Offers</Link
                         >
                     </li>
-                    <!-- <li>
-                        <a href="#" @click.prevent="drawer = false">Careers</a>
-                    </li> -->
                     <li>
-                        <Link :href="route('contact')" @click="drawer = false"
+                        <Link
+                            :href="route('contact')"
+                            @click="drawer = false"
                             >Contact Us</Link
                         >
                     </li>
                 </ul>
             </aside>
         </transition>
-    </header>
+
+        <!-- spacer so content is not hidden behind fixed headers -->
+        <div class="mh-spacer"></div>
+    </div>
 </template>
 
 <script>
@@ -308,9 +430,9 @@ export default {
     components: { Link },
     props: {
         cartTotal: { type: Number, default: 0 },
-        logoSrc: { type: String, default: "/images/rohana-logo.png" },
-        categories: Array, // optional – will fall back to $page.props.categories
-        brands: Array, // optional – will fall back to $page.props.brands
+        logoSrc: { type: String, default: "/images/mahindalogo.png" },
+        categories: Array, // optional – falls back to $page.props.categories
+        brands: Array, // optional – falls back to $page.props.brands
     },
     data() {
         return {
@@ -333,7 +455,6 @@ export default {
             return this.brands ?? this.$page?.props?.brands ?? [];
         },
         topCategories() {
-            // show featured first then top N
             const list = [...this.cats];
             list.sort(
                 (a, b) =>
@@ -363,7 +484,8 @@ export default {
     },
     methods: {
         onScroll() {
-            this.scrolled = window.scrollY > 8;
+            // match React behaviour: compact bar appears after ~80px scroll
+            this.scrolled = window.scrollY > 80;
         },
         submitSearch() {
             this.$inertia.get(
@@ -384,16 +506,14 @@ export default {
         formatMoney(n) {
             return (n || 0).toFixed(2);
         },
-       categoryHref(c) {
-    // Use category ID for the /category/{category} route
-    return route('category.list', c.id);
-  },
-
-  brandHref(b) {
-    // This one is fine using a query param, assuming 'brand' filter exists
-    return route('index', { brand: b.slug || this.slug(b.title) });
-  },
-
+        categoryHref(c) {
+            // keep existing /category/{id} behaviour
+            return route("category.list", c.id);
+        },
+        brandHref(b) {
+            // keep existing brand filter behaviour on index route
+            return route("index", { brand: b.slug || this.slug(b.title) });
+        },
         slug(s = "") {
             return String(s)
                 .trim()
@@ -406,41 +526,77 @@ export default {
 </script>
 
 <style scoped>
-/* ===== Sticky + palette (your gradient) ===== */
-.mh-header {
-    position: sticky;
-    top: 0;
-    z-index: 1001;
-    width: 100%;
-    --grad: linear-gradient(
-        90deg,
-        #415a77 0%,
-        #0a3f79 0%,
-        #163353 34%,
-        #142334 67%,
-        #0e1e30 80%,
-        #0d1b2a 100%
-    );
-    --text: #fff;
-    --muted: #dfe4ff;
-    --icon: #ffd400;
-    --divider: rgba(255, 255, 255, 0.18);
-    --pill-bg: rgba(255, 255, 255, 0.06);
+.mh-shell {
+    position: relative;
+    z-index: 50;
+    --nav-bg: #ffffff;
+    --nav-border: #e5e7eb;
+    --nav-text: #12355a;
+    --nav-muted: #6b7280;
+    --nav-primary: #0b3c80;
+    --nav-sale: #c1121f;
 }
 
-/* ===== shared container ===== */
+/* shared container */
 .mh-wrap {
     max-width: 1320px;
     margin: 0 auto;
-    padding: 0 12px;
+    padding: 0 16px;
 }
 
-/* ===== top ===== */
-.mh-top {
-    background: var(--grad);
+/* main + compact headers */
+.mh-header {
+    left: 0;
+    right: 0;
+    top: 0;
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--nav-border);
 }
-.mh-top .mh-wrap {
-    height: 64px;
+
+.mh-header-main,
+.mh-header-compact {
+    position: fixed;
+    z-index: 1001;
+    transition: transform 0.25s ease, opacity 0.25s ease, box-shadow 0.2s ease;
+}
+
+.mh-header-main {
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+}
+
+.mh-header-main.is-hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.mh-header-compact {
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+.mh-header-compact.is-visible {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* spacer so content clears fixed header */
+.mh-spacer {
+    height: 140px;
+}
+@media (min-width: 1024px) {
+    .mh-spacer {
+        height: 144px;
+    }
+}
+
+/* ===== full header: top row ===== */
+.mh-top {
+    border-bottom: 1px solid var(--nav-border);
+}
+.mh-top-wrap {
+    height: 72px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -450,26 +606,21 @@ export default {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    color: var(--text);
     text-decoration: none;
 }
 .mh-logo {
-    width: 44px;
-    height: 44px;
-    border-radius: 999px;
+    height: 116px;
+    width: auto;
     object-fit: contain;
 }
-.mh-brand-text {
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    color: var(--text);
+.mh-brand.mini .mh-logo.mini {
+    height: 90px;
 }
 
+/* quick actions */
 .mh-quick {
     display: flex;
-    gap: 26px;
+    gap: 28px;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -478,119 +629,146 @@ export default {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    color: var(--text);
+    color: var(--nav-text);
     text-decoration: none;
 }
 .mh-quick-item i {
-    color: var(--icon);
-    font-size: 20px;
+    font-size: 18px;
 }
 .mh-quick-item .t {
     display: flex;
     flex-direction: column;
-    line-height: 1.05;
+    line-height: 1.1;
 }
-.mh-quick-item .t .muted {
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: 700;
+.mh-quick-item .muted {
+    font-size: 11px;
     text-transform: uppercase;
+    color: var(--nav-muted);
+    font-weight: 600;
+    letter-spacing: 0.06em;
 }
-.mh-quick-item .t strong {
-    color: var(--text);
+.mh-quick-item strong {
     font-size: 13px;
-    font-weight: 800;
     text-transform: uppercase;
+    color: var(--nav-text);
+    font-weight: 700;
 }
 
+/* burger */
 .mh-burger {
     display: none;
     background: transparent;
     border: none;
-    color: #fff;
+    color: var(--nav-text);
     font-size: 22px;
 }
 
-/* ===== nav + search row ===== */
+/* ===== full header: nav row ===== */
 .mh-navrow {
-    background: var(--grad);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    transition: box-shadow 0.2s ease;
+    background: var(--nav-bg);
 }
-.mh-navrow.is-scrolled {
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-}
-.mh-navrow .mh-wrap {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 16px;
-    align-items: end;
-    padding-top: 8px;
+.mh-nav-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
     padding-bottom: 12px;
+    gap: 16px;
 }
 
+/* nav menu */
 .mh-menu {
     display: flex;
-    gap: 28px;
-    align-items: flex-end;
+    align-items: center;
+    gap: 18px;
+    white-space: nowrap;
 }
+
 .mitem {
     position: relative;
     display: inline-block;
-    padding: 0 2px 8px;
-    color: #fff;
-    font-weight: 800;
-    font-size: 13.5px;
+    padding: 4px 2px 8px;
+    color: var(--nav-text);
+    font-weight: 700;
+    font-size: 13px;
     text-transform: uppercase;
     text-decoration: none;
+    letter-spacing: 0.04em;
 }
 .mitem::after {
     content: "";
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: -2px;
+    left: 0;
+    right: 0;
+    bottom: 1px;
     height: 2px;
-    width: 0;
-    background: #fff;
-    transition: width 0.25s ease;
+    background: var(--nav-primary);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.2s ease;
 }
 .mitem:hover::after,
 .mitem.active::after {
-    width: 100%;
+    transform: scaleX(1);
 }
 
-/* sale badge */
+/* sale link badge */
 .mitem.sale {
-    padding-top: 16px;
+    padding-top: 14px;
 }
 .badge-sale {
     position: absolute;
-    top: -10px;
+    top: -12px;
     left: 50%;
     transform: translateX(-50%);
-    background: #ffd400;
-    color: #1f2937;
-    font-weight: 800;
-    font-size: 11px;
-    padding: 2px 6px;
+    background: var(--nav-sale);
+    color: #fff;
+    font-weight: 700;
+    font-size: 10px;
+    padding: 2px 7px;
     border-radius: 3px;
+    text-transform: uppercase;
+}
+.badge-sale.small {
+    top: -10px;
+    right: -6px;
+    left: auto;
 }
 
-/* dropdowns / mega */
+/* dropdowns */
 .has-dd {
     position: relative;
 }
+.mtext-btn {
+    border: none;
+    background: transparent;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--nav-text);
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+}
+.dd-icon {
+    font-size: 9px;
+}
+
 .dd {
     position: absolute;
     top: 100%;
     left: 0;
+    margin-top: 6px;
     min-width: 220px;
-    background: #0e1e30;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 6px;
-    padding: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid var(--nav-border);
+    padding: 6px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+    z-index: 2000;
 }
 .dd li {
     list-style: none;
@@ -598,166 +776,134 @@ export default {
 .dd a {
     display: block;
     padding: 8px 10px;
-    color: #e7efff;
+    font-size: 13px;
+    color: var(--nav-text);
     text-decoration: none;
     border-radius: 4px;
 }
 .dd a:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: #f3f4f6;
 }
 .dd .all a {
-    color: #fff;
     font-weight: 700;
 }
 
-/* mega */
-.has-mega {
-    position: relative;
-}
-.mega{
-  position:absolute;
-  top:100%;
-  left:0;
-  /* a nice, compact width that adapts a bit */
-  width:clamp(360px, 20vw, 80px);
-  background:#0e1e30;
-  border:1px solid rgba(255,255,255,.15);
-  border-radius:10px;
-  padding:12px 12px 14px;
-  box-shadow:0 16px 40px rgba(0,0,0,.45);
-}
-.mega-inner{ display:grid; grid-template-columns: 1fr; gap: 16px; }
-.mega-col h6 {
-    color: #fff;
-    font-weight: 800;
-    font-size: 12px;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    margin: 0 0 8px;
-}
-.grid{ display:grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap:8px 12px; }
-@media (max-width: 768px){
-  .grid{ grid-template-columns: repeat(2,minmax(0,1fr)); }
-}
-.grid-item {
+/* Search */
+.mh-search {
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: #e7efff;
-    text-decoration: none;
-    padding: 6px 6px;
-    border-radius: 6px;
-}
-.grid-item:hover {
-    background: rgba(255, 255, 255, 0.08);
-}
-.grid-item .dot {
-    width: 8px;
-    height: 8px;
+    max-width: 380px;
+    flex: 1 0 auto;
+    margin-left: auto;
     border-radius: 999px;
-    background: #ffd400;
-}
-.grid-item .label {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 260px;
-}
-.view-all {
-    display: inline-block;
-    margin-top: 8px;
-    color: #fff;
-    font-weight: 700;
-    text-decoration: none;
-}
-.brandlist {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 4px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-.brand-item {
-    display: block;
-    color: #e7efff;
-    text-decoration: none;
-    padding: 6px 6px;
-    border-radius: 6px;
-}
-.brand-item:hover {
-    background: rgba(255, 255, 255, 0.08);
-}
-
-/* search */
-.mh-search {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    align-items: center;
-    background: var(--pill-bg);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    overflow: hidden;
-    backdrop-filter: blur(2px);
+    border: 1px solid var(--nav-border);
+    background: #f9fafb;
 }
 .mh-search input {
-    height: 44px;
-    padding: 0 14px;
-    background: transparent;
     border: none;
     outline: none;
-    color: #eaf1ff;
-    font-weight: 700;
-    letter-spacing: 0.2px;
+    background: transparent;
+    padding: 0 14px;
+    height: 40px;
+    font-size: 13px;
+    color: var(--nav-text);
 }
 .mh-search input::placeholder {
-    color: #e0e7ff;
+    color: var(--nav-muted);
 }
-.mh-search .btn-search,
-.mh-search .btn-gear {
-    height: 44px;
-    width: 52px;
+.mh-search .btn-search {
+    width: 46px;
+    height: 40px;
+    border: none;
+    border-left: 1px solid var(--nav-border);
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    background: transparent;
-    border: none;
     cursor: pointer;
 }
-.mh-search .btn-search:hover,
-.mh-search .btn-gear:hover {
-    background: rgba(255, 255, 255, 0.1);
+.mh-search .btn-search i {
+    font-size: 14px;
+}
+
+/* ===== compact header ===== */
+.mh-compact-wrap {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.mh-menu-compact .mitem {
+    padding-bottom: 4px;
+    font-size: 12px;
+}
+
+.mh-compact-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mh-search-compact {
+    max-width: 260px;
+    height: 36px;
+}
+.mh-search-compact input {
+    height: 36px;
+    font-size: 12px;
+}
+.mh-search-compact .btn-search {
+    height: 36px;
+}
+
+.mh-compact-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 1px solid var(--nav-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--nav-text);
+    text-decoration: none;
 }
 
 /* ===== mobile ===== */
 @media (max-width: 992px) {
-    .mh-top .mh-wrap {
-        height: auto;
-        padding: 10px 12px;
-        gap: 10px;
+    .mh-top-wrap {
+        height: 64px;
+        padding: 8px 16px;
     }
     .mh-quick {
         display: none;
-    } /* keep header clean on mobile */
-    .mh-burger {
-        display: block;
     }
-    .mh-navrow .mh-wrap {
-        grid-template-columns: 1fr;
-        gap: 10px;
+    .mh-burger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .mh-nav-wrap {
+        padding-bottom: 10px;
     }
     .mh-menu {
         display: none;
-    } /* hidden; we use drawer */
-}
-@media (max-width: 640px) {
-    .mh-brand-text {
-        font-size: 18px;
     }
-    .mh-logo {
-        width: 40px;
-        height: 40px;
+    .mh-search {
+        max-width: none;
+        width: 100%;
+    }
+    .mh-header-compact .mh-search-compact {
+        display: none;
+    }
+    .mh-header-compact .mh-compact-actions {
+        display: none;
     }
 }
 
