@@ -170,6 +170,47 @@ class RolesPermissionSeeder extends Seeder
             ['section_name' => 'dealer', 'name' => 'dealer.edit'],
             ['section_name' => 'dealer', 'name' => 'dealer.delete'],
 
+
+
+            // Hardware CMS (NEW)
+
+// Category (your routes use can:category.*)
+['section_name' => 'category', 'name' => 'category.view'],
+['section_name' => 'category', 'name' => 'category.create'],
+['section_name' => 'category', 'name' => 'category.edit'],
+['section_name' => 'category', 'name' => 'category.delete'],
+
+// Brand
+['section_name' => 'brand', 'name' => 'brand.view'],
+['section_name' => 'brand', 'name' => 'brand.create'],
+['section_name' => 'brand', 'name' => 'brand.edit'],
+['section_name' => 'brand', 'name' => 'brand.delete'],
+
+// UOM
+['section_name' => 'uom', 'name' => 'uom.view'],
+['section_name' => 'uom', 'name' => 'uom.create'],
+['section_name' => 'uom', 'name' => 'uom.edit'],
+['section_name' => 'uom', 'name' => 'uom.delete'],
+
+// Attribute
+['section_name' => 'attribute', 'name' => 'attribute.view'],
+['section_name' => 'attribute', 'name' => 'attribute.create'],
+['section_name' => 'attribute', 'name' => 'attribute.edit'],
+['section_name' => 'attribute', 'name' => 'attribute.delete'],
+
+// Attribute Set
+['section_name' => 'attribute-set', 'name' => 'attribute-set.view'],
+['section_name' => 'attribute-set', 'name' => 'attribute-set.create'],
+['section_name' => 'attribute-set', 'name' => 'attribute-set.edit'],
+['section_name' => 'attribute-set', 'name' => 'attribute-set.delete'],
+
+// Product
+['section_name' => 'product', 'name' => 'product.view'],
+['section_name' => 'product', 'name' => 'product.create'],
+['section_name' => 'product', 'name' => 'product.edit'],
+['section_name' => 'product', 'name' => 'product.delete'],
+
+
         ];
 
         foreach ($permission_array as $permission) {
