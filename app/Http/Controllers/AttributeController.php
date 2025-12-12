@@ -26,6 +26,7 @@ class AttributeController extends Controller
                 <label class="form-check-label" for="att_' . $row->id . '"></label>
             </div>';
       })
+      
       ->addColumn('type_label', function ($row) {
         $map = [
           'text' => 'Text',
