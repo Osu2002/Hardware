@@ -55,7 +55,7 @@
               <div class="mb-3 col-md-6">
                 <SelectInputComponentVue class="w-100" id="model" label="Model" v-model="form.model" :options="model" />
               </div>
-              <!-- 
+              <!--
               <div class="mb-3 col-md-6">
                 <SelectInputComponentVue class="w-100" id="ex_color" label="Ex color" v-model="form.ex_color"
                   :options="color" />
@@ -374,7 +374,7 @@ import SelectInputComponentVue from "@/Components/SelectInputComponent.vue";
 import Editor from "@tinymce/tinymce-vue";
 import { ref } from "vue";
 import { Inertia } from "@inertiajs/inertia";
-import MultiSelect from '@/components/MultiSelect.vue';
+// import MultiSelect from '@/components/MultiSelect.vue';
 
 // import SuspendedUserAlert from "./Partials/SuspendedUserAlert.vue";
 
@@ -383,7 +383,7 @@ export default {
     Link,
     AppLayout,
     FileInputComponent,
-    MultiSelect,
+    // MultiSelect,
     // SuspendedUserAlert,
     SelectInputComponentVue,
     Editor,
