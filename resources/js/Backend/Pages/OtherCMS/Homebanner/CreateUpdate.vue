@@ -25,7 +25,7 @@
               </div>
 
               <!-- TinyMCE Editor -->
-              <div>
+              <!-- <div>
                 <label for="description" class="form-label">Description</label>
                 <Editor
                   v-model="form.editorContent"
@@ -34,7 +34,7 @@
                     plugins: 'lists link image table code help wordcount',
                   }"
                 />
-              </div>
+              </div> -->
 
               <div class="mb-3 col-md-6">
                 <label for="image" class="form-label me-3">Image</label>
@@ -126,7 +126,7 @@ import { Link, useForm } from "@inertiajs/inertia-vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import FileInputComponent from "@/Components/FileInputComponent.vue";
 import SelectInputComponentVue from "../../../Components/SelectInputComponent.vue";
-import Editor from "@tinymce/tinymce-vue";
+// import Editor from "@tinymce/tinymce-vue";
 
 // import SuspendedUserAlert from "./Partials/SuspendedUserAlert.vue";
 
@@ -134,7 +134,7 @@ export default {
   components: {
     Link,
     AppLayout,
-    Editor,
+    // Editor,
     FileInputComponent,
     // SuspendedUserAlert,
     SelectInputComponentVue,
@@ -159,7 +159,7 @@ export default {
         name: "",
         status: "",
         image: "",
-        editorContent: "",
+        // editorContent: "",
         // galery_images: [],
         // removed_images: [],
         // selected_images: [],
@@ -179,7 +179,7 @@ export default {
       this.form.id = this.homebanner.id;
       this.form.name = this.homebanner.name;
       this.form.status = this.homebanner.status;
-      this.form.editorContent = this.homebanner.editorContent;
+      // this.form.editorContent = this.homebanner.editorContent;
     }
 
     var imgs = this.branch?.media.filter(
