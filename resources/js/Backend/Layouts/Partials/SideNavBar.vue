@@ -294,9 +294,9 @@
           'advertisements.create',
           'advertisements.edit',
 
-          'homebanner.index',
-          'homebanner.create',
-          'homebanner.edit',
+        //   'homebanner.index',
+        //   'homebanner.create',
+        //   'homebanner.edit',
 
           'events.index',
           'events.create',
