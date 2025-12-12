@@ -7,6 +7,7 @@
           <p>Create / Update a product.</p>
         </div>
         <hr />
+        
         <div class="card-body">
           <form @submit.prevent="submit">
             <div class="row">
