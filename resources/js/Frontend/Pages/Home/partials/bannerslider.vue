@@ -5,68 +5,91 @@
     :style="viewportInlineStyle"
     tabindex="0"
     role="region"
-    aria-label="Banner slider"
+    aria-label="Image carousel"
+    aria-roledescription="carousel"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
     @keydown.left.prevent="prev"
     @keydown.right.prevent="next"
   >
+    <!-- Slide Track -->
     <div class="track" :style="trackStyle" aria-live="polite">
       <div
         v-for="(b, i) in safeBanners"
         :key="i"
         class="slide"
         :aria-hidden="i !== currentIndex"
+        role="group"
+        aria-roledescription="slide"
+        :aria-label="`Slide ${i + 1} of ${safeBanners.length}`"
       >
         <img
           class="slide-img"
           :src="b.src"
           :alt="b.alt || `Banner ${i + 1}`"
           :fetchpriority="i === 0 ? 'high' : 'auto'"
-          loading="eager"
+          :loading="i === 0 ? 'eager' : 'lazy'"
           decoding="async"
           draggable="false"
-          @load="onImgLoad(i, $event)"
         />
-
-        <div v-if="b.caption?.title || b.caption?.text" class="caption" aria-hidden="true">
-          <div v-if="b.caption?.title" class="caption-title">{{ b.caption.title }}</div>
-          <div v-if="b.caption?.text" class="caption-text">{{ b.caption.text }}</div>
-        </div>
       </div>
     </div>
 
     <!-- Arrows -->
     <button
       v-if="showArrows && safeBanners.length > 1"
-      class="nav nav-left"
+      class="arrow arrow--prev"
       type="button"
-      aria-label="Previous banner"
+      aria-label="Previous slide"
       @click="prev"
     >
-      ‹
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path
+          d="M15 18l-6-6 6-6"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.25"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
     </button>
 
     <button
       v-if="showArrows && safeBanners.length > 1"
-      class="nav nav-right"
+      class="arrow arrow--next"
       type="button"
-      aria-label="Next banner"
+      aria-label="Next slide"
       @click="next"
     >
-      ›
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path
+          d="M9 6l6 6-6 6"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.25"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
     </button>
 
     <!-- Dots -->
-    <div v-if="showDots && safeBanners.length > 1" class="dots" aria-label="Banner navigation">
+    <div
+      v-if="showDots && safeBanners.length > 1"
+      class="dots"
+      role="tablist"
+      aria-label="Slide navigation"
+    >
       <button
         v-for="(_, i) in safeBanners"
         :key="`dot-${i}`"
-        class="dot"
         type="button"
+        class="dot"
         :class="{ active: i === currentIndex }"
-        :aria-label="`Go to banner ${i + 1}`"
-        :aria-current="i === currentIndex ? 'true' : 'false'"
+        role="tab"
+        :aria-selected="i === currentIndex"
+        :aria-label="`Go to slide ${i + 1}`"
         @click="goTo(i)"
       />
     </div>
@@ -77,100 +100,55 @@
 export default {
   name: "BannerSlider",
   props: {
-    banners: {
-      type: Array,
-      default: () => [],
-    },
-    autoplay: {
-      type: Boolean,
-      default: true,
-    },
-    intervalMs: {
-      type: Number,
-      default: 4500,
-    },
-    pauseOnHover: {
-      type: Boolean,
-      default: true,
-    },
-    showArrows: {
-      type: Boolean,
-      default: true,
-    },
-    showDots: {
-      type: Boolean,
-      default: true,
-    },
-    /**
-     * Optional max height in px (keeps very tall images from taking the whole page).
-     * Set to null to disable.
-     */
-    maxHeight: {
-      type: Number,
-      default: 520,
-    },
-    /**
-     * Minimum height before images load (prevents layout collapse).
-     */
-    minHeight: {
-      type: Number,
-      default: 260,
-    },
+    banners: { type: Array, default: () => [] },
+    autoplay: { type: Boolean, default: true },
+    intervalMs: { type: Number, default: 4500 },
+    pauseOnHover: { type: Boolean, default: true },
+    showArrows: { type: Boolean, default: true },
+    showDots: { type: Boolean, default: true },
+    maxHeight: { type: Number, default: 520 },
+    minHeight: { type: Number, default: 260 },
   },
   data() {
     return {
       currentIndex: 0,
       timer: null,
       isHovering: false,
-
-      // aspect ratios (w/h) per slide index
-      ratios: {},
-
-      // viewport width (used to compute stable height)
       viewportWidth: 0,
       resizeObserver: null,
+      reducedMotion: false,
+      _mq: null,
     };
   },
   computed: {
     safeBanners() {
       return Array.isArray(this.banners)
-        ? this.banners.filter(b => b && b.src)
+        ? this.banners.filter((b) => b && b.src)
         : [];
     },
     trackStyle() {
       const x = this.currentIndex * 100;
-      return {
-        transform: `translateX(-${x}%)`,
-      };
+      return { transform: `translateX(-${x}%)` };
     },
     viewportInlineStyle() {
-      // Compute a stable height from the largest (scaled) image height:
-      // height = viewportWidth / (w/h) = viewportWidth / ratio
+      // Match TSX behavior: fixed 16:9 responsive height with min/max clamp.
       const width = this.viewportWidth || 0;
-      const ratios = Object.values(this.ratios).filter(r => r && r > 0);
+      const aspectRatio = 16 / 9;
 
-      let h = this.minHeight;
-
-      if (width > 0 && ratios.length > 0) {
-        const heights = ratios.map(r => width / r);
-        h = Math.max(...heights, this.minHeight);
+      let h = this.maxHeight;
+      if (width > 0) {
+        h = width / aspectRatio;
+        h = Math.max(this.minHeight, Math.min(this.maxHeight, h));
+      } else {
+        h = Math.max(this.minHeight, Math.min(this.maxHeight, this.maxHeight));
       }
 
-      if (this.maxHeight && this.maxHeight > 0) {
-        h = Math.min(h, this.maxHeight);
-      }
-
-      return {
-        height: `${Math.round(h)}px`,
-      };
+      return { height: `${Math.round(h)}px` };
     },
   },
   watch: {
     safeBanners(newVal) {
-      // keep index valid
       if (this.currentIndex >= newVal.length) this.currentIndex = 0;
-
-      // restart autoplay if needed
       this.restartAutoplay();
     },
     autoplay() {
@@ -181,14 +159,43 @@ export default {
     },
   },
   mounted() {
+    this.setupReducedMotion();
     this.setupResizeObserver();
     this.startAutoplay();
   },
   beforeUnmount() {
     this.stopAutoplay();
     this.teardownResizeObserver();
+    this.teardownReducedMotion();
   },
   methods: {
+    setupReducedMotion() {
+      if (typeof window === "undefined" || !window.matchMedia) return;
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      this._mq = mq;
+      this.reducedMotion = !!mq.matches;
+
+      const onChange = (e) => {
+        this.reducedMotion = !!e.matches;
+        this.restartAutoplay();
+      };
+
+      if (mq.addEventListener) mq.addEventListener("change", onChange);
+      else if (mq.addListener) mq.addListener(onChange);
+
+      this._mqChange = onChange;
+    },
+    teardownReducedMotion() {
+      const mq = this._mq;
+      const onChange = this._mqChange;
+      if (!mq || !onChange) return;
+
+      if (mq.removeEventListener) mq.removeEventListener("change", onChange);
+      else if (mq.removeListener) mq.removeListener(onChange);
+
+      this._mq = null;
+      this._mqChange = null;
+    },
     setupResizeObserver() {
       this.$nextTick(() => {
         const el = this.$refs.viewport;
@@ -201,8 +208,6 @@ export default {
         });
 
         this.resizeObserver.observe(el);
-
-        // initial width
         this.viewportWidth = el.clientWidth || 0;
       });
     },
@@ -212,18 +217,9 @@ export default {
         this.resizeObserver = null;
       }
     },
-    onImgLoad(index, evt) {
-      const img = evt?.target;
-      if (!img) return;
-
-      const w = img.naturalWidth || 0;
-      const h = img.naturalHeight || 0;
-      if (w > 0 && h > 0) {
-        this.$set ? this.$set(this.ratios, index, w / h) : (this.ratios[index] = w / h);
-      }
-    },
     startAutoplay() {
       if (!this.autoplay) return;
+      if (this.reducedMotion) return;
       if (this.safeBanners.length <= 1) return;
 
       this.stopAutoplay();
@@ -243,10 +239,10 @@ export default {
       this.startAutoplay();
     },
     onMouseEnter() {
-      this.isHovering = true;
+      if (this.pauseOnHover) this.isHovering = true;
     },
     onMouseLeave() {
-      this.isHovering = false;
+      if (this.pauseOnHover) this.isHovering = false;
     },
     next() {
       const n = this.safeBanners.length;
@@ -271,25 +267,32 @@ export default {
   position: relative;
   width: 100%;
   overflow: hidden;
-  border-radius: 14px;
-  background: #f6f7f9;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.14);
   outline: none;
+}
+
+.banner-slider:focus-visible {
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.14), 0 0 0 3px rgba(59, 130, 246, 0.35);
 }
 
 .track {
   height: 100%;
   display: flex;
-  transition: transform 420ms ease;
   will-change: transform;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    transition: none;
+  }
 }
 
 .slide {
   min-width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
   user-select: none;
 }
@@ -297,89 +300,81 @@ export default {
 .slide-img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* FULL IMAGE, NO CROPPING */
-  image-rendering: auto;
+  object-fit: cover; /* matches screenshot */
   -webkit-user-drag: none;
+  user-select: none;
+  display: block;
 }
 
-.caption {
-  position: absolute;
-  left: 14px;
-  bottom: 12px;
-  max-width: min(80%, 680px);
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
-  backdrop-filter: blur(2px);
-}
-
-.caption-title {
-  font-weight: 800;
-  font-size: 16px;
-  line-height: 1.2;
-}
-
-.caption-text {
-  margin-top: 4px;
-  font-size: 13px;
-  line-height: 1.35;
-  opacity: 0.95;
-}
-
-.nav {
+.arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   border: none;
   border-radius: 999px;
   cursor: pointer;
-  font-size: 28px;
-  line-height: 44px;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.75);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
-  transition: transform 120ms ease, background 120ms ease;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+  transition: transform 140ms ease, background 140ms ease;
+  color: #111827; /* icon color */
 }
 
-.nav:hover {
-  background: rgba(255, 255, 255, 0.92);
-  transform: translateY(-50%) scale(1.04);
+.arrow svg {
+  width: 22px;
+  height: 22px;
 }
 
-.nav-left {
-  left: 12px;
+.arrow:hover {
+  background: #ffffff;
+  transform: translateY(-50%) scale(1.05);
 }
 
-.nav-right {
-  right: 12px;
+.arrow:active {
+  transform: translateY(-50%) scale(0.98);
+}
+
+.arrow--prev {
+  left: 22px;
+}
+
+.arrow--next {
+  right: 22px;
 }
 
 .dots {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 10px;
+  bottom: 16px;
   display: flex;
   justify-content: center;
-  gap: 8px;
-  padding: 0 12px;
+  gap: 10px;
+  padding: 0 16px;
 }
 
 .dot {
   width: 10px;
   height: 10px;
-  border-radius: 999px;
   border: none;
+  border-radius: 999px;
   cursor: pointer;
-  background: rgba(0, 0, 0, 0.25);
-  transition: transform 120ms ease, background 120ms ease;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+  transition: width 180ms ease, transform 180ms ease, background 180ms ease;
 }
 
 .dot.active {
-  background: rgba(0, 0, 0, 0.7);
-  transform: scale(1.15);
+  width: 34px;              /* pill like the screenshot */
+  background: rgba(255, 255, 255, 0.95);
+  transform: scale(1.02);
+}
+
+.dot:focus-visible {
+  outline: none;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18), 0 0 0 3px rgba(59, 130, 246, 0.35);
 }
 </style>
