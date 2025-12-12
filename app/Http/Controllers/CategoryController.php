@@ -90,11 +90,11 @@ class CategoryController extends Controller
     return redirect()->route('category.index');
 }
 
-    public function edit($id)
-    {
-        $category = Type::with('media')->findOrFail($id);
-        return Inertia::render('VehicleCMS/Category/CreateUpdate', ['category' => $category]);
-    }
+   public function edit($id)
+{
+    $category = Category::with('media')->findOrFail($id);
+    return Inertia::render('VehicleCMS/Category/CreateUpdate', ['category' => $category]);
+}
 
     public function updateStatus(Request $request)
     {
@@ -110,41 +110,35 @@ class CategoryController extends Controller
         }
     }
 
-    public function update(Request $request)
-    {
-        $request->validate([
-            'title' => ['required'],
-            'status' => ['required'],
-            'featured' => ['required'],
-            // Keep SAME request field name:
-            'vehicle_type_image' => ['nullable', 'mimes:jpeg,jpg,png,webp', 'max:10000'],
-        ]);
+   public function update(Request $request)
+{
+    $request->validate([
+        'id' => ['required'],
+        'title' => ['required'],
+        'status' => ['required'],
+        'featured' => ['required'],
+        'vehicle_type_image' => ['nullable', 'mimes:jpeg,jpg,png,webp', 'max:10000'],
+    ]);
 
-        try {
-            DB::beginTransaction();
+    DB::beginTransaction();
 
-            $type = Type::findOrFail($request->id);
-            $type->title = $request->title;
-            $type->status = $request->status;
-            $type->featured = $request->featured;
-            $type->save();
+    $category = Category::findOrFail($request->id);
+    $category->title = $request->title;
+    $category->status = $request->status;
+    $category->featured = $request->featured;
+    $category->save();
 
-            DB::commit();
+    DB::commit();
 
-            if ($request->hasFile('vehicle_type_image')) {
-                // Clear existing media in this collection then add the new one
-                $type->clearMediaCollection('vehicle_type_image');
-                $type->addMedia($request->file('vehicle_type_image'))->toMediaCollection('vehicle_type_image');
-                $type->save();
-            }
-
-            return redirect()->route('category.index');
-        } catch (Exception $ex) {
-            DB::rollBack();
-            Log::error($ex);
-            return abort(500);
-        }
+    if ($request->hasFile('vehicle_type_image')) {
+        $category->clearMediaCollection('category_image');
+        $category->addMedia($request->file('vehicle_type_image'))
+                 ->toMediaCollection('category_image');
     }
+
+    return redirect()->route('category.index');
+}
+
 
     public function destroy(Request $request)
     {
