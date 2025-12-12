@@ -386,14 +386,12 @@ class VehicleController extends Controller
         $uuid = $urlParts[count($urlParts) - 2]; // Assuming the UUID is in the second last part
         $fileName = $urlParts[count($urlParts) - 1]; // The last part is the file name
 
-        // Find the media record by UUID or file name
         $media = Media::where('uuid', $uuid)
             ->where('file_name', $fileName)
             ->first();
         // dd($media);
         if ($media) {
-            // Delete the media from the product
-            $media->delete(); // This removes the file from storage and the database
+            $media->delete(); 
 
             return redirect()->back();
         }
