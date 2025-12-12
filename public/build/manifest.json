@@ -461,7 +461,7 @@
     ]
   },
   "resources/js/Backend/Pages/Dashboard/Index.vue": {
-    "file": "assets/Index-CIZor2_g.js",
+    "file": "assets/Index-DHlrZwlD.js",
     "name": "Index",
     "src": "resources/js/Backend/Pages/Dashboard/Index.vue",
     "isDynamicEntry": true,
@@ -472,7 +472,7 @@
       "_index-CC8vQQGS.js"
     ],
     "css": [
-      "assets/Index-851d6u-Z.css"
+      "assets/Index-2wlYmI46.css"
     ]
   },
   "resources/js/Backend/Pages/Dealer/CreateUpdate.vue": {
@@ -1226,7 +1226,7 @@
     ]
   },
   "resources/js/Backend/app.js": {
-    "file": "assets/app-DSt9aYYQ.js",
+    "file": "assets/app-BMNpVvxh.js",
     "name": "app",
     "src": "resources/js/Backend/app.js",
     "isEntry": true,
