@@ -1053,7 +1053,7 @@
     ]
   },
   "resources/js/Backend/Pages/VehicleCMS/Category/CreateUpdate.vue": {
-    "file": "assets/CreateUpdate-DJars9bh.js",
+    "file": "assets/CreateUpdate-MBd-nu7p.js",
     "name": "CreateUpdate",
     "src": "resources/js/Backend/Pages/VehicleCMS/Category/CreateUpdate.vue",
     "isDynamicEntry": true,
@@ -1223,7 +1223,7 @@
     ]
   },
   "resources/js/Backend/app.js": {
-    "file": "assets/app-Dzu8bcKl.js",
+    "file": "assets/app-BwLtmVWH.js",
     "name": "app",
     "src": "resources/js/Backend/app.js",
     "isEntry": true,

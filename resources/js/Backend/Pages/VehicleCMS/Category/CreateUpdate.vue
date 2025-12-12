@@ -102,10 +102,12 @@ export default {
   },
 
   computed: {
-    // Keep SAME name for preview to reuse existing media collection/path
-    vehicle_type_image() {
-      return this.category ? (this.category.media.length > 0 ? this.category.media[0].original_url : "") : "";
-    },
+   vehicle_type_image() {
+  if (!this.category?.media?.length) return "";
+  const m = this.category.media.find(x => x.collection_name === "category_image");
+  return m ? m.original_url : "";
+}
+
   },
 
   methods: {
