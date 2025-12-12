@@ -47,15 +47,16 @@
     </button>
 
     <!-- Dots -->
-    <div v-if="showDots && count > 1" class="dots" aria-hidden="true">
-      <button
-        v-for="(_, i) in images"
-        :key="'dot-' + i"
-        :class="['dot', { active: realIndex === i }]"
-        @click="goTo(i)"
-        :aria-label="'Go to slide ' + (i+1)"
-      />
-    </div>
+  <div v-if="showDots && count > 1" class="dots" aria-hidden="true">
+  <button
+    v-for="(_, i) in computedImages"
+    :key="'dot-' + i"
+    :class="['dot', { active: realIndex === i }]"
+    @click="goTo(i)"
+    :aria-label="'Go to slide ' + (i+1)"
+  />
+</div>
+
   </section>
 </template>
 
@@ -64,14 +65,31 @@ export default {
   name: 'ImageSlider',
   props: {
     // Default images (public/images/*)
-    images: {
-      type: Array,
-      default: () => ([
-        { src: '/images/asianpaints.png', alt: 'Slide 1', caption: { title: 'Pro-grade Power Tools', text: 'Makita • Bosch • DeWalt' } },
-        { src: '/images/asianpaints.png', alt: 'Slide 2', caption: { title: 'Paint & Finishes', text: 'Refresh your space' } },
-        { src: '/images/asianpaints.png', alt: 'Slide 3', caption: { title: 'Plumbing Essentials', text: 'PVC • GI • Fittings' } },
-      ])
-    },
+     images: {
+    type: Array,
+    default: () => [],
+  },
+
+   fallbackImages: {
+    type: Array,
+    default: () => ([
+      {
+        src: '/images/asianpaints.png',
+        alt: 'Slide 1',
+        caption: { title: 'Pro-grade Power Tools', text: 'Makita • Bosch • DeWalt' },
+      },
+      {
+        src: '/images/asianpaints.png',
+        alt: 'Slide 2',
+        caption: { title: 'Paint & Finishes', text: 'Refresh your space' },
+      },
+      {
+        src: '/images/asianpaints.png',
+        alt: 'Slide 3',
+        caption: { title: 'Plumbing Essentials', text: 'PVC • GI • Fittings' },
+      },
+    ]),
+  },
     interval: { type: Number, default: 4500 },
     speed:    { type: Number, default: 700 },
     height:   { type: String, default: '420px' },
@@ -84,6 +102,13 @@ export default {
     return { current: 1, transitioning: true, timer: null, touchStartX: null };
   },
   computed: {
+
+    computedImages() {
+      // use backend banners if present, otherwise defaults
+      return (this.images && this.images.length)
+        ? this.images
+        : this.fallbackImages;
+    },
     count() { return this.images?.length || 0; },
     slidesExtended() {
       if (!this.count) return [];

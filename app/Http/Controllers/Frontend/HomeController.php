@@ -10,6 +10,7 @@ use App\Models\AttributeSet;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Product;
+use App\Models\Homebanner;
 
 
 class HomeController extends Controller
@@ -134,6 +135,28 @@ class HomeController extends Controller
         })
         ->values();
 
+        // Home banners for slider
+$banners = Homebanner::where('status', 1)
+    ->with('media')
+    ->orderBy('created_at', 'desc')
+    ->get()
+    ->map(function ($b) {
+        $img = optional($b->getFirstMedia('Home_Banner_Image'))->getUrl();
+
+        return [
+            'src' => $img,          // image URL
+            'alt' => $b->name,      // alt text
+            'caption' => [
+                'title' => $b->name,  // banner title
+                'text'  => null,      // no description (you said you don't want it)
+            ],
+            // 'link' => null,       // optional: add a landing URL later if you want
+        ];
+    })
+    ->filter(fn ($b) => !empty($b['src'])) // only keep ones that actually have an image
+    ->values();
+
+
    $specialOffers = Product::where('status', 1)
         ->where('discount_status', 1)
         ->with('media')
@@ -188,6 +211,7 @@ class HomeController extends Controller
         'attributes'    => $attributes,
         'attributeSets' => $attributeSets,
         'specialOffers' => $specialOffers,   // ← NEW
+        'banners'       => $banners,  
     ]);
 }
 }
