@@ -13,5 +13,5 @@ class Type extends Model implements HasMedia
     use InteractsWithMedia;
 
     protected $with = ['media'];
-    protected $table = 'vehicle_type';
+    protected $table = 'categories';
 }
