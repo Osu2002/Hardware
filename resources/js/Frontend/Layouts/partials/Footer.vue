@@ -26,11 +26,10 @@
                 class="mh-footer-logo"
               />
             </Link>
-            <!-- <p class="mh-footer-desc">
+            <p class="mh-footer-desc">
               Your one-stop shop for all electrical and hardware needs.
-              Quality products, expert advice, and exceptional service since
-              1995.
-            </p> -->
+             
+            </p>
           </div>
 
           <!-- Quick Links -->
@@ -300,7 +299,7 @@ export default {
 }
 
 .mh-footer-logo {
-  height: 12.5rem;
+  height: 11.5rem;
   width: auto;
   filter: brightness(0) invert(1);
 }
