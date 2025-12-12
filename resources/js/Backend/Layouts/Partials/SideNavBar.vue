@@ -4,13 +4,13 @@
   <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
     <div class="app-brand demo justify-content-center">
       <a href="/admin" class="app-brand-link" style="justify-content: center">
-        <span  v-if="isCollapsed" class="app-brand-logo demo" style="justify-content: center">
+        <!-- <span  v-if="isCollapsed" class="app-brand-logo demo" style="justify-content: center">
           <img src="/images/main-logo (1).png" alt style="height: 50px; width: auto" />
         </span>
         <span v-else class="app-brand-logo demo" style="justify-content: center">
           <img src="/images/main-logo (1).png" alt style="height: 150px; width: auto" />
         </span>
-        <span class="app-brand-text demo menu-text fw-bolder ms-2"></span>
+        <span class="app-brand-text demo menu-text fw-bolder ms-2"></span> -->
       </a>
 
       <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-none d-md-block"
@@ -365,7 +365,7 @@
         </a>
 
         <ul class="menu-sub">
-          <li class="menu-item" v-bind:class="{
+          <!-- <li class="menu-item" v-bind:class="{
             active: addActiveClass([
               'testimonials.view',
               'testimonials.create',
@@ -377,7 +377,7 @@
             <Link :href="route('testimonials.index')" class="menu-link">
             <div data-i18n="Vehicle type">Vehicle Testimonials</div>
             </Link>
-          </li>
+          </li> -->
 
           <li class="menu-item" v-bind:class="{
             active: addActiveClass([
