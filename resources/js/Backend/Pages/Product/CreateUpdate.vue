@@ -94,6 +94,58 @@
               </div>
             </div>
 
+             <div class="mb-3 col-md-4">
+    <label class="form-label d-block">Apply Discount</label>
+    <div class="form-check form-check-inline">
+      <input
+        class="form-check-input"
+        type="radio"
+        id="discount_no"
+        value="0"
+        v-model="form.discount_status"
+      />
+      <label class="form-check-label" for="discount_no">No</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input
+        class="form-check-input"
+        type="radio"
+        id="discount_yes"
+        value="1"
+        v-model="form.discount_status"
+      />
+      <label class="form-check-label" for="discount_yes">Yes</label>
+    </div>
+    <div class="text-danger">{{ form.errors.discount_status }}</div>
+
+    <!-- Discount fields appear only if Apply Discount = Yes -->
+    <div v-if="form.discount_status === '1'" class="mt-2">
+      <label class="form-label">Discount</label>
+      <div class="input-group">
+        <select class="form-select" v-model="form.discount_type">
+          <option value="">-- Select Type --</option>
+          <option value="percent">Percentage (%)</option>
+          <option value="amount">Amount (LKR)</option>
+        </select>
+        <input
+          type="number"
+          step="0.01"
+          class="form-control"
+          v-model="form.discounted_amount"
+        />
+      </div>
+      <div class="text-danger">
+        {{ form.errors.discount_type || form.errors.discounted_amount }}
+      </div>
+      <div class="form-text" v-if="form.discount_type === 'percent'">
+        Enter discount percentage (0–100).
+      </div>
+      <div class="form-text" v-else-if="form.discount_type === 'amount'">
+        Enter discount amount in LKR.
+      </div>
+    </div>
+  </div>
+
             <div class="row">
               <div class="mb-3 col-md-6">
                 <label class="form-label">Short Description</label>
@@ -184,6 +236,9 @@ export default {
         description: "",
         attributes_map: [], // [{attribute_id,value}]
         images: [],
+        discount_status: "0",       
+        discount_type: "",         
+        discounted_amount: "",  
       }),
       attrValue: {},    // attribute_id => value
       previews: this.images || [],
@@ -206,6 +261,9 @@ export default {
       this.form.sale_price = p.sale_price ?? "";
       this.form.short_description = p.short_description ?? "";
       this.form.description = p.description ?? "";
+      this.form.discount_status = String(p.discount_status ?? "0");
+      this.form.discount_type = p.discount_type ?? "";
+      this.form.discounted_amount = p.discounted_amount ?? "";
 
       // existing attribute values
       (p.attribute_values || p.attributeValues || []).forEach(row => {

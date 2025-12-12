@@ -58,9 +58,9 @@ Route::group(['middleware' => ['auth:sanctum', 'verified', 'web']], function () 
 
 Route::group(['middleware' => ['auth:sanctum', 'verified', 'web']], function () {
 
-    Route::get('/', function () {
-        return redirect('/admin/dashboard');
-    });
+    // Route::get('/', function () {
+    //     return redirect('/admin/dashboard');
+    // });
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     https://mailtrap.io/inboxes
     //Inquiry
