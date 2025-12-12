@@ -2,7 +2,8 @@
   <AppLayout>
     <br><br>
     <div class="home-container">
-      <ImageSlider />
+    <ImageSlider :images="banners" />
+
 
        <CategoriesBox :categories="categories" />
 
@@ -41,6 +42,11 @@ export default {
       default: () => [],
     },
     brands: Array,
+
+      banners: {           // ← NEW
+      type: Array,
+      default: () => [],
+    },
   },
 };
 </script>
