@@ -138,13 +138,13 @@
 <script>
 import { Link, useForm } from "@inertiajs/inertia-vue3";
 import AppLayout from "@@/Layouts/AppLayout.vue";
-import FileInputComponent from "@@/Components/FileInputComponent.vue";
+// import FileInputComponent from "@@/Components/FileInputComponent.vue";
 import Banner from "./Banner.vue";
 export default {
   components: {
     Link,
     AppLayout,
-    FileInputComponent,
+    // FileInputComponent,
     Banner
   },
   mounted() {
@@ -234,9 +234,9 @@ export default {
 
 .login-logo {
   display: block !important;
-  max-width: 250px !important;   
+  max-width: 250px !important;
   height: auto !important;
-  margin-bottom: 1.5rem !important; 
+  margin-bottom: 1.5rem !important;
 }
 .form-control {
   box-shadow: none;
