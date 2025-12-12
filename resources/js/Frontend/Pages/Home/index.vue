@@ -2,7 +2,10 @@
   <AppLayout>
     <br><br>
     <div class="home-container">
-      <ImageSlider />
+      <BannerSlider :banners="banners" />
+
+    <!-- <ImageSlider :images="banners" /> -->
+
 
        <CategoriesBox :categories="categories" />
 
@@ -27,9 +30,11 @@ import CategoriesBox from './partials/Categoriesbox.vue';
 import CategoryNav   from './partials/Categorynav.vue';
 import SpecialOffers from './partials/SpecialOffers.vue';
 import BrandBanner from './partials/BrandBanner.vue';
+import BannerSlider from './partials/bannerslider.vue';
+
 
 export default {
-  components: { AppLayout, ImageSlider, CategoriesBox, CategoryNav,SpecialOffers,  BrandBanner},
+  components: { AppLayout, ImageSlider,  BannerSlider,CategoriesBox, CategoryNav,SpecialOffers,  BrandBanner},
   props: {
     site_url: Object,
     categories: {
@@ -41,6 +46,11 @@ export default {
       default: () => [],
     },
     brands: Array,
+
+      banners: {           // ← NEW
+      type: Array,
+      default: () => [],
+    },
   },
 };
 </script>

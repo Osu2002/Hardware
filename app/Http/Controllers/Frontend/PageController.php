@@ -530,12 +530,12 @@ class PageController extends Controller
         }
         // dd('test');
         $category_manufactures = LiveAuctionManufacturer::where(['status' => 1])->get();
-        $vehicle_types = Type::where(['status' => 1, 'featured' => 1])->get();
+        // $vehicle_types = Type::where(['status' => 1, 'featured' => 1])->get();
         $countries = Country::where(['status' => 1])->get();
 
         return Inertia::render('Login/index', [
             'redirect' => $request->query('redirect'),
-            'vehicle_types' => $vehicle_types,
+            // 'vehicle_types' => $vehicle_types,
             'category_manufactures' => $category_manufactures,
             'countries' => $countries
         ]);
