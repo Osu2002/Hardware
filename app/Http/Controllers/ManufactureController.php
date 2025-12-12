@@ -86,6 +86,7 @@ class ManufactureController extends Controller
         return Inertia::render('VehicleCMS/VehicleManufacture/CreateUpdate');
     }
 
+    
     /**
      * Store a newly created resource in storage.
      */

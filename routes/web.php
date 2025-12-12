@@ -30,6 +30,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ContactController;
 
 use App\Http\Controllers\Admin\FuelPriceController;
+use App\Http\Controllers\AttributeController;
+use App\Http\Controllers\AttributeSetController;
+use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UomController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,9 +58,9 @@ Route::group(['middleware' => ['auth:sanctum', 'verified', 'web']], function () 
 
 Route::group(['middleware' => ['auth:sanctum', 'verified', 'web']], function () {
 
-    Route::get('/', function () {
-        return redirect('/admin/dashboard');
-    });
+    // Route::get('/', function () {
+    //     return redirect('/admin/dashboard');
+    // });
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     https://mailtrap.io/inboxes
     //Inquiry
@@ -94,28 +100,77 @@ Route::group(['middleware' => ['auth:sanctum', 'verified', 'web']], function () 
         Route::post('/delete', [DealerController::class, 'destroy'])->middleware(['can:dealer.delete'])->name('dealer.delete');
     });
     //Vehicle type
-    Route::prefix('vehicle_type')->group(function () {
-        Route::get('/vehicle_type', [VehicleTypeController::class, 'index'])->middleware(['can:vehicle_type.view'])->name('vehicle.type.index');
-        Route::get('/get/data', [VehicleTypeController::class, 'getData'])->middleware(['can:vehicle_type.view'])->name('vehicle.type.getdata');
-        Route::get('/create', [VehicleTypeController::class, 'create'])->middleware(['can:vehicle_type.create'])->name('vehicle_type.create');
-        Route::post('/store', [VehicleTypeController::class, 'store'])->middleware(['can:vehicle_type.create'])->name('vehicle_type.store');
-        Route::put('/update/status', [VehicleTypeController::class, 'updateStatus'])->middleware(['can:vehicle_type.edit'])->name('vehicle_type.change.status');
-        Route::get('/edit/{id}', [VehicleTypeController::class, 'edit'])->middleware(['can:vehicle_type.edit'])->name('vehicle_type.edit');
-        Route::post('/update', [VehicleTypeController::class, 'update'])->middleware(['can:vehicle_type.edit'])->name('vehicle_type.update');
-        Route::post('/delete', [VehicleTypeController::class, 'destroy'])->middleware(['can:vehicle_type.delete'])->name('vehicle_type.delete');
-    });
-    //Vehicle Manufacture
-    Route::prefix('vehicle_manufacture_local')->group(function () {
-        Route::get('/vehicle_manufacture', [ManufactureController::class, 'index'])->middleware(['can:vehicle_manufacture.view'])->name('vehicle_manufacture.index');
-        Route::get('/get/data', [ManufactureController::class, 'getData'])->middleware(['can:vehicle_manufacture.view'])->name('vehicle_manufacture.getdata');
-        Route::get('/create', [ManufactureController::class, 'create'])->middleware(['can:vehicle_manufacture.create'])->name('vehicle_manufacture.create');
-        Route::post('/store', [ManufactureController::class, 'store'])->middleware(['can:vehicle_manufacture.create'])->name('vehicle_manufacture.store');
-        Route::put('/update/status', [ManufactureController::class, 'updateStatus'])->middleware(['can:vehicle_manufacture.edit'])->name('vehicle_manufacture.change.status');
-        Route::get('/edit/{id}', [ManufactureController::class, 'edit'])->middleware(['can:vehicle_manufacture.edit'])->name('vehicle_manufacture.edit');
-        Route::post('/update', [ManufactureController::class, 'update'])->middleware(['can:vehicle_manufacture.edit'])->name('vehicle_manufacture.update');
-        Route::post('/delete', [ManufactureController::class, 'destroy'])->middleware(['can:vehicle_manufacture.delete'])->name('vehicle_manufacture.delete');
-    });
+   Route::prefix('category')->group(function () {
+    Route::get('/category',        [CategoryController::class, 'index'])->middleware(['can:category.view'])->name('category.index');
+    Route::get('/get/data',        [CategoryController::class, 'getData'])->middleware(['can:category.view'])->name('category.getdata');
+    Route::get('/create',          [CategoryController::class, 'create'])->middleware(['can:category.create'])->name('category.create');
+    Route::post('/store',          [CategoryController::class, 'store'])->middleware(['can:category.create'])->name('category.store');
+    Route::put('/update/status',   [CategoryController::class, 'updateStatus'])->middleware(['can:category.edit'])->name('category.change.status');
+    Route::get('/edit/{id}',       [CategoryController::class, 'edit'])->middleware(['can:category.edit'])->name('category.edit');
+    Route::post('/update',         [CategoryController::class, 'update'])->middleware(['can:category.edit'])->name('category.update');
+    Route::post('/delete',         [CategoryController::class, 'destroy'])->middleware(['can:category.delete'])->name('category.delete');
+});
+
+    Route::prefix('brand')->group(function () {
+    Route::get('/',              [BrandController::class, 'index'])->middleware(['can:brand.view'])->name('brand.index');
+    Route::get('/get/data',      [BrandController::class, 'getData'])->middleware(['can:brand.view'])->name('brand.getdata');
+    Route::get('/create',        [BrandController::class, 'create'])->middleware(['can:brand.create'])->name('brand.create');
+    Route::post('/store',        [BrandController::class, 'store'])->middleware(['can:brand.create'])->name('brand.store');
+    Route::put('/update/status', [BrandController::class, 'updateStatus'])->middleware(['can:brand.edit'])->name('brand.change.status');
+    Route::get('/edit/{id}',     [BrandController::class, 'edit'])->middleware(['can:brand.edit'])->name('brand.edit');
+    Route::post('/update',       [BrandController::class, 'update'])->middleware(['can:brand.edit'])->name('brand.update');
+    Route::post('/delete',       [BrandController::class, 'destroy'])->middleware(['can:brand.delete'])->name('brand.delete');
+});
+
+
+Route::prefix('uom')->group(function () {
+    Route::get('/',              [UomController::class, 'index'])->middleware(['can:uom.view'])->name('uom.index');
+    Route::get('/get/data',      [UomController::class, 'getData'])->middleware(['can:uom.view'])->name('uom.getdata');
+    Route::get('/create',        [UomController::class, 'create'])->middleware(['can:uom.create'])->name('uom.create');
+    Route::post('/store',        [UomController::class, 'store'])->middleware(['can:uom.create'])->name('uom.store');
+    Route::put('/update/status', [UomController::class, 'updateStatus'])->middleware(['can:uom.edit'])->name('uom.change.status');
+    Route::get('/edit/{id}',     [UomController::class, 'edit'])->middleware(['can:uom.edit'])->name('uom.edit');
+    Route::post('/update',       [UomController::class, 'update'])->middleware(['can:uom.edit'])->name('uom.update');
+    Route::post('/delete',       [UomController::class, 'destroy'])->middleware(['can:uom.delete'])->name('uom.delete');
+});
+Route::prefix('attribute')->group(function () {
+  Route::get('/', [AttributeController::class,'index'])->name('attribute.index');
+  Route::get('/get/data', [AttributeController::class,'getData'])->name('attribute.getdata');
+  Route::get('/create', [AttributeController::class,'create'])->name('attribute.create');
+  Route::post('/store', [AttributeController::class,'store'])->name('attribute.store');
+  Route::get('/edit/{attribute}', [AttributeController::class,'edit'])->name('attribute.edit');
+  Route::post('/update', [AttributeController::class,'update'])->name('attribute.update');
+  Route::post('/delete', [AttributeController::class,'destroy'])->name('attribute.delete');
+});
+
+Route::prefix('attribute-set')->group(function () {
+  Route::get('/', [AttributeSetController::class,'index'])->name('attribute-set.index');
+  Route::get('/get/data', [AttributeSetController::class,'getData'])->name('attribute-set.getdata');
+  Route::get('/create', [AttributeSetController::class,'create'])->name('attribute-set.create');
+  Route::post('/store', [AttributeSetController::class,'store'])->name('attribute-set.store');
+  Route::get('/edit/{attribute_set}', [AttributeSetController::class,'edit'])->name('attribute-set.edit');
+  Route::post('/update', [AttributeSetController::class,'update'])->name('attribute-set.update');
+  Route::post('/delete', [AttributeSetController::class,'destroy'])->name('attribute-set.delete');
+});
+
+// Products
+Route::prefix('products')->group(function () {
+    Route::get('/', [ProductController::class, 'index'])->name('product.index');
+    Route::get('/get/data', [ProductController::class, 'getData'])->name('product.getdata');
+
+    Route::get('/create', [ProductController::class, 'create'])->name('product.create');
+    Route::post('/store', [ProductController::class, 'store'])->name('product.store');
+
+    Route::get('/edit/{id}', [ProductController::class, 'edit'])->name('product.edit');
+    Route::post('/update', [ProductController::class, 'update'])->name('product.update');
+
+    Route::put('/update/status', [ProductController::class, 'updateStatus'])->name('product.change.status');
+    Route::post('/delete', [ProductController::class, 'destroy'])->name('product.delete');
+});
+
     //Vehicle Manufacture (Live Auction)
+
+    
     Route::prefix('vehicle_manufacture_live')->group(function () {
         Route::get('/vehicle_manufacture', [LiveAuctionManufacturerController::class, 'index'])->middleware(['can:vehicle_manufacture.view'])->name('vehicle_manufacture.live.index');
         Route::get('/get/data', [LiveAuctionManufacturerController::class, 'getData'])->middleware(['can:vehicle_manufacture.view'])->name('vehicle_manufacture.live.getdata');
