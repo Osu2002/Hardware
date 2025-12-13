@@ -269,10 +269,23 @@ class ProductController extends Controller
             'categories'    => Category::orderBy('title')->get(['id', 'title']),
             'attributeSets' => AttributeSet::where('status', 1)->orderBy('name')->get(['id', 'name']),
             'attributes'    => $this->attributesForSet($setId),
-            'images'        => $product->getMedia('product_images')->map(fn($m) => $m->getUrl()),
+'images' => $product->getMedia('product_images')->map(fn($m) => [
+    'id'  => $m->id,
+    'url' => $m->getUrl(),
+])->values(),
         ]);
     }
+public function destroyImage(Product $product, $media)
+{
+    $mediaItem = $product->media()
+        ->where('id', $media)
+        ->where('collection_name', 'product_images')
+        ->firstOrFail();
 
+    $mediaItem->delete(); // ✅ deletes db row + file
+
+    return back(); // Inertia will refresh the edit page
+}
     public function update(Request $r)
     {
         $r->validate([

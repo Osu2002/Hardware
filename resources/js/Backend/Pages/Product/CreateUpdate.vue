@@ -344,62 +344,61 @@
                             </div>
                         </div>
 
-                        <!-- Images -->
-                        <div class="row mt-2">
-                            <div class="mb-3 col-md-12">
-                                <label class="form-label">Images</label>
-                                <input
-                                    type="file"
-                                    class="form-control"
-                                    multiple
-                                    accept="image/*"
-                                    @change="onFiles"
-                                />
+                     <!-- Images -->
+<div class="row mt-2">
+  <div class="mb-3 col-md-12">
+    <label class="form-label">Images</label>
 
-                                <!-- previews (no broken image icon) -->
-                                <div class="mt-2 d-flex gap-2 flex-wrap">
-                                    <div
-                                        v-for="(p, i) in previewItems"
-                                        :key="p.key"
-                                        class="position-relative"
-                                    >
-                                        <img
-                                            v-if="p.url"
-                                            :src="p.url"
-                                            @error="hideBroken(i)"
-                                            style="
-                                                height: 70px;
-                                                width: 70px;
-                                                object-fit: cover;
-                                                border: 1px solid #eee;
-                                                padding: 2px;
-                                                border-radius: 6px;
-                                            "
-                                        />
-                                        <button
-                                            v-if="p.canRemove"
-                                            type="button"
-                                            class="btn btn-sm btn-danger position-absolute"
-                                            style="
-                                                top: -8px;
-                                                right: -8px;
-                                                border-radius: 999px;
-                                                padding: 0 6px;
-                                                line-height: 18px;
-                                            "
-                                            @click="removeSelectedImage(i)"
-                                            title="Remove"
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                </div>
+    <input type="file" class="form-control" multiple accept="image/*" @change="onFiles" />
 
-                                <div class="text-danger">
-                                    {{ form.errors.images }}
-                                </div>
-                            </div>
-                        </div>
+    <!-- Existing saved images (removable) -->
+    <div v-if="existingPreviews.length" class="mt-2">
+      <div class="small text-muted mb-1">Saved Images</div>
+      <div class="d-flex gap-2 flex-wrap">
+        <div v-for="(img, i) in existingPreviews" :key="img.id" class="position-relative">
+          <img
+            :src="img.url"
+            style="height:70px;width:70px;object-fit:cover;border:1px solid #eee;padding:2px;border-radius:6px;"
+          />
+          <button
+            type="button"
+            class="btn btn-sm btn-danger position-absolute"
+            style="top:-8px;right:-8px;border-radius:999px;padding:0 6px;line-height:18px;"
+            @click="removeSavedImage(img.id, i)"
+            title="Remove"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- New selected images (removable locally before upload) -->
+    <div v-if="selectedPreviews.length" class="mt-3">
+      <div class="small text-muted mb-1">New Images (not saved yet)</div>
+      <div class="d-flex gap-2 flex-wrap">
+        <div v-for="(url, i) in selectedPreviews" :key="'new-' + i" class="position-relative">
+          <img
+            :src="url"
+            style="height:70px;width:70px;object-fit:cover;border:1px solid #eee;padding:2px;border-radius:6px;"
+          />
+          <button
+            type="button"
+            class="btn btn-sm btn-danger position-absolute"
+            style="top:-8px;right:-8px;border-radius:999px;padding:0 6px;line-height:18px;"
+            @click="removeSelectedImage(i)"
+            title="Remove"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-danger">{{ form.errors.images }}</div>
+  </div>
+</div>
+
 
                         <div class="mt-3">
                             <button
@@ -471,7 +470,10 @@ export default {
             selectedPreviews: [],
 
             // existing images from server
-            existingPreviews: (this.images || []).filter(Boolean),
+existingPreviews: (this.images || []).map(x => ({
+  id: x.id,
+  url: x.url,
+})),
             brokenIndexes: new Set(),
         };
     },
@@ -561,6 +563,54 @@ export default {
     },
 
     methods: {
+        async removeSavedImage(mediaId, index) {
+    if (!this.product) return;
+
+    // Optimistic UI remove
+    const backup = [...this.existingPreviews];
+    this.existingPreviews.splice(index, 1);
+
+    this.$inertia.delete(
+      route("product.images.destroy", { product: this.product.id, media: mediaId }),
+      {
+        preserveScroll: true,
+        preserveState: true,
+        onError: () => {
+          // revert if failed
+          this.existingPreviews = backup;
+        },
+      }
+    );
+  },
+
+  onFiles(e) {
+    // clear old object URLs
+    (this.selectedPreviews || []).forEach((u) => {
+      try { URL.revokeObjectURL(u); } catch (_) {}
+    });
+
+    const files = Array.from(e.target.files || []);
+    this.selectedFiles = files;
+    this.form.images = files;
+    this.selectedPreviews = files.map((f) => URL.createObjectURL(f));
+  },
+
+  removeSelectedImage(i) {
+    const newFiles = [...this.selectedFiles];
+    const newPrevs = [...this.selectedPreviews];
+
+    const removedPrev = newPrevs[i];
+    if (removedPrev) {
+      try { URL.revokeObjectURL(removedPrev); } catch (_) {}
+    }
+
+    newFiles.splice(i, 1);
+    newPrevs.splice(i, 1);
+
+    this.selectedFiles = newFiles;
+    this.selectedPreviews = newPrevs;
+    this.form.images = newFiles;
+  },
         generateSku() {
             // example: HW-9K3D7P2Q (frontend only; server will enforce uniqueness too)
             const part = Math.random().toString(36).slice(2, 10).toUpperCase();
