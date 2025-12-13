@@ -166,11 +166,13 @@ Route::prefix('products')->group(function () {
 
     Route::put('/update/status', [ProductController::class, 'updateStatus'])->name('product.change.status');
     Route::post('/delete', [ProductController::class, 'destroy'])->name('product.delete');
+    Route::delete('/products/{product}/images/{media}', [ProductController::class, 'destroyImage'])
+    ->name('product.images.destroy');
 });
 
     //Vehicle Manufacture (Live Auction)
 
-    
+
     Route::prefix('vehicle_manufacture_live')->group(function () {
         Route::get('/vehicle_manufacture', [LiveAuctionManufacturerController::class, 'index'])->middleware(['can:vehicle_manufacture.view'])->name('vehicle_manufacture.live.index');
         Route::get('/get/data', [LiveAuctionManufacturerController::class, 'getData'])->middleware(['can:vehicle_manufacture.view'])->name('vehicle_manufacture.live.getdata');
