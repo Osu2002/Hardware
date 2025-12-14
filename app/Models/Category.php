@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use App\Models\SubCategory;
 
 class Category extends Model implements HasMedia
 {
@@ -25,4 +26,8 @@ class Category extends Model implements HasMedia
     {
         return $this->belongsToMany(Product::class, 'category_product')->withTimestamps();
     }
+  public function subcategories()
+{
+    return $this->hasMany(SubCategory::class, 'category_id');
+}
 }

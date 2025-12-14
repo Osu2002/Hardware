@@ -158,6 +158,8 @@
       // Category
       'category.index','category.create','category.edit',
 
+      'subcategory.index','subcategory.create','subcategory.edit',
+
       // Brands
       'brand.index','brand.create','brand.edit',
 
@@ -176,6 +178,7 @@
   }"
   v-if="!$page.props.branch && hasAnyPermission([
     'category.view',
+     'subcategory.view',
     'brand.view',
     'uom.view',
     'attribute.view',
@@ -199,6 +202,18 @@
         <div data-i18n="Category">Category</div>
       </Link>
     </li>
+
+    <!-- ✅ Subcategory -->
+<li
+  class="menu-item"
+  :class="{ active: addActiveClass(['subcategory.index','subcategory.create','subcategory.edit']) }"
+  v-if="$root.hasPermission('subcategory.view')"
+>
+  <Link :href="route('subcategory.index')" class="menu-link">
+    <div data-i18n="Subcategory">Subcategory</div>
+  </Link>
+</li>
+
 
     <!-- Brands -->
     <li

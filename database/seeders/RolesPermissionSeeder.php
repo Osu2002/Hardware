@@ -180,6 +180,13 @@ class RolesPermissionSeeder extends Seeder
 ['section_name' => 'category', 'name' => 'category.edit'],
 ['section_name' => 'category', 'name' => 'category.delete'],
 
+// Subcategory
+['section_name' => 'subcategory', 'name' => 'subcategory.view'],
+['section_name' => 'subcategory', 'name' => 'subcategory.create'],
+['section_name' => 'subcategory', 'name' => 'subcategory.edit'],
+['section_name' => 'subcategory', 'name' => 'subcategory.delete'],
+
+
 // Brand
 ['section_name' => 'brand', 'name' => 'brand.view'],
 ['section_name' => 'brand', 'name' => 'brand.create'],
