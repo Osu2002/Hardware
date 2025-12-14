@@ -99,7 +99,7 @@ class CategoryController extends Controller
     public function updateStatus(Request $request)
     {
         try {
-            $row = Type::findOrFail($request->id);
+            $row = Category::findOrFail($request->id);
             $row->status = $request->status == 0 ? 1 : 0;
             $row->save();
 
@@ -144,7 +144,7 @@ class CategoryController extends Controller
     {
         try {
             // FIX: accept array properly
-            Type::destroy($request->ids);
+            Category::destroy($request->ids);
             return redirect()->route('category.index');
         } catch (Exception $ex) {
             Log::error($ex);

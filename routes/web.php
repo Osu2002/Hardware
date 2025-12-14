@@ -36,6 +36,7 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UomController;
+use App\Http\Controllers\SubCategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -111,6 +112,21 @@ Route::group(['middleware' => ['auth:sanctum', 'verified', 'web']], function () 
     Route::post('/delete',         [CategoryController::class, 'destroy'])->middleware(['can:category.delete'])->name('category.delete');
 });
 
+Route::prefix('subcategory')->group(function () {
+    Route::get('/',            [SubCategoryController::class, 'index'])->middleware(['can:subcategory.view'])->name('subcategory.index');
+    Route::get('/get/data',    [SubCategoryController::class, 'getData'])->middleware(['can:subcategory.view'])->name('subcategory.getdata');
+
+    Route::get('/create',      [SubCategoryController::class, 'create'])->middleware(['can:subcategory.create'])->name('subcategory.create');
+    Route::get('/edit/{id}',   [SubCategoryController::class, 'edit'])->middleware(['can:subcategory.edit'])->name('subcategory.edit');
+
+    Route::post('/store',      [SubCategoryController::class, 'store'])->middleware(['can:subcategory.create'])->name('subcategory.store');
+    Route::post('/update',     [SubCategoryController::class, 'update'])->middleware(['can:subcategory.edit'])->name('subcategory.update');
+
+    Route::put('/update/status', [SubCategoryController::class, 'updateStatus'])->middleware(['can:subcategory.edit'])->name('subcategory.change.status');
+
+    Route::post('/delete',     [SubCategoryController::class, 'destroy'])->middleware(['can:subcategory.delete'])->name('subcategory.delete');
+});
+
     Route::prefix('brand')->group(function () {
     Route::get('/',              [BrandController::class, 'index'])->middleware(['can:brand.view'])->name('brand.index');
     Route::get('/get/data',      [BrandController::class, 'getData'])->middleware(['can:brand.view'])->name('brand.getdata');
@@ -169,6 +185,8 @@ Route::prefix('products')->group(function () {
     Route::delete('/products/{product}/images/{media}', [ProductController::class, 'destroyImage'])
     ->name('product.images.destroy');
 });
+
+
 
     //Vehicle Manufacture (Live Auction)
 
