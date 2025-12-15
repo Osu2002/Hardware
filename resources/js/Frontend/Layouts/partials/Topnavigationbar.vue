@@ -74,28 +74,59 @@
                 <div class="mh-wrap mh-nav-wrap">
                     <nav class="mh-menu">
                         <!-- Categories dropdown -->
-                        <div class="mitem has-dd">
-                            <button
-                                type="button"
-                                class="mtext-btn"
-                                @click.stop="mega = !mega"
-                            >
-                                <span>CATEGORIES</span>
-                                <i class="fa-solid fa-chevron-down dd-icon"></i>
-                            </button>
-                            <ul class="dd" v-show="mega">
-                                <li v-for="c in topCategories" :key="c.id">
-                                    <Link :href="categoryHref(c)">
-                                        {{ c.title }}
-                                    </Link>
-                                </li>
-                                <li class="all">
-                                    <Link :href="route('index')"
-                                        >View all categories</Link
-                                    >
-                                </li>
-                            </ul>
-                        </div>
+                      <div class="mitem has-dd">
+  <button type="button" class="mtext-btn" @click.stop="toggleMega">
+    <span>CATEGORIES</span>
+    <i class="fa-solid fa-chevron-down dd-icon"></i>
+  </button>
+
+<div
+  class="mega"
+  :class="{ 'has-right': !!activeCategory }"
+  v-show="mega"
+  @mouseleave="mega=false; activeCatId=null"
+>
+
+
+    <!-- LEFT: categories -->
+    <div class="mega-left">
+      <div
+        v-for="c in topCategories"
+        :key="c.id"
+        class="mega-item"
+        :class="{ active: Number(activeCatId) === Number(c.id) }"
+        @mouseenter="activeCatId = c.id"
+      >
+        <Link :href="categoryHref(c)" class="mega-link" @click="mega=false">
+          <span>{{ c.title }}</span>
+          <i v-if="(c.subcategories || []).length" class="fa-solid fa-chevron-right"></i>
+        </Link>
+      </div>
+    </div>
+
+ 
+<div class="mega-right" v-if="activeCategory">
+  <div class="mega-right-title">
+    {{ activeCategory.title }}
+  </div>
+
+  <div v-if="activeSubcategories.length" class="mega-sublist">
+    <Link
+      v-for="s in activeSubcategories"
+      :key="s.id"
+      :href="subcategoryHref(activeCategory, s)"
+      class="mega-sublink"
+      @click="mega=false"
+    >
+      {{ s.title }}
+    </Link>
+  </div>
+
+  <div v-else class="mega-empty">No subcategories</div>
+</div>
+
+  </div>
+</div>
 
                         <Link
                             :href="route('index')"
@@ -442,6 +473,7 @@ export default {
             drawer: false,
             scrolled: false,
             acc: { product: true, brands: false },
+            activeCatId: null,
         };
     },
     computed: {
@@ -454,6 +486,16 @@ export default {
         brs() {
             return this.brands ?? this.$page?.props?.brands ?? [];
         },
+activeCategory() {
+  if (!this.activeCatId) return null;
+  return (this.topCategories || []).find(
+    c => Number(c.id) === Number(this.activeCatId)
+  ) || null;
+},
+activeSubcategories() {
+  return this.activeCategory?.subcategories || [];
+},
+
         topCategories() {
             const list = [...this.cats];
             list.sort(
@@ -483,6 +525,12 @@ export default {
         window.removeEventListener("scroll", this.onScroll);
     },
     methods: {
+
+        toggleMega() { // ✅ ADD THIS
+      this.mega = !this.mega;
+
+    if (this.mega) this.activeCatId = null;
+    },
         onScroll() {
             // match React behaviour: compact bar appears after ~80px scroll
             this.scrolled = window.scrollY > 80;
@@ -494,6 +542,12 @@ export default {
                 { preserveState: true, preserveScroll: true }
             );
         },
+
+         subcategoryHref(cat, sub) {
+    // safest: keep your existing category route and pass subcategory as query
+    const base = route("category.list", cat.id);
+    return base + "?subcategory=" + encodeURIComponent(sub.id);
+  },
         isActive(name) {
             try {
                 const url = route(name);
@@ -1018,4 +1072,81 @@ export default {
 .drawer-list .acc ul li a:hover {
     background: rgba(255, 255, 255, 0.08);
 }
+
+.mega{
+  position:absolute;
+  top:100%;
+  left:0;
+  margin-top:10px;
+  height:520px;
+  display:flex;
+  background:#c4c5cd;
+  border:2px solid #f2c94c;
+  z-index:2000;
+
+  width:300px;                 /* ✅ ONLY left panel by default */
+  transition: width .15s ease; /* optional */
+}
+
+.mega.has-right{
+  width:720px;                 /* ✅ expand ONLY after hover */
+}
+
+.mega-left{
+  width:300px;
+  overflow:auto;
+  padding:10px 0;
+  border-right: none;          /* ✅ no divider if right panel hidden */
+}
+
+
+.mega.has-right .mega-left{
+  border-right:2px solid #f2c94c; /* ✅ divider only when right exists */
+}
+
+.mega-item{ padding:0 10px; }
+.mega-link{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 14px;
+  color:#fff;
+  text-decoration:none;
+  font-weight:700;
+  text-transform:uppercase;
+  border-radius:6px;
+}
+.mega-item.active .mega-link,
+.mega-link:hover{
+  background:rgba(255,255,255,0.08);
+}
+
+.mega-right{
+  flex:1;
+  padding:14px;
+  overflow:auto;
+}
+.mega-right-title{
+  color:#f2c94c;
+  font-weight:800;
+  text-transform:uppercase;
+  margin-bottom:10px;
+}
+.mega-sublist{ display:flex; flex-direction:column; }
+.mega-sublink{
+  padding:12px 10px;
+  color:#fff;
+  text-decoration:none;
+  font-weight:700;
+  text-transform:uppercase;
+  border-radius:6px;
+}
+.mega-sublink:hover{
+  background:rgba(255,255,255,0.08);
+}
+.mega-empty{
+  color:rgba(255,255,255,0.75);
+  padding:10px;
+}
+
 </style>
