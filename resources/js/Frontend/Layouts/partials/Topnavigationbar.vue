@@ -74,28 +74,83 @@
                 <div class="mh-wrap mh-nav-wrap">
                     <nav class="mh-menu">
                         <!-- Categories dropdown -->
-                        <div class="mitem has-dd">
-                            <button
-                                type="button"
-                                class="mtext-btn"
-                                @click.stop="mega = !mega"
-                            >
-                                <span>CATEGORIES</span>
-                                <i class="fa-solid fa-chevron-down dd-icon"></i>
-                            </button>
-                            <ul class="dd" v-show="mega">
-                                <li v-for="c in topCategories" :key="c.id">
-                                    <Link :href="categoryHref(c)">
-                                        {{ c.title }}
-                                    </Link>
-                                </li>
-                                <li class="all">
-                                    <Link :href="route('index')"
-                                        >View all categories</Link
-                                    >
-                                </li>
-                            </ul>
-                        </div>
+<!-- ✅ UPDATED: Categories (Category + Subcategory dropdown) -->
+<div
+  class="mitem has-dd mh-cats"
+  @mouseenter="mega = true"
+  @mouseleave="mega = false; activeCatId = null"
+>
+  <button
+    type="button"
+    class="mtext-btn mh-dd-btn"
+    :class="{ 'is-open': mega }"
+    :aria-expanded="mega ? 'true' : 'false'"
+    aria-haspopup="menu"
+    @click.stop="toggleMega"
+  >
+    <span>CATEGORIES</span>
+    <i class="fa-solid fa-chevron-down dd-icon" aria-hidden="true"></i>
+  </button>
+
+  <transition name="mh-mega">
+    <div
+      class="mega mh-mega"
+      :class="{ 'has-right': !!activeCategory }"
+      v-show="mega"
+      role="menu"
+      aria-label="Categories"
+      @keydown="onMegaKeydown"
+    >
+      <!-- LEFT: categories -->
+      <div class="mega-left" role="none">
+        <div
+          v-for="c in topCategories"
+          :key="c.id"
+          class="mega-item"
+          :class="{ active: Number(activeCatId) === Number(c.id) }"
+          @mouseenter="activeCatId = c.id"
+          role="none"
+        >
+          <Link
+            :href="categoryHref(c)"
+            class="mega-link"
+            role="menuitem"
+            @click="mega = false"
+          >
+            <span class="mh-dd-text">{{ c.title }}</span>
+            <i
+              v-if="(c.subcategories || []).length"
+              class="fa-solid fa-chevron-right"
+              aria-hidden="true"
+            ></i>
+          </Link>
+        </div>
+      </div>
+
+      <!-- RIGHT: subcategories -->
+      <div class="mega-right" v-if="activeCategory" role="none">
+        <div class="mega-right-title" role="none">
+          {{ activeCategory.title }}
+        </div>
+
+        <div v-if="activeSubcategories.length" class="mega-sublist" role="none">
+          <Link
+            v-for="s in activeSubcategories"
+            :key="s.id"
+            :href="subcategoryHref(activeCategory, s)"
+            class="mega-sublink"
+            role="menuitem"
+            @click="mega = false"
+          >
+            <span class="mh-dd-text">{{ s.title }}</span>
+          </Link>
+        </div>
+
+        <div v-else class="mega-empty" role="none">No subcategories</div>
+      </div>
+    </div>
+  </transition>
+</div>
 
                         <Link
                             :href="route('index')"
@@ -106,26 +161,33 @@
                         </Link>
 
                         <!-- Brands dropdown -->
-                        <div class="mitem has-dd">
-                            <button
-                                type="button"
-                                class="mtext-btn"
-                                @click.stop="brandsOpen = !brandsOpen"
-                            >
-                                <span>BRANDS</span>
-                                <i class="fa-solid fa-chevron-down dd-icon"></i>
-                            </button>
-                            <ul class="dd" v-show="brandsOpen">
-                                <li v-for="b in brandDropdown" :key="b.id">
-                                    <Link :href="brandHref(b)">
-                                        {{ b.title }}
-                                    </Link>
-                                </li>
-                                <li class="all">
-                                    <Link :href="route('index')">All Brands</Link>
-                                </li>
-                            </ul>
-                        </div>
+                       <div
+  class="mitem has-dd"
+  @mouseenter="brandsOpen = true"
+  @mouseleave="brandsOpen = false"
+>
+  <button
+    type="button"
+    class="mtext-btn"
+    :aria-expanded="brandsOpen ? 'true' : 'false'"
+    aria-haspopup="menu"
+    @click.stop="brandsOpen = !brandsOpen"
+  >
+    <span>BRANDS</span>
+    <i class="fa-solid fa-chevron-down dd-icon"></i>
+  </button>
+
+  <ul class="dd" v-show="brandsOpen" role="menu" aria-label="Brands">
+    <li v-for="b in brandDropdown" :key="b.id" role="none">
+      <Link :href="brandHref(b)" role="menuitem">
+        {{ b.title }}
+      </Link>
+    </li>
+    <li class="all" role="none">
+      <Link :href="route('index')" role="menuitem">All Brands</Link>
+    </li>
+  </ul>
+</div>
 
                         <Link :href="route('index')" class="mitem">
                             FEATURED
@@ -442,6 +504,7 @@ export default {
             drawer: false,
             scrolled: false,
             acc: { product: true, brands: false },
+            activeCatId: null,
         };
     },
     computed: {
@@ -454,6 +517,16 @@ export default {
         brs() {
             return this.brands ?? this.$page?.props?.brands ?? [];
         },
+activeCategory() {
+  if (!this.activeCatId) return null;
+  return (this.topCategories || []).find(
+    c => Number(c.id) === Number(this.activeCatId)
+  ) || null;
+},
+activeSubcategories() {
+  return this.activeCategory?.subcategories || [];
+},
+
         topCategories() {
             const list = [...this.cats];
             list.sort(
@@ -483,6 +556,12 @@ export default {
         window.removeEventListener("scroll", this.onScroll);
     },
     methods: {
+
+        toggleMega() { // ✅ ADD THIS
+      this.mega = !this.mega;
+
+    if (this.mega) this.activeCatId = null;
+    },
         onScroll() {
             // match React behaviour: compact bar appears after ~80px scroll
             this.scrolled = window.scrollY > 80;
@@ -494,6 +573,12 @@ export default {
                 { preserveState: true, preserveScroll: true }
             );
         },
+
+         subcategoryHref(cat, sub) {
+    // safest: keep your existing category route and pass subcategory as query
+    const base = route("category.list", cat.id);
+    return base + "?subcategory=" + encodeURIComponent(sub.id);
+  },
         isActive(name) {
             try {
                 const url = route(name);
@@ -521,6 +606,43 @@ export default {
                 .replace(/\s+/g, "-")
                 .replace(/[^a-z0-9-]/g, "");
         },
+        onMegaKeydown(e) {
+  const k = e.key;
+
+  if (k === "Escape") {
+    e.preventDefault();
+    this.mega = false;
+    this.activeCatId = null;
+    return;
+  }
+
+  if (!["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"].includes(k)) return;
+
+  e.preventDefault();
+
+  const root = e.currentTarget;
+
+  if (k === "ArrowRight") {
+    const firstSub = root.querySelector(".mega-right a.mega-sublink");
+    if (firstSub) return firstSub.focus();
+  }
+
+  if (k === "ArrowLeft") {
+    const activeCat = root.querySelector(".mega-item.active a.mega-link");
+    if (activeCat) return activeCat.focus();
+  }
+
+  const items = Array.from(
+    root.querySelectorAll("a.mega-link, a.mega-sublink")
+  ).filter((el) => el && el.offsetParent !== null);
+
+  if (!items.length) return;
+
+  const idx = items.indexOf(document.activeElement);
+  const dir = k === "ArrowDown" ? 1 : -1;
+  const next = items[(Math.max(0, idx) + dir + items.length) % items.length];
+  next && next.focus();
+},
     },
 };
 </script>
@@ -1018,4 +1140,316 @@ export default {
 .drawer-list .acc ul li a:hover {
     background: rgba(255, 255, 255, 0.08);
 }
+
+.mega{
+  position:absolute;
+  top:100%;
+  left:0;
+  margin-top:10px;
+  height:520px;
+  display:flex;
+  background:#c4c5cd;
+  border:2px solid #f2c94c;
+  z-index:2000;
+
+  width:300px;                 /* ✅ ONLY left panel by default */
+  transition: width .15s ease; /* optional */
+}
+
+.mega.has-right{
+  width:720px;                 /* ✅ expand ONLY after hover */
+}
+
+.mega-left{
+  width:300px;
+  overflow:auto;
+  padding:10px 0;
+  border-right: none;          /* ✅ no divider if right panel hidden */
+}
+
+
+.mega.has-right .mega-left{
+  border-right:2px solid #f2c94c; /* ✅ divider only when right exists */
+}
+
+.mega-item{ padding:0 10px; }
+.mega-link{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 14px;
+  color:#fff;
+  text-decoration:none;
+  font-weight:700;
+  text-transform:uppercase;
+  border-radius:6px;
+}
+.mega-item.active .mega-link,
+.mega-link:hover{
+  background:rgba(255,255,255,0.08);
+}
+
+.mega-right{
+  flex:1;
+  padding:14px;
+  overflow:auto;
+}
+.mega-right-title{
+  color:#f2c94c;
+  font-weight:800;
+  text-transform:uppercase;
+  margin-bottom:10px;
+}
+.mega-sublist{ display:flex; flex-direction:column; }
+.mega-sublink{
+  padding:12px 10px;
+  color:#fff;
+  text-decoration:none;
+  font-weight:700;
+  text-transform:uppercase;
+  border-radius:6px;
+}
+.mega-sublink:hover{
+  background:rgba(255,255,255,0.08);
+}
+.mega-empty{
+  color:rgba(255,255,255,0.75);
+  padding:10px;
+}
+
+/* ✅ UPDATED: Premium mega dropdown (matches navbar + Brands dropdown) */
+.mh-dd-btn .dd-icon {
+  opacity: 0.85;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+.mh-dd-btn.is-open .dd-icon {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+/* Smooth open/close (fade + slight translate) */
+.mh-mega-enter-active,
+.mh-mega-leave-active {
+  transition: opacity 0.14s ease, transform 0.16s ease;
+}
+.mh-mega-enter-from,
+.mh-mega-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mh-mega-enter-active,
+  .mh-mega-leave-active {
+    transition: none;
+  }
+}
+
+/* Container */
+.mh-mega {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 10px;
+
+  /* ✅ same background as Brands dropdown */
+  background: #ffffff;
+  border: 1px solid var(--nav-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+  overflow: hidden;
+  z-index: 2000;
+
+  /* responsive safety */
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 140px);
+  display: flex;
+
+  /* subtle polish */
+  backdrop-filter: saturate(140%);
+}
+
+/* Width behavior (keeps your existing logic) */
+.mh-mega {
+  width: min(92vw, 360px);
+}
+.mh-mega.has-right {
+  width: min(92vw, 760px);
+}
+
+/* Panels */
+.mh-mega .mega-left {
+  width: 320px;
+  padding: 8px;
+  overflow: auto;
+  max-height: min(70vh, 520px);
+}
+.mh-mega:not(.has-right) .mega-left {
+  width: 100%;
+}
+
+.mh-mega.has-right .mega-left {
+  border-right: 1px solid var(--nav-border);
+}
+
+.mh-mega .mega-right {
+  flex: 1;
+  min-width: 240px;
+  padding: 10px;
+  overflow: auto;
+  max-height: min(70vh, 520px);
+}
+
+/* Typography matches navbar (same size/weight/uppercase/spacing) */
+.mh-mega .mega-link,
+.mh-mega .mega-sublink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border-radius: 10px;
+
+  color: var(--nav-text);
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+
+  transition: background-color 0.15s ease, box-shadow 0.15s ease,
+    transform 0.15s ease, color 0.15s ease;
+}
+
+/* ✅ same hover background as Brands dropdown */
+.mh-mega .mega-link:hover,
+.mh-mega .mega-sublink:hover {
+  background: #f3f4f6;
+}
+
+.mh-mega .mega-link i,
+.mh-mega .mega-sublink i {
+  font-size: 10px;
+  opacity: 0.75;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+/* Active category state (clear but premium) */
+.mh-mega .mega-item.active .mega-link {
+  background: rgba(11, 60, 128, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(11, 60, 128, 0.18);
+}
+.mh-mega .mega-item.active .mega-link i {
+  opacity: 1;
+}
+
+/* Focus-visible (strong + navbar-themed) */
+.mh-mega .mega-link:focus-visible,
+.mh-mega .mega-sublink:focus-visible,
+.mh-dd-btn:focus-visible {
+  outline: 2px solid rgba(11, 60, 128, 0.55);
+  outline-offset: 2px;
+}
+
+/* Long names: ellipsis desktop, wrap on smaller screens */
+.mh-mega .mh-dd-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Subcategory header */
+.mh-mega .mega-right-title {
+  padding: 6px 8px;
+  margin: 2px 0 6px;
+  color: var(--nav-primary);
+  font-weight: 800;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Empty state */
+.mh-mega .mega-empty {
+  padding: 10px 8px;
+  color: var(--nav-muted);
+  font-size: 13px;
+}
+
+/* Tablet + small laptop: balanced sizing */
+@media (max-width: 1200px) {
+  .mh-mega.has-right {
+    width: min(94vw, 720px);
+  }
+  .mh-mega .mega-left {
+    width: 300px;
+  }
+}
+
+/* Mobile-safe layout (even if your main menu is hidden on <=992) */
+@media (max-width: 992px) {
+  .mh-mega {
+    width: calc(100vw - 24px) !important;
+    left: 12px;
+    right: 12px;
+    margin-top: 8px;
+  }
+
+  .mh-mega.has-right {
+    flex-direction: column;
+  }
+
+  .mh-mega .mega-left {
+    width: 100%;
+    max-height: 38vh;
+    border-right: none !important;
+    border-bottom: 1px solid var(--nav-border);
+  }
+
+  .mh-mega .mega-right {
+    max-height: 38vh;
+  }
+
+  .mh-mega .mh-dd-text {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-word;
+  }
+
+  /* larger tap targets */
+  .mh-mega .mega-link,
+  .mh-mega .mega-sublink {
+    padding: 12px 12px;
+    border-radius: 12px;
+  }
+}
+/* ✅ ONLY UPDATED: light separators under each Category item (premium, subtle) */
+.mh-mega .mega-item {
+  padding: 0; /* (we moved spacing into link for clean separators) */
+  position: relative;
+}
+.mh-mega .mega-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 1px;
+  background: rgba(17, 24, 39, 0.08); /* subtle line like premium menus */
+}
+
+/* keep comfortable spacing */
+.mh-mega .mega-link {
+  margin: 0;
+}
+
+/* (optional) subtle separator for subcategories too */
+.mh-mega .mega-sublist .mega-sublink:not(:last-child) {
+  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+}
+
+
 </style>

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use App\Models\SubCategory;
 
 class Product extends Model implements HasMedia
 {
@@ -14,7 +15,7 @@ class Product extends Model implements HasMedia
     protected $fillable = [
         'name','slug','sku','status','sort_order','brand_id','uom_id',
         'attribute_set_id','primary_category_id','price','sale_price', 'attributes_json',
-        'short_description','description','discount_status','discount_type','discounted_amount',
+        'short_description','description','discount_status','discount_type','discounted_amount','subcategory_id',
     ];
 
  protected $casts = [
@@ -40,6 +41,10 @@ class Product extends Model implements HasMedia
     public function attributeValues()
     {
         return $this->hasMany(ProductAttributeValue::class);
+    }
+     public function subcategory()
+    {
+        return $this->belongsTo(SubCategory::class, 'subcategory_id');
     }
 
 

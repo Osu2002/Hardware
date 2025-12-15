@@ -173,7 +173,7 @@
                         </div>
 
                         <div class="row">
-                            <SelectInputComponent
+                            <!-- <SelectInputComponent
                                 class="mb-3 col-md-6"
                                 id="primary_category_id"
                                 label="Primary Category (optional)"
@@ -181,23 +181,30 @@
                                 option-label="title"
                                 option-value="id"
                                 v-model="form.primary_category_id"
-                            />
+                            /> -->
                             <div class="mb-3 col-md-6">
-                                <label class="form-label">Categories</label>
-                                <select
-                                    class="form-select"
-                                    v-model="form.categories"
-                                    multiple
-                                    size="6"
-                                >
-                                    <option
-                                        v-for="c in categories"
-                                        :key="c.id"
-                                        :value="c.id"
-                                    >
-                                        {{ c.title }}
-                                    </option>
-                                </select>
+                                <!-- <label class="form-label">Categories</label> -->
+                               <SelectInputComponent
+  class="mb-3 col-md-6"
+  id="category_id"
+  label="Category"
+  :options="categories"
+  option-label="title"
+  option-value="id"
+  :error="form.errors.category_id"
+  v-model="form.category_id"
+/>
+
+ <SelectInputComponent
+    class="mb-3 col-md-6"
+    id="subcategory_id"
+    label="Sub Category"
+    :options="filteredSubcategories"
+    option-label="title"
+    option-value="id"
+    :error="form.errors.subcategory_id"
+    v-model="form.subcategory_id"
+  />
                                 <div class="text-muted small">
                                     Hold Ctrl / Cmd to multi-select
                                 </div>
@@ -436,6 +443,7 @@ export default {
         attributeSets: Array,
         attributes: Array,
         images: Array, // existing image urls (edit)
+          subcategories: Array,
     },
     data() {
         return {
@@ -448,8 +456,10 @@ export default {
                 brand_id: "",
                 uom_id: "",
                 attribute_set_id: "",
-                primary_category_id: "",
-                categories: [],
+            //   primary_category_id
+                 category_id: "",
+                // categories: [],
+                subcategory_id: "",
                 price: "",
                 sale_price: "",
                 short_description: "",
@@ -496,6 +506,12 @@ existingPreviews: (this.images || []).map(x => ({
 
             return [...existing, ...selected];
         },
+
+         filteredSubcategories() {
+    const cid = Number(this.form.category_id || 0);
+    if (!cid) return [];
+    return (this.subcategories || []).filter(s => Number(s.category_id) === cid);
+  },
     },
 
     mounted() {
@@ -509,8 +525,10 @@ existingPreviews: (this.images || []).map(x => ({
             this.form.brand_id = p.brand_id ?? "";
             this.form.uom_id = p.uom_id ?? "";
             this.form.attribute_set_id = p.attribute_set_id ?? "";
-            this.form.primary_category_id = p.primary_category_id ?? "";
-            this.form.categories = (p.categories || []).map((c) => c.id);
+            // this.form.primary_category_id = p.primary_category_id ?? "";
+            // this.form.categories = (p.categories || []).map((c) => c.id);
+            this.form.category_id = (p.categories && p.categories.length) ? p.categories[0].id : "";
+
             this.form.price = p.price ?? "";
             this.form.sale_price = p.sale_price ?? "";
             this.form.short_description = p.short_description ?? "";
@@ -519,6 +537,8 @@ existingPreviews: (this.images || []).map(x => ({
             this.form.discount_status = String(p.discount_status ?? "0");
             this.form.discount_type = p.discount_type ?? "";
             this.form.discounted_amount = p.discounted_amount ?? "";
+            this.form.subcategory_id = p.subcategory_id ?? "";
+
 
             // load saved JSON {code:value}
             const saved = p.attributes_json || {};
@@ -549,6 +569,16 @@ existingPreviews: (this.images || []).map(x => ({
 
             this.reloadAttributes(newVal);
         },
+         "form.category_id"(newVal, oldVal) {
+    if (newVal === oldVal) return;
+
+    const cid = Number(newVal || 0);
+    const ok = (this.subcategories || []).some(
+      s => Number(s.category_id) === cid && String(s.id) === String(this.form.subcategory_id)
+    );
+
+    if (!ok) this.form.subcategory_id = "";
+  },
 
         attributes: {
             immediate: true,

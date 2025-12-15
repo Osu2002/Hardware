@@ -26,6 +26,7 @@ class HomeController extends Controller
     $categories = Category::where('status', 1)
         ->with([
             'media',
+             'subcategories' => fn($q) => $q->where('status', 1)->orderBy('sort_order')->orderBy('title'),
             'products' => function ($q) {
                 $q->where('status', 1)
                     ->with('media')
@@ -43,6 +44,13 @@ class HomeController extends Controller
                 'slug'     => $c->slug,
                 'featured' => (bool) $c->featured,
                 'image'    => $img,
+                
+                 'subcategories' => $c->subcategories->map(fn($s) => [
+                'id' => $s->id,
+                'title' => $s->title,
+                'slug' => $s->slug,
+                'category_id' => $s->category_id,
+            ])->values(),
 
                 // 8 products for this category
                 'products' => $c->products->map(function ($p) {
