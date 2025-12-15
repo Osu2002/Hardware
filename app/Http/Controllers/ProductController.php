@@ -15,6 +15,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Yajra\DataTables\Facades\DataTables;
+use App\Models\SubCategory;
+
 
 class ProductController extends Controller
 {
@@ -173,6 +175,7 @@ class ProductController extends Controller
     public function create(Request $r)
     {
         $setId = $r->integer('attribute_set_id');
+        
 
         return Inertia::render('Product/CreateUpdate', [
             'brands'        => Brand::where('status', 1)->orderBy('title')->get(['id', 'title']),
@@ -181,6 +184,10 @@ class ProductController extends Controller
             'attributeSets' => AttributeSet::where('status', 1)->orderBy('name')->get(['id', 'name']),
             'attributes'    => $this->attributesForSet($setId),
             'images'        => [],
+            'subcategories' => SubCategory::where('status', 1)
+    ->orderBy('title')
+    ->get(['id','title','category_id']),
+
         ]);
     }
 
@@ -193,8 +200,7 @@ class ProductController extends Controller
             'brand_id' => ['nullable', 'exists:brands,id'],
             'uom_id' => ['nullable', 'exists:uoms,id'],
             'attribute_set_id' => ['nullable', 'exists:attribute_sets,id'],
-            'primary_category_id' => ['nullable', 'exists:categories,id'],
-            'categories' => ['array'],
+           
             'price' => ['nullable', 'numeric', 'min:0'],
             'sale_price' => ['nullable', 'numeric', 'min:0'],
             'short_description' => ['nullable', 'max:500'],
@@ -204,6 +210,14 @@ class ProductController extends Controller
             'discount_status' => ['required', 'in:0,1'],
             'discount_type' => ['required_if:discount_status,1', 'nullable', 'in:percent,amount'],
             'discounted_amount' => ['required_if:discount_status,1', 'nullable', 'numeric', 'min:0'],
+
+            'category_id' => ['nullable', 'exists:categories,id'],
+'subcategory_id' => [
+    'nullable',
+    Rule::exists('subcategories', 'id')
+        ->where(fn($q) => $q->where('category_id', $r->category_id)),
+],
+
         ]);
 
         DB::beginTransaction();
@@ -230,7 +244,7 @@ class ProductController extends Controller
                 'uom_id' => $r->uom_id,
                 'attribute_set_id' => $r->attribute_set_id,
                 'attributes_json'  => $attributesJson, // ✅ {code:value}
-                'primary_category_id' => $r->primary_category_id,
+                // 'primary_category_id' => $r->primary_category_id,
                 'price' => $r->price,
                 'sale_price' => $r->sale_price,
                 'short_description' => $r->short_description,
@@ -238,9 +252,12 @@ class ProductController extends Controller
                 'discount_status'   => (int)($r->discount_status ?? 0),
                 'discount_type'     => $r->discount_status ? $r->discount_type : null,
                 'discounted_amount' => $r->discount_status ? $r->discounted_amount : null,
+                'subcategory_id' => $r->subcategory_id,
+
             ]);
 
-            $product->categories()->sync($r->categories ?? []);
+           $product->categories()->sync($r->category_id ? [(int)$r->category_id] : []);
+
 
             if ($r->hasFile('images')) {
                 foreach ($r->file('images', []) as $img) {
@@ -255,26 +272,30 @@ class ProductController extends Controller
             throw $ex;
         }
     }
+public function edit(Request $r, $id)
+{
+    $product = Product::with(['categories:id,title'])->findOrFail($id);
 
-    public function edit(Request $r, $id)
-    {
-        $product = Product::with(['categories:id,title'])->findOrFail($id);
+    $setId = $r->integer('attribute_set_id') ?: (int)$product->attribute_set_id;
 
-        $setId = $r->integer('attribute_set_id') ?: (int)$product->attribute_set_id;
+    return Inertia::render('Product/CreateUpdate', [
+        'product'       => $product,
+        'brands'        => Brand::where('status', 1)->orderBy('title')->get(['id', 'title']),
+        'uoms'          => Uom::where('status', 1)->orderBy('name')->get(['id', 'name']),
+        'categories'    => Category::orderBy('title')->get(['id', 'title']),
+        'subcategories' => SubCategory::where('status', 1)
+            ->orderBy('title')
+            ->get(['id','title','category_id']),
+        'attributeSets' => AttributeSet::where('status', 1)->orderBy('name')->get(['id', 'name']),
+        'attributes'    => $this->attributesForSet($setId),
 
-        return Inertia::render('Product/CreateUpdate', [
-            'product'       => $product,
-            'brands'        => Brand::where('status', 1)->orderBy('title')->get(['id', 'title']),
-            'uoms'          => Uom::where('status', 1)->orderBy('name')->get(['id', 'name']),
-            'categories'    => Category::orderBy('title')->get(['id', 'title']),
-            'attributeSets' => AttributeSet::where('status', 1)->orderBy('name')->get(['id', 'name']),
-            'attributes'    => $this->attributesForSet($setId),
-'images' => $product->getMedia('product_images')->map(fn($m) => [
-    'id'  => $m->id,
-    'url' => $m->getUrl(),
-])->values(),
-        ]);
-    }
+        'images' => $product->getMedia('product_images')->map(fn($m) => [
+            'id'  => $m->id,
+            'url' => $m->getUrl(),
+        ])->values(),
+    ]);
+}
+
 public function destroyImage(Product $product, $media)
 {
     $mediaItem = $product->media()
@@ -296,8 +317,7 @@ public function destroyImage(Product $product, $media)
             'brand_id' => ['nullable', 'exists:brands,id'],
             'uom_id' => ['nullable', 'exists:uoms,id'],
             'attribute_set_id' => ['nullable', 'exists:attribute_sets,id'],
-            'primary_category_id' => ['nullable', 'exists:categories,id'],
-            'categories' => ['array'],
+           
             'price' => ['nullable', 'numeric', 'min:0'],
             'sale_price' => ['nullable', 'numeric', 'min:0'],
             'short_description' => ['nullable', 'max:500'],
@@ -307,6 +327,13 @@ public function destroyImage(Product $product, $media)
             'discount_status' => ['required', 'in:0,1'],
             'discount_type' => ['required_if:discount_status,1', 'nullable', 'in:percent,amount'],
             'discounted_amount' => ['required_if:discount_status,1', 'nullable', 'numeric', 'min:0'],
+            'category_id' => ['nullable', 'exists:categories,id'],
+'subcategory_id' => [
+    'nullable',
+    Rule::exists('subcategories', 'id')
+        ->where(fn($q) => $q->where('category_id', $r->category_id)),
+],
+
         ]);
 
         DB::beginTransaction();
@@ -329,7 +356,7 @@ public function destroyImage(Product $product, $media)
                 'uom_id' => $r->uom_id,
                 'attribute_set_id' => $r->attribute_set_id,
                 'attributes_json'  => $attributesJson, // ✅ {code:value}
-                'primary_category_id' => $r->primary_category_id,
+                // 'primary_category_id' => $r->primary_category_id,
                 'price' => $r->price,
                 'sale_price' => $r->sale_price,
                 'short_description' => $r->short_description,
@@ -337,9 +364,12 @@ public function destroyImage(Product $product, $media)
                 'discount_status'   => (int)($r->discount_status ?? 0),
                 'discount_type'     => $r->discount_status ? $r->discount_type : null,
                 'discounted_amount' => $r->discount_status ? $r->discounted_amount : null,
+                'subcategory_id' => $r->subcategory_id,
+
             ]);
 
-            $product->categories()->sync($r->categories ?? []);
+          $product->categories()->sync($r->category_id ? [(int)$r->category_id] : []);
+
 
             if ($r->hasFile('images')) {
                 foreach ($r->file('images', []) as $img) {
