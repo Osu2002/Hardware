@@ -147,19 +147,21 @@ export default {
     fieldError(idx, field) {
       return this.form.errors?.[`subcategories.${idx}.${field}`] || "";
     },
-    submit() {
-      const routeName = this.category ? "subcategory.update" : "subcategory.store";
+   submit() {
+  const routeName = this.category ? "subcategory.update" : "subcategory.store";
 
-      this.form.post(route(routeName), {
-        forceFormData: true, // IMPORTANT for nested files
-        onSuccess: () => {
-          this.$root.showMessage("success", '<span class="text-success">Success</span><br/>', "Saved successfully!");
-        },
-        onError: () => {
-          this.$root.showMessage("error", '<span class="text-danger">Error</span><br>', "Something went wrong!");
-        },
-      });
+  this.form.post(route(routeName), {
+    forceFormData: true,
+    onSuccess: () => {
+      this.$root.showMessage("success", '<span class="text-success">Success</span><br/>', "Saved successfully!");
+      this.$inertia.visit(route("subcategory.index")); // ✅ force go back
     },
+    onError: () => {
+      this.$root.showMessage("error", '<span class="text-danger">Error</span><br>', "Something went wrong!");
+    },
+  });
+},
+
   },
 };
 </script>

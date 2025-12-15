@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Illuminate\Validation\ValidationException;
 use Yajra\DataTables\Facades\DataTables;
 
 class SubCategoryController extends Controller
@@ -21,83 +20,80 @@ class SubCategoryController extends Controller
     }
 
     /**
-     * Index table shows ONLY categories (as you requested):
-     * Category | Status (based on subcategories) | Sort | Action
+     * Index table shows ONLY "subcategory sets"
+     * = categories that have at least 1 subcategory.
+     *
+     * Columns: Category | Count | Status | Action
      */
-  public function getData()
-{
-    $rows = Category::query()
-        ->select(['id', 'title', 'sort_order'])
-        ->withCount([
-            'subcategories',
-            'subcategories as active_subcategories_count' => fn($q) => $q->where('status', 1),
-        ]);
+    public function getData(Request $request)
+    {
+        $query = Category::query()
+            ->select(['categories.id', 'categories.title'])
+            ->whereHas('subcategories') // ✅ show only created sets
+            ->withCount([
+                'subcategories',
+                'subcategories as active_subcategories_count' => fn($q) => $q->where('status', 1),
+            ]);
 
-    return DataTables::of($rows)
-        ->addColumn('check', function ($row) {
-            return '<div class="custom-control custom-checkbox item-check">
-                <input type="checkbox" class="form-check-input" id="cat_'.$row->id.'" value="'.$row->id.'">
-                <label class="form-check-label" for="cat_'.$row->id.'"></label>
-            </div>';
-        })
+        return DataTables::eloquent($query)
+            ->addColumn('check', fn($row) => '
+                <div class="custom-control custom-checkbox item-check">
+                    <input type="checkbox" class="form-check-input" id="cat_' . $row->id . '" value="' . $row->id . '">
+                    <label class="form-check-label" for="cat_' . $row->id . '"></label>
+                </div>
+            ')
+            ->editColumn('title', fn($row) => e($row->title))
 
-        // IMPORTANT: title is a REAL column -> use editColumn
-        ->editColumn('title', fn($row) => e($row->title))
+            ->addColumn('count', fn($row) => (int)($row->subcategories_count ?? 0))
 
-        ->addColumn('status', function ($row) {
-            if ((int)$row->subcategories_count === 0) {
-                return '<span class="badge bg-secondary">No Subcategories</span>';
-            }
-            if ((int)$row->active_subcategories_count > 0) {
-                return '<span class="badge bg-success">Active</span>';
-            }
-            return '<span class="badge bg-warning">Inactive</span>';
-        })
+            ->addColumn('status', function ($row) {
+                $total  = (int)$row->subcategories_count;
+                $active = (int)$row->active_subcategories_count;
 
-        // IMPORTANT: return real DB field name sort_order (not "sort")
-        ->editColumn('sort_order', fn($row) => (int)($row->sort_order ?? 0))
+                if ($total === 0) return '<span class="badge bg-secondary">No Subcategories</span>';
+                if ($active > 0)  return '<span class="badge bg-success">Active</span>';
+                return '<span class="badge bg-warning">Inactive</span>';
+            })
 
-        ->addColumn('action', function ($row) {
-            $currentStatus = ((int)$row->active_subcategories_count > 0) ? 1 : 0;
-            $html = '';
+            ->addColumn('action', function ($row) {
+                $total  = (int)$row->subcategories_count;
+                $active = (int)$row->active_subcategories_count;
+                $currentStatus = ($active > 0) ? 1 : 0;
 
-            if (auth()->user()->can('subcategory.view') || auth()->user()->can('subcategory.edit')) {
-                $html .= '<a class="dropdown-item action_edit" style="font-size:14px;padding:5px 13px;"
-                    data-item-id="'.$row->id.'" href="javascript:void(0)">
-                    <i class="fas fa-edit mr-2"></i> View / Edit
-                </a>';
-            }
+                $html = '';
 
-            if (auth()->user()->can('subcategory.edit')) {
-                $html .= '<a class="dropdown-item '.($currentStatus == 1 ? 'text-warning' : 'text-success').' action_status_change"
-                    style="font-size:14px;padding:5px 13px;"
-                    data-item-id="'.$row->id.'" data-status="'.$currentStatus.'" href="javascript:void(0)">
-                    <i class="fas fa-power-off mr-2"></i>'.($currentStatus == 1 ? ' Deactivate' : ' Activate').'
-                </a>';
-            }
+                if (auth()->user()->can('subcategory.view') || auth()->user()->can('subcategory.edit')) {
+                    $html .= '<a class="dropdown-item action_edit" data-item-id="' . $row->id . '" href="javascript:void(0)">
+                        <i class="fas fa-edit mr-2"></i> View / Edit
+                    </a>';
+                }
 
-            $html .= '<div class="dropdown-divider"></div>';
+                // Disable activate/deactivate if set has 0 subcategories (avoid confusion)
+                if (auth()->user()->can('subcategory.edit') && $total > 0) {
+                    $html .= '<a class="dropdown-item ' . ($currentStatus ? 'text-warning' : 'text-success') . ' action_status_change"
+                        data-item-id="' . $row->id . '" data-status="' . $currentStatus . '" href="javascript:void(0)">
+                        <i class="fas fa-power-off mr-2"></i> ' . ($currentStatus ? 'Deactivate' : 'Activate') . '
+                    </a>';
+                }
 
-            if (auth()->user()->can('subcategory.delete')) {
-                $html .= '<a class="dropdown-item text-danger action_delete"
-                    data-bs-toggle="modal" data-bs-target="#deleteConfirm"
-                    style="font-size:14px;padding:5px 13px;"
-                    data-item-id="'.$row->id.'" href="javascript:void(0)">
-                    <i class="fas fa-trash mr-2"></i> Delete
-                </a>';
-            }
+                $html .= '<div class="dropdown-divider"></div>';
 
-            return '<div class="btn-group">
-                <button type="button" class="btn btn-main btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    Action
-                </button>
-                <div class="dropdown-menu" style="min-width:10rem;">'.$html.'</div>
-            </div>';
-        })
-        ->rawColumns(['check', 'status', 'action'])
-        ->make(true);
-}
+                if (auth()->user()->can('subcategory.delete')) {
+                    $html .= '<a class="dropdown-item text-danger action_delete"
+                        data-bs-toggle="modal" data-bs-target="#deleteConfirm"
+                        data-item-id="' . $row->id . '" href="javascript:void(0)">
+                        <i class="fas fa-trash mr-2"></i> Delete
+                    </a>';
+                }
 
+                return '<div class="btn-group">
+                    <button type="button" class="btn btn-main btn-sm dropdown-toggle" data-bs-toggle="dropdown">Action</button>
+                    <div class="dropdown-menu" style="min-width:10rem;">' . $html . '</div>
+                </div>';
+            })
+            ->rawColumns(['check', 'status', 'action'])
+            ->make(true);
+    }
 
     public function create()
     {
@@ -115,7 +111,7 @@ class SubCategoryController extends Controller
 
         $subs = SubCategory::with('media')
             ->where('category_id', $category->id)
-            ->orderBy('sort_order')
+            ->orderBy('sort_order') // still ok inside set
             ->get()
             ->map(function ($s) {
                 $img = $s->getFirstMediaUrl('subcategory_image');
@@ -127,7 +123,6 @@ class SubCategoryController extends Controller
             })
             ->values();
 
-        // derive set status: if any active -> 1 else 0 (if none exist -> 1 default)
         $hasAny = SubCategory::where('category_id', $category->id)->exists();
         $setStatus = $hasAny
             ? (SubCategory::where('category_id', $category->id)->where('status', 1)->exists() ? 1 : 0)
@@ -145,16 +140,11 @@ class SubCategoryController extends Controller
     {
         return $this->saveSet($r);
     }
-
     public function update(Request $r)
     {
         return $this->saveSet($r);
     }
 
-    /**
-     * Saves multiple subcategories for ONE category.
-     * Each subcategory is stored as its own record (unique ID).
-     */
     private function saveSet(Request $r)
     {
         $r->validate([
@@ -172,8 +162,7 @@ class SubCategoryController extends Controller
 
         DB::beginTransaction();
         try {
-            $existing = SubCategory::where('category_id', $categoryId)->get();
-            $existingIds = $existing->pluck('id')->all();
+            $existingIds = SubCategory::where('category_id', $categoryId)->pluck('id')->all();
 
             $incomingIds = collect($items)
                 ->pluck('id')
@@ -181,27 +170,22 @@ class SubCategoryController extends Controller
                 ->map(fn($v) => (int)$v)
                 ->all();
 
-            // soft-delete removed items
+            // remove deleted rows (soft delete)
             $toDelete = array_diff($existingIds, $incomingIds);
             if (!empty($toDelete)) {
-                SubCategory::where('category_id', $categoryId)
-                    ->whereIn('id', $toDelete)
-                    ->delete();
+                SubCategory::where('category_id', $categoryId)->whereIn('id', $toDelete)->delete();
             }
 
             foreach ($items as $i => $row) {
-                $title = (string)$row['title'];
+                $title = (string)($row['title'] ?? '');
                 $id = !empty($row['id']) ? (int)$row['id'] : null;
 
                 $slugBase = Str::slug($title);
                 $slug = $slugBase ?: Str::random(8);
 
-                // ensure unique slug per category (exclude current id when updating)
                 $dupQuery = SubCategory::where('category_id', $categoryId)->where('slug', $slug);
                 if ($id) $dupQuery->where('id', '!=', $id);
-                if ($dupQuery->exists()) {
-                    $slug .= '-' . Str::random(5);
-                }
+                if ($dupQuery->exists()) $slug .= '-' . Str::random(5);
 
                 $payload = [
                     'category_id' => $categoryId,
@@ -211,14 +195,13 @@ class SubCategoryController extends Controller
                     'sort_order'  => $i + 1,
                 ];
 
-                if ($id) {
-                    $sub = SubCategory::where('category_id', $categoryId)->findOrFail($id);
-                    $sub->update($payload);
-                } else {
-                    $sub = SubCategory::create($payload);
-                }
+                $sub = $id
+                    ? SubCategory::where('category_id', $categoryId)->findOrFail($id)
+                    : new SubCategory();
 
-                // handle image for this row
+                $sub->fill($payload);
+                $sub->save();
+
                 $file = $r->file("subcategories.$i.image");
                 if ($file) {
                     $sub->clearMediaCollection('subcategory_image');
@@ -235,9 +218,6 @@ class SubCategoryController extends Controller
         }
     }
 
-    /**
-     * Toggle ALL subcategories under a category (set-level activate/deactivate)
-     */
     public function updateStatus(Request $r)
     {
         $r->validate([
@@ -245,32 +225,20 @@ class SubCategoryController extends Controller
             'status' => ['required', 'in:0,1'],
         ]);
 
-        try {
-            $categoryId = (int)$r->id;
-            $new = ((int)$r->status === 0) ? 1 : 0;
+        $categoryId = (int)$r->id;
+        $new = ((int)$r->status === 0) ? 1 : 0;
 
-            SubCategory::where('category_id', $categoryId)->update(['status' => $new]);
+        SubCategory::where('category_id', $categoryId)->update(['status' => $new]);
 
-            return redirect()->route('subcategory.index');
-        } catch (Exception $ex) {
-            Log::error($ex);
-            return abort(500);
-        }
+        return redirect()->route('subcategory.index');
     }
 
-    /**
-     * Delete subcategory set(s) by category ids (soft delete rows)
-     */
     public function destroy(Request $r)
     {
         $r->validate(['ids' => ['required', 'array']]);
 
-        try {
-            SubCategory::whereIn('category_id', $r->ids)->delete();
-            return redirect()->route('subcategory.index');
-        } catch (Exception $ex) {
-            Log::error($ex);
-            return abort(500);
-        }
+        SubCategory::whereIn('category_id', $r->ids)->delete();
+
+        return redirect()->route('subcategory.index');
     }
 }
