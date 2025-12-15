@@ -469,6 +469,26 @@ export default {
   }
 }
 
+.offer-image-wrapper {
+  position: relative;
+}
+
+/* put image behind */
+.offer-image {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* put badge above image */
+.offer-discount {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+}
+
+
 @media (max-width: 480px) {
   .offer-card {
     flex: 0 0 100%; /* 1 card visible on phones */
