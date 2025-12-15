@@ -203,9 +203,13 @@ export default {
 
 .section-title {
   font-size: 1.8rem;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 24px;
-  color: #111827;
+
+  /* TopNav style */
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--nav-text);
 }
 
 .categories-wrapper {
@@ -336,14 +340,20 @@ export default {
   margin: 0;
   padding: 1rem;
   text-align: center;
+
+  /* keep white on overlay */
   color: #ffffff;
-  font-size: 1.25rem;
+
+  /* TopNav style */
+  /* text-transform: uppercase; */
+  letter-spacing: 0.04em;
   font-weight: 700;
+
+  font-size: 1.25rem; /* keep your current size (change to 13px if you want exact navbar size) */
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
   transition: transform 0.3s ease;
-  pointer-events: none; /* Let clicks pass through */
+  pointer-events: none;
 }
-
 .category-card:hover .card-title {
   transform: scale(1.05); /* Slight text scale */
 }
@@ -432,5 +442,15 @@ export default {
   .nav-button {
     background: rgba(255,255,255,0.9);
   }
+}
+
+
+.shop-categories{
+  --nav-text: #12355a;
+  --nav-muted: #6b7280;
+  --nav-primary: #0b3c80;
+
+  font-family: inherit; /* ensures it follows the same font as the page/navbar */
+  color: var(--nav-text);
 }
 </style>
