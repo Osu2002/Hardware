@@ -31,7 +31,7 @@ class HomeController extends Controller
                 $q->where('status', 1)
                     ->with('media')
                     ->orderBy('created_at', 'desc')
-                    ->take(8);
+                    ->take(10);
             },
         ])
         ->get()
@@ -44,7 +44,7 @@ class HomeController extends Controller
                 'slug'     => $c->slug,
                 'featured' => (bool) $c->featured,
                 'image'    => $img,
-                
+
                  'subcategories' => $c->subcategories->map(fn($s) => [
                 'id' => $s->id,
                 'title' => $s->title,
