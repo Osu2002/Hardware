@@ -3,15 +3,15 @@
     <div class="special-offers-inner">
       <!-- LEFT STATIC PANEL -->
       <div class="special-panel">
-        <span class="special-badge">SALE</span>
+        <span class="special-badge">Limited Time</span>
 
         <h2 class="special-title">
-          SPECIAL<br />
-          OFFERS
+          EXCLUSIVE <br />
+          DEALS
         </h2>
 
         <button class="special-cta">
-          SHOP NOW
+         GRAB IT NOW
         </button>
       </div>
 
@@ -215,39 +215,33 @@ export default {
      * 3. discount_type + discounted_amount (percent/amount)
      */
     discountBadgeFor(offer) {
-      // 1. Direct label from backend
-      if (offer.discountLabel) {
-        return offer.discountLabel;
-      }
+  // 1) Prefer computing % from old vs current price
+  const original = this.oldPrice(offer);
+  const current = this.currentPrice(offer);
 
-      // 2. Calculate from prices
-      const original = this.oldPrice(offer);
-      const current = this.currentPrice(offer);
+  if (original && current && original > current) {
+    const percent = Math.round(((original - current) / original) * 100);
+    return percent > 0 ? `-${percent}%` : null;
+  }
 
-      if (original && current && original > current) {
-        const diff = original - current;
-        const percent = original > 0 ? Math.round((diff / original) * 100) : 0;
-        if (percent > 0) {
-          return `-${percent}%`;
-        }
-      }
+  // 2) Fallback: explicit percent from backend fields
+  if (
+    offer.discount_status &&
+    offer.discount_type === 'percent' &&
+    Number(offer.discounted_amount) > 0
+  ) {
+    return `-${Math.round(Number(offer.discounted_amount))}%`;
+  }
 
-      // 3. Fallback using discount_type / discounted_amount
-      if (
-        offer.discount_status &&
-        offer.discount_type &&
-        offer.discounted_amount > 0
-      ) {
-        if (offer.discount_type === 'percent') {
-          return `-${offer.discounted_amount}%`;
-        }
-        if (offer.discount_type === 'amount') {
-          return `-Rs. ${this.formatCurrency(offer.discounted_amount)}`;
-        }
-      }
+  // 3) Last fallback: extract a number from "DISCOUNT 80%" and convert to "-80%"
+  if (offer.discountLabel) {
+    const m = String(offer.discountLabel).match(/(\d+(?:\.\d+)?)/);
+    if (m) return `-${Math.round(Number(m[1]))}%`;
+  }
 
-      return null;
-    },
+  return null;
+}
+,
   },
 };
 </script>
@@ -274,7 +268,7 @@ export default {
 
 /* LEFT PANEL */
 .special-panel {
-  background: #001c80;
+  background: #041553;
   color: #ffffff;
   padding: 40px 32px;
   display: flex;
@@ -378,18 +372,7 @@ export default {
 }
 
 /* DISCOUNT BADGE */
-.offer-discount {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: #7c3aed; /* purple */
-  color: #ffffff;
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 8px 12px;
-  border-radius: 999px;
-  box-shadow: 0 4px 10px rgba(76, 29, 149, 0.4);
-}
+
 
 /* NAME + PRICE */
 .offer-name {
@@ -492,6 +475,21 @@ export default {
   top: 10px;
   left: 10px;
   z-index: 2;
+
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+
+  background: #1a175c; /* light red */
+  color: #f9f7f7;      /* red text */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(185, 28, 28, 0.18);
 }
 
 
