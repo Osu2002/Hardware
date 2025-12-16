@@ -257,6 +257,12 @@ export default {
   margin: 40px 0;
 }
 
+.special-offers .offer-price .old {
+  text-decoration: line-through !important;
+  text-decoration-thickness: 2px;
+  text-decoration-color: currentColor;
+}
+
 .special-offers-inner {
   display: grid;
   grid-template-columns: 320px 18px minmax(0, 1fr);
