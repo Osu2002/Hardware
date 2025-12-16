@@ -54,21 +54,44 @@ class HomeController extends Controller
 
                 // 8 products for this category
                 'products' => $c->products->map(function ($p) {
-                    $thumb = optional($p->getFirstMedia('product_images'))->getUrl();
+    $thumb = optional($p->getFirstMedia('product_images'))->getUrl();
 
-                    return [
-                        'id'           => $p->id,
-                        'name'         => $p->name,
-                        'slug'         => $p->slug,
-                        'image'        => $thumb,
-                        'price'        => $p->sale_price ?? $p->price,
-                        'regular_price'=> $p->price,
-                        'sale_price'   => $p->sale_price,
-                        'is_new'       => $p->created_at
-                            ? $p->created_at->gt(now()->subDays(30))
-                            : false,
-                    ];
-                })->values(),
+    $basePrice = (float) ($p->price ?? 0);   // original price
+    $currentPrice = $basePrice;             // discounted price
+    $discountPercent = 0;
+
+    // SAME discount logic as SpecialOffers
+    if ((int) $p->discount_status === 1 && $p->discount_type && (float) $p->discounted_amount > 0) {
+        if ($p->discount_type === 'percent') {
+            $discountPercent = (int) round((float) $p->discounted_amount);
+            $currentPrice = max(0, $basePrice * (1 - ($discountPercent / 100)));
+        } elseif ($p->discount_type === 'amount') {
+            $amount = (float) $p->discounted_amount;
+            $currentPrice = max(0, $basePrice - $amount);
+            $discountPercent = $basePrice > 0 ? (int) round(($amount / $basePrice) * 100) : 0;
+        }
+    }
+
+    return [
+        'id'   => $p->id,
+        'name' => $p->name,
+        'slug' => $p->slug,
+        'image'=> $thumb,
+
+        // IMPORTANT: send old & new like CategoryNav expects
+        'regular_price'    => round($basePrice, 2),       // OLD price
+        'price'            => round($currentPrice, 2),    // NEW price
+        'discount_percent' => $discountPercent,
+
+        // optional (useful if you want later)
+        'discount_status'   => (int) $p->discount_status,
+        'discount_type'     => $p->discount_type,
+        'discounted_amount' => (float) $p->discounted_amount,
+
+        'is_new' => $p->created_at ? $p->created_at->gt(now()->subDays(30)) : false,
+    ];
+})->values(),
+
             ];
         })
         ->values();

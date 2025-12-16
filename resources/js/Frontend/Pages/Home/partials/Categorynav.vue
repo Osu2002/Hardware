@@ -205,61 +205,37 @@ export default {
       }
     },
 
-    // ---------- DISCOUNT LOGIC ----------
-    discountPercent(product) {
-      const raw =
-        product?.discount_percent ??
-        product?.discount_percentage ??
-        product?.discount ??
-        product?.discountRate ??
-        null;
+   // ---------- DISCOUNT LOGIC ----------
+// ---------- DISCOUNT LOGIC ----------
+discountPercent(product) {
+  // backend computed percent (best)
+  const p = Number(product?.discount_percent);
+  if (Number.isFinite(p) && p > 0) return Math.round(p);
 
-      let p = Number(raw);
-      if (Number.isFinite(p) && p > 0) return Math.round(p);
+  // fallback compute from prices
+  const oldP = Number(product?.regular_price);
+  const nowP = Number(product?.price);
+  if (Number.isFinite(oldP) && oldP > 0 && Number.isFinite(nowP) && nowP > 0 && nowP < oldP) {
+    return Math.round(((oldP - nowP) / oldP) * 100);
+  }
 
-      const oldP = Number(product?.old_price ?? product?.original_price);
-      const nowP = Number(product?.price ?? product?.sale_price ?? product?.discounted_price);
-      if (Number.isFinite(oldP) && oldP > 0 && Number.isFinite(nowP) && nowP > 0 && nowP < oldP) {
-        return Math.round(((oldP - nowP) / oldP) * 100);
-      }
+  return 0;
+},
 
-      return 0;
-    },
+basePrice(product) {
+  return Number(product?.regular_price ?? 0) || 0;
+},
 
-    basePrice(product) {
-      const oldP = Number(product?.old_price ?? product?.original_price);
-      const price = Number(product?.price);
-      const sale = Number(product?.sale_price ?? product?.discounted_price);
+currentPrice(product) {
+  return Number(product?.price ?? 0) || 0;
+},
 
-      // prefer explicit old/original if valid
-      if (Number.isFinite(oldP) && oldP > 0) return oldP;
+hasDiscount(product) {
+  const base = this.basePrice(product);
+  const now = this.currentPrice(product);
+  return base > 0 && now > 0 && now < base && this.discountPercent(product) > 0;
+},
 
-      // if sale exists and is less than price, treat price as base
-      if (Number.isFinite(price) && price > 0 && Number.isFinite(sale) && sale > 0 && sale < price) return price;
-
-      // fallback
-      return Number.isFinite(price) && price > 0 ? price : (Number.isFinite(sale) ? sale : 0);
-    },
-
-    currentPrice(product) {
-      const base = this.basePrice(product);
-      const sale = Number(product?.sale_price ?? product?.discounted_price);
-      if (Number.isFinite(sale) && sale > 0 && sale < base) return sale;
-
-      const p = this.discountPercent(product);
-      if (p > 0 && Number.isFinite(base) && base > 0) {
-        return Math.max(0, base * (1 - p / 100));
-      }
-
-      return base;
-    },
-
-    hasDiscount(product) {
-      const p = this.discountPercent(product);
-      const base = this.basePrice(product);
-      const now = this.currentPrice(product);
-      return p > 0 && Number.isFinite(base) && Number.isFinite(now) && now < base;
-    },
 
     // ---------- UI HELPERS ----------
     truncateName(name) {
