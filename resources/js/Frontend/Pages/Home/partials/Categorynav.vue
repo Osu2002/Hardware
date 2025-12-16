@@ -68,9 +68,9 @@
                   <div class="card-price-row">
                     <div class="card-price-stack">
                       <!-- OLD PRICE -->
-                      <div v-if="hasDiscount(product)" class="card-old-price">
-                        Rs{{ formatPrice(basePrice(product)) }}
-                      </div>
+                      <del v-if="hasDiscount(product)" class="card-old-price">
+  Rs{{ formatPrice(basePrice(product)) }}
+</del>
 
                       <!-- NEW / CURRENT PRICE -->
                       <div class="card-price">
@@ -458,8 +458,32 @@ hasDiscount(product) {
   color: #6b7280;
   font-weight: 600;
   font-size: 0.78rem;
-  text-decoration: line-through;
+
+  text-decoration: line-through !important;
+  text-decoration-thickness: 2px;
+  text-decoration-color: currentColor;
+
+  display: inline-block; /* helps rendering cleanly */
 }
+.card-old-price {
+  position: relative;
+  display: inline-block;
+  color: #979ca49e;
+  font-weight: 600;
+  font-size: 0.78rem;
+}
+
+.card-old-price::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: currentColor;
+  transform: translateY(-50%);
+}
+
 
 .card-price {
   color: #f97316;
