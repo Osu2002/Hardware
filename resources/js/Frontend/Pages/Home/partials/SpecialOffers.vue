@@ -324,6 +324,49 @@ updateNavState() {
   margin-bottom: 32px;
 }
 
+/* ===== Typography to match TopNavbar (mitem / mtext-btn style) ===== */
+.special-offers {
+  font-family: inherit; /* same global font as navbar */
+}
+
+/* match navbar vibe: uppercase + tracking + bold */
+.special-badge,
+.special-cta,
+.offer-name {
+ 
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+/* navbar uses smaller uppercase label style */
+.special-badge {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+}
+
+/* navbar-like button text */
+.special-cta {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+/* product name in navbar style */
+.offer-name {
+  font-size: 13px;      /* similar to navbar menu size */
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* prices: keep your colors, just align weight a bit */
+.offer-price .current {
+  font-weight: 500;
+}
+.offer-price .old {
+  font-weight: 500;
+}
+
+
 .special-cta {
   align-self: flex-start;
   padding: 10px 28px;
@@ -451,7 +494,7 @@ updateNavState() {
 /* NEW PRICE (purple, bold) */
 .offer-price .current {
   display: block;
-  font-weight: 700;
+  font-weight: 500;
   color: #4c1d95;
 }
 
