@@ -748,4 +748,86 @@ export default {
     --card-basis: 100%;
   }
 }
+
+/* mobile: smaller cards + swipe + snap */
+@media (max-width: 768px) {
+  .catnav-arrows {
+    display: none !important;
+  }
+
+  .catnav-slider {
+    --gap: 8px;
+
+    /* keep ~2 visible but make them feel smaller (slightly narrower + tighter spacing) */
+    --card-basis: clamp(150px, 44vw, 185px);
+  }
+
+  .slider-track {
+    padding: 0 8px;
+  }
+
+  .product-card {
+    scroll-snap-stop: always;
+  }
+
+  /* tighten vertical size */
+  .card-image-wrapper {
+    padding-top: 62%;
+  }
+
+  .card-body {
+    padding: 8px 8px 4px;
+  }
+
+  .card-title {
+    font-size: 0.78rem;
+    min-height: 2.4em;
+  }
+
+  .card-price {
+    font-size: 0.86rem;
+  }
+
+  .card-old-price {
+    font-size: 0.72rem;
+  }
+
+  .card-footer {
+    padding: 6px 8px 8px;
+    gap: 8px;
+  }
+
+  .btn-heart {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+
+  .heart-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .btn-buy {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+  }
+
+  .badge-discount {
+    width: 38px;
+    height: 38px;
+    font-size: 0.72rem;
+    right: 6px;
+    top: 6px;
+  }
+}
+
+/* very small: still effectively 1 at a time, but not oversized */
+@media (max-width: 480px) {
+  .catnav-slider {
+    --card-basis: clamp(180px, 78vw, 260px);
+  }
+}
+
 </style>
