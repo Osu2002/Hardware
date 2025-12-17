@@ -29,8 +29,9 @@
           ‹
         </button>
 
-        <div class="offers-viewport">
-          <div class="offers-track" :style="trackStyle">
+       <div class="offers-viewport" ref="viewport" @scroll.passive="onViewportScroll">
+  <div class="offers-track">
+
            <div
   v-for="offer in offers"
   :key="offer.id"
@@ -116,40 +117,72 @@ export default {
 
   data() {
     return {
-      visibleCount: 4, // how many cards visible at once (desktop)
-      currentIndex: 0,
-    };
+  canPrev: false,
+  canNext: false,
+  _raf: null,
+};
+
   },
 
   computed: {
-    maxIndex() {
-      return Math.max(0, this.offers.length - this.visibleCount);
-    },
-    atStart() {
-      return this.currentIndex === 0;
-    },
-    atEnd() {
-      return this.currentIndex >= this.maxIndex;
-    },
-    trackStyle() {
-      const step = 100 / this.visibleCount;
-      return {
-        transform: `translateX(-${this.currentIndex * step}%)`,
-      };
-    },
+  atStart() {
+    return !this.canPrev;
   },
+  atEnd() {
+    return !this.canNext;
+  },
+},
+
+mounted() {
+  this.$nextTick(() => {
+    this.updateNavState();
+    window.addEventListener('resize', this.updateNavState, { passive: true });
+  });
+},
+
+beforeUnmount() {
+  window.removeEventListener('resize', this.updateNavState);
+  if (this._raf) cancelAnimationFrame(this._raf);
+},
+
 
   methods: {
-    next() {
-      if (!this.atEnd) {
-        this.currentIndex += 1;
-      }
-    },
-    prev() {
-      if (!this.atStart) {
-        this.currentIndex -= 1;
-      }
-    },
+   next() {
+  const vp = this.$refs.viewport;
+  if (!vp) return;
+
+  const card = vp.querySelector('.offer-card');
+  const step = card ? card.getBoundingClientRect().width : vp.clientWidth;
+
+  vp.scrollBy({ left: step, behavior: 'smooth' });
+},
+
+prev() {
+  const vp = this.$refs.viewport;
+  if (!vp) return;
+
+  const card = vp.querySelector('.offer-card');
+  const step = card ? card.getBoundingClientRect().width : vp.clientWidth;
+
+  vp.scrollBy({ left: -step, behavior: 'smooth' });
+},
+
+onViewportScroll() {
+  if (this._raf) cancelAnimationFrame(this._raf);
+  this._raf = requestAnimationFrame(() => this.updateNavState());
+},
+
+updateNavState() {
+  const vp = this.$refs.viewport;
+  if (!vp) return;
+
+  const left = vp.scrollLeft;
+  const maxLeft = vp.scrollWidth - vp.clientWidth;
+
+  this.canPrev = left > 2;
+  this.canNext = left < maxLeft - 2;
+},
+
 
     formatCurrency(value) {
       if (value == null) return '';
@@ -330,21 +363,45 @@ export default {
 /* SLIDER AREA */
 .offers-slider {
   position: relative;
-  padding: 26px 40px 30px;
+  padding: 26px 16px 30px; /* less padding on sides */
   background: #ffffff;
-  display: flex;
-  align-items: center;
 }
 
+
 .offers-viewport {
-  overflow: hidden;
   width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+
+  scrollbar-width: none;
 }
+
+.offers-viewport::-webkit-scrollbar {
+  display: none;
+}
+
 
 .offers-track {
   display: flex;
-  transition: transform 0.3s ease;
+  gap: 0; /* keep your padding spacing */
 }
+.offer-card {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+@media (max-width: 768px) {
+  .nav-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
+  }
+}
+
 
 /* CARD */
 .offer-card {
@@ -407,21 +464,32 @@ export default {
   color: #9ca3af;
 }
 
-/* NAV BUTTONS */
 .nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+
   border: none;
   background: rgba(17, 24, 39, 0.06);
   width: 32px;
   height: 32px;
   border-radius: 999px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   font-size: 18px;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.15s ease;
-  margin: 0 6px;
+
+  margin: 0; /* IMPORTANT: remove margin so it won't push layout */
 }
+
+.nav-btn.prev { left: 10px; }
+.nav-btn.next { right: 10px; }
+
 
 .nav-btn:hover:not(:disabled) {
   background: rgba(17, 24, 39, 0.15);
@@ -458,6 +526,38 @@ export default {
   }
 }
 
+@media (max-width: 768px) {
+  .nav-btn { display: none; }
+
+  .offers-slider { padding: 20px 0; }
+
+  .offers-track { padding: 0 14px; }
+
+  .offer-card {
+    flex: 0 0 72%;       /* smaller than 85% */
+    max-width: 320px;    /* stops being too big on tablets/large phones */
+    padding: 0 8px;
+    scroll-snap-align: center;
+  }
+
+  .offer-image-wrapper {
+    padding-top: 58%;    /* reduce image height */
+  }
+}
+
+@media (max-width: 480px) {
+  .offer-card {
+    flex: 0 0 78%;       /* phone size */
+    max-width: 280px;    /* even smaller on phones */
+  }
+
+  .offer-image-wrapper {
+    padding-top: 55%;
+  }
+}
+
+
+
 .offer-image-wrapper {
   position: relative;
 }
@@ -493,9 +593,5 @@ export default {
 }
 
 
-@media (max-width: 480px) {
-  .offer-card {
-    flex: 0 0 100%; /* 1 card visible on phones */
-  }
-}
+
 </style>
