@@ -8,15 +8,14 @@
       <div class="catnav-header">
         <h2 class="catnav-heading">{{ category.title }}</h2>
 
-        <div
-          class="catnav-arrows"
-          v-if="displayProducts(category).length > visibleCount"
-        >
+        <div class="catnav-arrows" v-if="shouldShowArrows(category)">
           <button
             type="button"
             class="nav-btn"
             @click="prevSlide(category)"
             :disabled="atStart(category)"
+            aria-label="Previous"
+            title="Previous"
           >
             «
           </button>
@@ -25,6 +24,8 @@
             class="nav-btn"
             @click="nextSlide(category)"
             :disabled="atEnd(category)"
+            aria-label="Next"
+            title="Next"
           >
             »
           </button>
@@ -32,8 +33,11 @@
       </div>
 
       <div class="catnav-slider">
-        <div class="slider-viewport">
-          <div class="slider-track" :style="trackStyle(category)">
+        <div
+          class="slider-viewport"
+          :ref="(el) => setViewportRef(category.id, el)"
+        >
+          <div class="slider-track">
             <article
               v-for="product in displayProducts(category)"
               :key="product.id"
@@ -57,6 +61,7 @@
                     :src="product.image"
                     :alt="product.name"
                     class="card-image"
+                    loading="lazy"
                   />
                 </div>
 
@@ -69,8 +74,8 @@
                     <div class="card-price-stack">
                       <!-- OLD PRICE -->
                       <del v-if="hasDiscount(product)" class="card-old-price">
-  Rs{{ formatPrice(basePrice(product)) }}
-</del>
+                        Rs{{ formatPrice(basePrice(product)) }}
+                      </del>
 
                       <!-- NEW / CURRENT PRICE -->
                       <div class="card-price">
@@ -91,14 +96,17 @@
                     title="Wishlist"
                   >
                     <svg viewBox="0 0 24 24" class="heart-icon" aria-hidden="true">
-                     <path
-  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-/>
-
+                      <path
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                      />
                     </svg>
                   </button>
 
-                  <button type="button" class="btn-buy" @click.stop="goToProduct(product.slug)">
+                  <button
+                    type="button"
+                    class="btn-buy"
+                    @click.stop="goToProduct(product.slug)"
+                  >
                     BUY
                   </button>
                 </div>
@@ -124,10 +132,21 @@ export default {
 
   data() {
     return {
-      visibleCount: 5,
       maxPerCategory: 8,
-      sliderIndex: {},
-      wished: new Set(), // local wishlist state (optional)
+      wished: new Set(),
+
+      // viewport + scroll state per category
+      viewportRefs: {}, // { [categoryId]: HTMLElement }
+      scrollMeta: {}, // { [categoryId]: { canScroll, atStart, atEnd } }
+
+      // mobile flag (also backed by CSS media query)
+      isMobile: false,
+
+      // internals
+      _mql: null,
+      _mqlHandler: null,
+      _scrollRaf: {}, // { [categoryId]: rafId }
+      _scrollHandlers: {}, // { [categoryId]: fn }
     };
   },
 
@@ -142,100 +161,224 @@ export default {
   watch: {
     categories: {
       handler() {
-        this.ensureIndices();
+        this.$nextTick(() => this.refreshAllScrollMeta());
       },
       immediate: true,
     },
   },
 
+  mounted() {
+    this.setupMobileWatcher();
+    this.$nextTick(() => this.refreshAllScrollMeta());
+
+    // keep arrow state accurate on resize (card basis changes with breakpoints)
+    window.addEventListener('resize', this.refreshAllScrollMeta, { passive: true });
+  },
+
+  beforeUnmount() {
+    this.teardown();
+  },
+
+  // Vue 2 fallback
+  beforeDestroy() {
+    this.teardown();
+  },
+
   methods: {
-    ensureIndices() {
-      const next = {};
-      (this.categories || []).forEach((cat) => {
-        const id = cat.id;
-        next[id] = this.sliderIndex[id] || 0;
-      });
-      this.sliderIndex = next;
+    // ---- reactive helpers (Vue 2 + Vue 3 safe) ----
+    _set(obj, key, val) {
+      if (this.$set) this.$set(obj, key, val);
+      else obj[key] = val;
+    },
+    _del(obj, key) {
+      if (this.$delete) this.$delete(obj, key);
+      else delete obj[key];
     },
 
+    // ---- category products ----
     displayProducts(category) {
       const list = Array.isArray(category.products) ? category.products : [];
       return list.slice(0, this.maxPerCategory);
     },
 
-    getIndex(category) {
-      return this.sliderIndex[category.id] || 0;
+    // ---- viewport refs (required approach) ----
+    setViewportRef(categoryId, el) {
+      const id = String(categoryId);
+
+      // unmount / v-if cleanup
+      if (!el) {
+        const prev = this.viewportRefs[id];
+        if (prev && this._scrollHandlers[id]) {
+          prev.removeEventListener('scroll', this._scrollHandlers[id]);
+        }
+        this._del(this.viewportRefs, id);
+        this._del(this.scrollMeta, id);
+        delete this._scrollHandlers[id];
+        if (this._scrollRaf[id]) cancelAnimationFrame(this._scrollRaf[id]);
+        delete this._scrollRaf[id];
+        return;
+      }
+
+      // ignore same element
+      if (this.viewportRefs[id] === el) return;
+
+      // detach old
+      const prev = this.viewportRefs[id];
+      if (prev && this._scrollHandlers[id]) {
+        prev.removeEventListener('scroll', this._scrollHandlers[id]);
+      }
+
+      // store ref
+      this._set(this.viewportRefs, id, el);
+
+      // attach scroll listener (throttled with rAF)
+      const onScroll = () => {
+        if (this._scrollRaf[id]) return;
+        this._scrollRaf[id] = requestAnimationFrame(() => {
+          this._scrollRaf[id] = null;
+          this.updateScrollMeta(id);
+        });
+      };
+      this._scrollHandlers[id] = onScroll;
+      el.addEventListener('scroll', onScroll, { passive: true });
+
+      // initial state
+      this.$nextTick(() => this.updateScrollMeta(id));
     },
 
-    maxIndex(category) {
-      const len = this.displayProducts(category).length;
-      return Math.max(0, len - this.visibleCount);
+    refreshAllScrollMeta() {
+      (this.normalizedCategories || []).forEach((cat) => {
+        this.updateScrollMeta(String(cat.id));
+      });
+    },
+
+    updateScrollMeta(categoryId) {
+      const id = String(categoryId);
+      const el = this.viewportRefs[id];
+      if (!el) return;
+
+      const maxLeft = Math.max(0, el.scrollWidth - el.clientWidth);
+      const left = el.scrollLeft;
+
+      // small thresholds for fractional scrollLeft / snap
+      const EPS = 2;
+
+      const canScroll = maxLeft > EPS;
+      const atStart = !canScroll || left <= EPS;
+      const atEnd = !canScroll || left >= maxLeft - EPS;
+
+      this._set(this.scrollMeta, id, { canScroll, atStart, atEnd });
+    },
+
+    // ---- arrows + scrolling ----
+    shouldShowArrows(category) {
+      if (this.isMobile) return false;
+
+      const id = String(category.id);
+      const meta = this.scrollMeta[id];
+
+      // fallback heuristic until meta is computed
+      if (!meta) return this.displayProducts(category).length > 5;
+
+      return !!meta.canScroll;
     },
 
     atStart(category) {
-      return this.getIndex(category) === 0;
+      const meta = this.scrollMeta[String(category.id)];
+      return meta ? meta.atStart : true;
     },
 
     atEnd(category) {
-      return this.getIndex(category) >= this.maxIndex(category);
-    },
-
-    trackStyle(category) {
-      const products = this.displayProducts(category);
-      const total = products.length || 1;
-      const index = this.getIndex(category);
-      const step = 100 / total;
-      const offset = index * step;
-
-      return { transform: `translateX(-${offset}%)` };
+      const meta = this.scrollMeta[String(category.id)];
+      return meta ? meta.atEnd : true;
     },
 
     nextSlide(category) {
-      const current = this.getIndex(category);
-      const max = this.maxIndex(category);
-      if (current < max) {
-        this.sliderIndex = { ...this.sliderIndex, [category.id]: current + 1 };
-      }
+      const el = this.viewportRefs[String(category.id)];
+      if (!el) return;
+
+      const delta = Math.max(220, Math.floor(el.clientWidth * 0.9));
+      el.scrollBy({ left: delta, behavior: 'smooth' });
     },
 
     prevSlide(category) {
-      const current = this.getIndex(category);
-      if (current > 0) {
-        this.sliderIndex = { ...this.sliderIndex, [category.id]: current - 1 };
-      }
+      const el = this.viewportRefs[String(category.id)];
+      if (!el) return;
+
+      const delta = Math.max(220, Math.floor(el.clientWidth * 0.9));
+      el.scrollBy({ left: -delta, behavior: 'smooth' });
     },
 
-   // ---------- DISCOUNT LOGIC ----------
-// ---------- DISCOUNT LOGIC ----------
-discountPercent(product) {
-  // backend computed percent (best)
-  const p = Number(product?.discount_percent);
-  if (Number.isFinite(p) && p > 0) return Math.round(p);
+    // ---- mobile watcher (optional, plus CSS hides arrows too) ----
+    setupMobileWatcher() {
+      if (typeof window === 'undefined' || !window.matchMedia) return;
 
-  // fallback compute from prices
-  const oldP = Number(product?.regular_price);
-  const nowP = Number(product?.price);
-  if (Number.isFinite(oldP) && oldP > 0 && Number.isFinite(nowP) && nowP > 0 && nowP < oldP) {
-    return Math.round(((oldP - nowP) / oldP) * 100);
-  }
+      this._mql = window.matchMedia('(max-width: 768px)');
+      const apply = (matches) => {
+        this.isMobile = !!matches;
+        this.$nextTick(() => this.refreshAllScrollMeta());
+      };
 
-  return 0;
-},
+      apply(this._mql.matches);
 
-basePrice(product) {
-  return Number(product?.regular_price ?? 0) || 0;
-},
+      this._mqlHandler = (e) => apply(e.matches);
 
-currentPrice(product) {
-  return Number(product?.price ?? 0) || 0;
-},
+      if (this._mql.addEventListener) this._mql.addEventListener('change', this._mqlHandler);
+      else if (this._mql.addListener) this._mql.addListener(this._mqlHandler);
+    },
 
-hasDiscount(product) {
-  const base = this.basePrice(product);
-  const now = this.currentPrice(product);
-  return base > 0 && now > 0 && now < base && this.discountPercent(product) > 0;
-},
+    teardown() {
+      window.removeEventListener('resize', this.refreshAllScrollMeta);
 
+      if (this._mql && this._mqlHandler) {
+        if (this._mql.removeEventListener) this._mql.removeEventListener('change', this._mqlHandler);
+        else if (this._mql.removeListener) this._mql.removeListener(this._mqlHandler);
+      }
+
+      Object.keys(this.viewportRefs || {}).forEach((id) => {
+        const el = this.viewportRefs[id];
+        const fn = this._scrollHandlers[id];
+        if (el && fn) el.removeEventListener('scroll', fn);
+      });
+
+      Object.keys(this._scrollRaf || {}).forEach((id) => {
+        if (this._scrollRaf[id]) cancelAnimationFrame(this._scrollRaf[id]);
+      });
+    },
+
+    // ---------- DISCOUNT LOGIC ----------
+    discountPercent(product) {
+      const p = Number(product?.discount_percent);
+      if (Number.isFinite(p) && p > 0) return Math.round(p);
+
+      const oldP = Number(product?.regular_price);
+      const nowP = Number(product?.price);
+      if (
+        Number.isFinite(oldP) &&
+        oldP > 0 &&
+        Number.isFinite(nowP) &&
+        nowP > 0 &&
+        nowP < oldP
+      ) {
+        return Math.round(((oldP - nowP) / oldP) * 100);
+      }
+
+      return 0;
+    },
+
+    basePrice(product) {
+      return Number(product?.regular_price ?? 0) || 0;
+    },
+
+    currentPrice(product) {
+      return Number(product?.price ?? 0) || 0;
+    },
+
+    hasDiscount(product) {
+      const base = this.basePrice(product);
+      const now = this.currentPrice(product);
+      return base > 0 && now > 0 && now < base && this.discountPercent(product) > 0;
+    },
 
     // ---------- UI HELPERS ----------
     truncateName(name) {
@@ -261,9 +404,6 @@ hasDiscount(product) {
       else next.add(id);
 
       this.wished = next;
-
-      // If you want to tell parent:
-      // this.$emit('toggle-wishlist', { product, wished: next.has(id) });
     },
 
     isWished(product) {
@@ -334,31 +474,56 @@ hasDiscount(product) {
 
 .catnav-slider {
   position: relative;
+
+  /* responsive basis via CSS only (no translate math) */
+  --gap: 12px;
+  --card-basis: calc((100% - (var(--gap) * 4)) / 5); /* ~5 visible */
 }
 
+/* REQUIRED: real scroll container + snap + momentum */
 .slider-viewport {
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   width: 100%;
   padding: 6px 0;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+
+  /* makes end-of-list fully reachable + nicer snap offsets */
+  scroll-padding-left: 6px;
+  scroll-padding-right: 6px;
+
+  /* keep UI clean while still scrollable */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
+}
+
+.slider-viewport::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 .slider-track {
   display: flex;
-  transition: transform 0.3s ease;
+  gap: var(--gap);
+  padding: 0 6px; /* ensures last/first card can snap fully into view */
 }
 
 /* card */
 .product-card {
-  flex: 0 0 20%;
-  padding: 0 6px;
+  flex: 0 0 var(--card-basis);
   box-sizing: border-box;
   cursor: pointer;
+
+  scroll-snap-align: start;
 }
 
 .card-inner {
   background: #ffffff;
   border-radius: 8px;
-  border: 1px solid #e5e7eb; /* light ash border */
+  border: 1px solid #e5e7eb;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -366,12 +531,9 @@ hasDiscount(product) {
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-
 .product-card:hover .card-inner {
   transform: translateY(-2px);
-  /* border-color: #373a3d; */
 }
-
 
 .card-image-wrapper {
   position: relative;
@@ -454,17 +616,7 @@ hasDiscount(product) {
   align-items: center;
 }
 
-.card-old-price {
-  color: #6b7280;
-  font-weight: 600;
-  font-size: 0.78rem;
-
-  text-decoration: line-through !important;
-  text-decoration-thickness: 2px;
-  text-decoration-color: currentColor;
-
-  display: inline-block; /* helps rendering cleanly */
-}
+/* OLD PRICE (keep intact) */
 .card-old-price {
   position: relative;
   display: inline-block;
@@ -484,7 +636,6 @@ hasDiscount(product) {
   transform: translateY(-50%);
 }
 
-
 .card-price {
   color: #f97316;
   font-weight: 800;
@@ -494,7 +645,7 @@ hasDiscount(product) {
 .card-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* heart left, buy right */
+  justify-content: space-between;
   gap: 10px;
   padding: 8px 10px 10px;
   border-top: 1px solid #e5e7eb;
@@ -527,19 +678,12 @@ hasDiscount(product) {
 .heart-icon {
   width: 18px;
   height: 18px;
-  fill: #ef4444;
   display: block;
-}
-
-.heart-icon {
-  width: 18px;
-  height: 18px;
-  display: block; /* prevents weird inline spacing */
 }
 
 /* default = outline heart */
 .btn-heart {
-  color: #9ca3af; /* grey */
+  color: #9ca3af;
 }
 
 .btn-heart .heart-icon {
@@ -550,14 +694,13 @@ hasDiscount(product) {
 
 /* active = filled heart */
 .btn-heart.active {
-  color: #ef4444; /* red */
+  color: #ef4444;
 }
 
 .btn-heart.active .heart-icon {
   fill: currentColor;
   stroke: none;
 }
-
 
 .btn-buy {
   background: #22c55e;
@@ -576,28 +719,33 @@ hasDiscount(product) {
   transform: translateY(-1px);
 }
 
-/* responsive */
+/* tablet: ~3 visible */
 @media (max-width: 1024px) {
-  .product-card {
-    flex: 0 0 33.333%;
+  .catnav-slider {
+    --card-basis: calc((100% - (var(--gap) * 2)) / 3);
   }
 }
 
+/* mobile: hide arrows + smaller cards + swipe + snap */
 @media (max-width: 768px) {
-  .catnav-header {
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
+  .catnav-arrows {
+    display: none !important;
+  }
+
+  .catnav-slider {
+    --gap: 10px;
+    --card-basis: calc((100% - var(--gap)) / 2); /* ~2 visible */
   }
 
   .product-card {
-    flex: 0 0 50%;
+    scroll-snap-stop: always;
   }
 }
 
+/* very small: 1 visible */
 @media (max-width: 480px) {
-  .product-card {
-    flex: 0 0 100%;
+  .catnav-slider {
+    --card-basis: 100%;
   }
 }
 </style>
