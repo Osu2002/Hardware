@@ -194,12 +194,15 @@ export default {
 }
 
 /* Container limits width but allows grid to expand */
+/* Make CategoryBox container behave like SpecialOffers (full width) */
 .container {
-  max-width: 1400px; /* Large enough for 4 cols */
-  margin: 0 auto;
-  padding: 0 20px;
+  max-width: none;   /* remove 1400px cap */
+  width: 100%;
+  margin: 0;
+  padding: 0;        /* remove side padding */
   position: relative;
 }
+
 
 .section-title {
   font-size: 1.2rem;
