@@ -23,7 +23,9 @@ class HomeController extends Controller
    public function index(Request $request)
 {
     // Categories + 8 latest products for each
-    $categories = Category::where('status', 1)
+   $categories = Category::where('status', 1)
+    ->orderBy('id', 'asc') // or ->oldest()
+
         ->with([
             'media',
              'subcategories' => fn($q) => $q->where('status', 1)->orderBy('sort_order')->orderBy('title'),
@@ -97,7 +99,9 @@ class HomeController extends Controller
         ->values();
 
     // Brands / attributes stay as you already have:
-    $brands = Brand::where('status', 1)
+   $brands = Brand::where('status', 1)
+    ->orderBy('id', 'asc') // or ->oldest()
+
         ->with('media')
         ->get()
         ->map(function ($b) {

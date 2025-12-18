@@ -623,24 +623,13 @@ activeSubcategories() {
   return this.activeCategory?.subcategories || [];
 },
 
-        topCategories() {
-            const list = [...this.cats];
-            list.sort(
-                (a, b) =>
-                    (b.featured | 0) - (a.featured | 0) ||
-                    a.title.localeCompare(b.title)
-            );
-            return list.slice(0, 10);
-        },
-        topBrands() {
-            const list = [...this.brs];
-            list.sort(
-                (a, b) =>
-                    (b.featured | 0) - (a.featured | 0) ||
-                    a.title.localeCompare(b.title)
-            );
-            return list.slice(0, 10);
-        },
+      topCategories() {
+  return (this.cats || []).slice(0, 10);
+},
+topBrands() {
+  return (this.brs || []).slice(0, 10);
+},
+
         brandDropdown() {
             return this.topBrands.slice(0, 8);
         },
