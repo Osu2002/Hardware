@@ -55,9 +55,10 @@
                 />
               </div>
 
-              <div class="offer-name" :title="offer.name">
-                {{ offer.name }}
-              </div>
+          <div class="offer-name" :title="offer.name">
+  {{ truncateName(offer.name, 20) }}
+</div>
+
 
               <div class="offer-price">
                 <!-- OLD PRICE (STRIKED) -->
@@ -182,6 +183,13 @@ updateNavState() {
   this.canPrev = left > 2;
   this.canNext = left < maxLeft - 2;
 },
+
+truncateName(name, limit = 20) {
+  const str = String(name ?? '');
+  if (str.length <= limit) return str;
+  return str.slice(0, limit) + '...';
+},
+
 
 
     formatCurrency(value) {
