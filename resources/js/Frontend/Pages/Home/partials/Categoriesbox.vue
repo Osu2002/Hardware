@@ -34,12 +34,18 @@
 
       <div class="categories-wrapper">
         <!-- MODE: Slider (Active if > 8 items) -->
-        <div
-          v-if="isSliderActive"
-          class="slider-container"
-          ref="sliderViewport"
-        >
-          <div class="slider-track" :style="trackStyle">
+       <div
+  v-if="isSliderActive"
+  class="slider-container"
+  ref="sliderViewport"
+  @pointerdown="onPointerDown"
+  @pointermove="onPointerMove"
+  @pointerup="onPointerUp"
+  @pointercancel="onPointerUp"
+>
+  
+
+          <div class="slider-track" :class="{ dragging: isDragging }" :style="trackStyle">
             <div
               v-for="(page, pageIndex) in paginatedCategories"
               :key="pageIndex"
@@ -106,6 +112,24 @@
             </div>
           </div>
         </div>
+        <!-- Progress dots (only for slider mode) -->
+<div
+  v-if="isSliderActive && totalPages > 1"
+  class="slider-dots"
+  aria-label="Category pages"
+>
+  <button
+    v-for="n in totalPages"
+    :key="n - 1"
+    type="button"
+    class="dot"
+    :class="{ 'is-active': currentPage === (n - 1) }"
+    @click="goToPage(n - 1)"
+    :aria-label="`Go to page ${n}`"
+    :aria-current="currentPage === (n - 1) ? 'page' : null"
+  ></button>
+</div>
+
       </div>
 
     </div>
@@ -131,6 +155,14 @@ export default {
 
       // NEW: creates “space between page 1 and page 2” (your 8th vs 9th/10th)
       pageGap: 24,
+      isDragging: false,
+dragX: 0,
+startX: 0,
+startY: 0,
+dragAxis: null,       // 'x' | 'y' | null
+pointerId: null,
+justDragged: false,
+    
     };
   },
   computed: {
@@ -162,14 +194,18 @@ export default {
 
     // NEW: correct track movement (no peeking)
     trackStyle() {
-      const step = (this.viewportWidth || 0) + this.pageGap;
-      const offset = this.currentPage * step;
+  const step = (this.viewportWidth || 0) + this.pageGap;
+  const baseOffset = this.currentPage * step;
 
-      return {
-        transform: `translateX(-${offset}px)`,
-        gap: `${this.pageGap}px`, // space between page 1 and page 2
-      };
-    },
+  // while dragging, apply live drag offset
+  const live = this.isDragging ? this.dragX : 0;
+
+  return {
+    transform: `translateX(-${baseOffset - live}px)`,
+    gap: `${this.pageGap}px`,
+  };
+},
+
   },
   watch: {
     itemsPerPage() {
@@ -205,10 +241,92 @@ export default {
     prevPage() {
       if (this.currentPage > 0) this.currentPage--;
     },
-    goToCategory(category) {
-      this.$inertia.visit(route('category.list', category.id));
-    },
+   goToCategory(category) {
+  if (this.justDragged) return; // stop clicks after swipe
+  this.$inertia.visit(route('category.list', category.id));
+},
+
+    onPointerDown(e) {
+  // left click or touch
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+  this.isDragging = true;
+  this.pointerId = e.pointerId;
+  this.startX = e.clientX;
+  this.startY = e.clientY;
+  this.dragX = 0;
+  this.dragAxis = null;
+
+  // capture pointer so move/up still fires even if finger leaves area
+  e.currentTarget.setPointerCapture?.(e.pointerId);
+},
+
+goToPage(i) {
+  const idx = Math.max(0, Math.min(this.totalPages - 1, i));
+  this.currentPage = idx;
+},
+
+
+onPointerMove(e) {
+  if (!this.isDragging) return;
+
+  const dx = e.clientX - this.startX;
+  const dy = e.clientY - this.startY;
+
+  // decide direction once (prevents breaking vertical page scroll)
+  if (!this.dragAxis) {
+    if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+
+    this.dragAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+
+    // if it’s vertical scroll, stop our drag immediately
+    if (this.dragAxis === 'y') {
+      this.isDragging = false;
+      this.dragX = 0;
+      return;
+    }
+  }
+
+  if (this.dragAxis !== 'x') return;
+
+  // prevent page from scrolling sideways while swiping slider
+  e.preventDefault?.();
+
+  const step = (this.viewportWidth || 0) + this.pageGap;
+  const max = step; // limit one page worth of drag
+
+  this.dragX = Math.max(-max, Math.min(max, dx));
+},
+
+onPointerUp(e) {
+  if (!this.isDragging) return;
+
+  const step = (this.viewportWidth || 0) + this.pageGap;
+
+  // swipe threshold: 20% of viewport or at least 60px
+  const threshold = Math.max(60, (this.viewportWidth || 0) * 0.2);
+
+  const moved = Math.abs(this.dragX) > 10;
+  if (moved) {
+    this.justDragged = true;
+    setTimeout(() => (this.justDragged = false), 250);
+  }
+
+  if (this.dragAxis === 'x' && Math.abs(this.dragX) >= threshold) {
+    if (this.dragX < 0) this.nextPage();
+    else this.prevPage();
+  }
+
+  this.isDragging = false;
+  this.dragX = 0;
+  this.dragAxis = null;
+
+  e.currentTarget.releasePointerCapture?.(this.pointerId);
+  this.pointerId = null;
+},
+
   },
+
 };
 </script>
 
@@ -434,4 +552,65 @@ export default {
   font-family: inherit;
   color: var(--nav-text);
 }
+
+/* enables smooth touch swiping without fighting page scroll */
+.slider-container {
+  touch-action: pan-y;     /* allow vertical scrolling, handle horizontal ourselves */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* remove transition during drag so it follows finger */
+.slider-track.dragging {
+  transition: none !important;
+  cursor: grabbing;
+}
+
+/* progress dots bar */
+/* dots row (no background wrapper) */
+.slider-dots {
+  margin: 14px auto 0;
+  width: fit-content;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;              /* no wrapper padding */
+  background: transparent; /* no wrapper background */
+  box-shadow: none;        /* no wrapper shadow */
+}
+
+
+/* inactive dots */
+/* inactive dots */
+.slider-dots .dot {
+  width: 10px;
+  height: 10px;
+  border: 0;
+  border-radius: 999px;
+
+  background: rgba(18, 53, 90, 0.25); /* light version of #12355a */
+  cursor: pointer;
+
+  transition: transform 0.18s ease, background 0.18s ease, width 0.18s ease;
+}
+
+/* active pill */
+.slider-dots .dot.is-active {
+  width: 34px;
+  background: #12355a; /* same active color */
+}
+
+/* hover */
+.slider-dots .dot:hover {
+  transform: translateY(-1px);
+  background: rgba(18, 53, 90, 0.4);
+}
+
+.slider-dots .dot:focus-visible {
+  outline: 2px solid rgba(18, 53, 90, 0.55);
+  outline-offset: 3px;
+}
+
+
 </style>
