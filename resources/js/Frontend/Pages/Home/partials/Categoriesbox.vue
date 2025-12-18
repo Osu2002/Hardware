@@ -202,8 +202,8 @@ export default {
 }
 
 .section-title {
-  font-size: 1.8rem;
-  font-weight: 800;
+  font-size: 1.2rem;
+  font-weight: 700;
   margin-bottom: 24px;
 
   /* TopNav style */
