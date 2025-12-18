@@ -98,6 +98,7 @@ class AttributeController extends Controller
         ]);
       }
     }
+    
     return redirect()->route('attribute.index');
   }
   public function edit(Attribute $attribute)

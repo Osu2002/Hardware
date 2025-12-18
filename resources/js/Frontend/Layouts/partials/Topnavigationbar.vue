@@ -247,54 +247,137 @@
                 </Link>
 
                 <!-- nav (desktop) -->
-                <nav class="mh-menu mh-menu-compact">
-                    <div class="mitem has-dd">
-                        <button
-                            type="button"
-                            class="mtext-btn"
-                            @click.stop="mega = !mega"
-                        >
-                            <span>CATEGORIES</span>
-                            <i class="fa-solid fa-chevron-down dd-icon"></i>
-                        </button>
-                    </div>
+               <nav class="mh-menu mh-menu-compact">
+  <!-- ✅ CATEGORIES (compact) -->
+  <div
+    class="mitem has-dd mh-cats"
+    @mouseenter="megaCompact = true"
+    @mouseleave="megaCompact = false; activeCatIdCompact = null"
+  >
+    <button
+      type="button"
+      class="mtext-btn mh-dd-btn"
+      :class="{ 'is-open': megaCompact }"
+      :aria-expanded="megaCompact ? 'true' : 'false'"
+      aria-haspopup="menu"
+      @click.stop="toggleMegaCompact"
+    >
+      <span>CATEGORIES</span>
+      <i class="fa-solid fa-chevron-down dd-icon" aria-hidden="true"></i>
+    </button>
 
-                    <Link
-                        :href="route('index')"
-                        class="mitem"
-                        :class="{ active: isActive('index') }"
-                    >
-                        HOME
-                    </Link>
+    <transition name="mh-mega">
+      <div
+        class="mega mh-mega"
+        :class="{ 'has-right': !!activeCategoryCompact }"
+        v-show="megaCompact"
+        role="menu"
+        aria-label="Categories"
+        @keydown="onMegaKeydownCompact"
+      >
+        <!-- LEFT: categories -->
+        <div class="mega-left" role="none">
+          <div
+            v-for="c in topCategories"
+            :key="c.id"
+            class="mega-item"
+            :class="{ active: Number(activeCatIdCompact) === Number(c.id) }"
+            @mouseenter="activeCatIdCompact = c.id"
+            role="none"
+          >
+            <Link
+              :href="categoryHref(c)"
+              class="mega-link"
+              role="menuitem"
+              @click="megaCompact = false"
+            >
+              <span class="mh-dd-text">{{ c.title }}</span>
+              <i
+                v-if="(c.subcategories || []).length"
+                class="fa-solid fa-chevron-right"
+                aria-hidden="true"
+              ></i>
+            </Link>
+          </div>
+        </div>
 
-                    <div class="mitem has-dd">
-                        <button
-                            type="button"
-                            class="mtext-btn"
-                            @click.stop="brandsOpen = !brandsOpen"
-                        >
-                            <span>BRANDS</span>
-                            <i class="fa-solid fa-chevron-down dd-icon"></i>
-                        </button>
-                    </div>
+        <!-- RIGHT: subcategories -->
+        <div class="mega-right" v-if="activeCategoryCompact" role="none">
+          <div class="mega-right-title" role="none">
+            {{ activeCategoryCompact.title }}
+          </div>
 
-                    <Link :href="route('index')" class="mitem">
-                        FEATURED
-                    </Link>
+          <div v-if="activeSubcategoriesCompact.length" class="mega-sublist" role="none">
+            <Link
+              v-for="s in activeSubcategoriesCompact"
+              :key="s.id"
+              :href="subcategoryHref(activeCategoryCompact, s)"
+              class="mega-sublink"
+              role="menuitem"
+              @click="megaCompact = false"
+            >
+              <span class="mh-dd-text">{{ s.title }}</span>
+            </Link>
+          </div>
 
-                    <Link :href="route('index')" class="mitem">
-    OFFERS
-</Link>
+          <div v-else class="mega-empty" role="none">No subcategories</div>
+        </div>
+      </div>
+    </transition>
+  </div>
 
+  <!-- HOME -->
+  <Link
+    :href="route('index')"
+    class="mitem"
+    :class="{ active: isActive('index') }"
+  >
+    HOME
+  </Link>
 
-                    <Link
-                        :href="route('contact')"
-                        class="mitem"
-                        :class="{ active: isActive('contact') }"
-                    >
-                        CONTACT
-                    </Link>
-                </nav>
+  <!-- ✅ BRANDS (compact) -->
+  <div
+    class="mitem has-dd"
+    @mouseenter="brandsOpenCompact = true"
+    @mouseleave="brandsOpenCompact = false"
+  >
+    <button
+      type="button"
+      class="mtext-btn"
+      :aria-expanded="brandsOpenCompact ? 'true' : 'false'"
+      aria-haspopup="menu"
+      @click.stop="brandsOpenCompact = !brandsOpenCompact"
+    >
+      <span>BRANDS</span>
+      <i class="fa-solid fa-chevron-down dd-icon" aria-hidden="true"></i>
+    </button>
+
+    <ul class="dd" v-show="brandsOpenCompact" role="menu" aria-label="Brands">
+      <li v-for="b in brandDropdown" :key="b.id" role="none">
+        <Link :href="brandHref(b)" role="menuitem" @click="brandsOpenCompact = false">
+          {{ b.title }}
+        </Link>
+      </li>
+      <li class="all" role="none">
+        <Link :href="route('index')" role="menuitem" @click="brandsOpenCompact = false">
+          All Brands
+        </Link>
+      </li>
+    </ul>
+  </div>
+
+  <Link :href="route('index')" class="mitem">FEATURED</Link>
+  <Link :href="route('index')" class="mitem">OFFERS</Link>
+
+  <Link
+    :href="route('contact')"
+    class="mitem"
+    :class="{ active: isActive('contact') }"
+  >
+    CONTACT
+  </Link>
+</nav>
+
 
                 <!-- Search + icons -->
                 <div class="mh-compact-right">
@@ -500,11 +583,14 @@ export default {
         return {
             q: "",
             mega: false,
+            megaCompact: false, 
             brandsOpen: false,
+             brandsOpenCompact: false,
             drawer: false,
             scrolled: false,
             acc: { product: true, brands: false },
             activeCatId: null,
+            activeCatIdCompact: null, 
         };
     },
     computed: {
@@ -517,6 +603,16 @@ export default {
         brs() {
             return this.brands ?? this.$page?.props?.brands ?? [];
         },
+
+         activeCategoryCompact() {      // ✅ add
+    if (!this.activeCatIdCompact) return null;
+    return (this.topCategories || []).find(
+      c => Number(c.id) === Number(this.activeCatIdCompact)
+    ) || null;
+  },
+  activeSubcategoriesCompact() { // ✅ add
+    return this.activeCategoryCompact?.subcategories || [];
+  },
 activeCategory() {
   if (!this.activeCatId) return null;
   return (this.topCategories || []).find(
@@ -527,24 +623,13 @@ activeSubcategories() {
   return this.activeCategory?.subcategories || [];
 },
 
-        topCategories() {
-            const list = [...this.cats];
-            list.sort(
-                (a, b) =>
-                    (b.featured | 0) - (a.featured | 0) ||
-                    a.title.localeCompare(b.title)
-            );
-            return list.slice(0, 10);
-        },
-        topBrands() {
-            const list = [...this.brs];
-            list.sort(
-                (a, b) =>
-                    (b.featured | 0) - (a.featured | 0) ||
-                    a.title.localeCompare(b.title)
-            );
-            return list.slice(0, 10);
-        },
+      topCategories() {
+  return (this.cats || []).slice(0, 10);
+},
+topBrands() {
+  return (this.brs || []).slice(0, 10);
+},
+
         brandDropdown() {
             return this.topBrands.slice(0, 8);
         },

@@ -5,7 +5,7 @@
       <div class="col-md-12">
         <div class="card mb-4">
           <div class="card-header pb-0">
-            <h5>Units of Measure (UoM)</h5>
+            <h5>Units of Measure </h5>
             <p>Manage UoMs.</p>
             <div class="d-flex">
               <Link class="btn btn-main btn-sm" :href="route('uom.create')">

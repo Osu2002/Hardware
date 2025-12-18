@@ -3,15 +3,15 @@
     <div class="special-offers-inner">
       <!-- LEFT STATIC PANEL -->
       <div class="special-panel">
-        <span class="special-badge">SALE</span>
+        <span class="special-badge">Limited Time</span>
 
         <h2 class="special-title">
-          SPECIAL<br />
-          OFFERS
+          EXCLUSIVE <br />
+          DEALS
         </h2>
 
         <button class="special-cta">
-          SHOP NOW
+         GRAB IT NOW
         </button>
       </div>
 
@@ -29,8 +29,9 @@
           ‹
         </button>
 
-        <div class="offers-viewport">
-          <div class="offers-track" :style="trackStyle">
+       <div class="offers-viewport" ref="viewport" @scroll.passive="onViewportScroll">
+  <div class="offers-track">
+
            <div
   v-for="offer in offers"
   :key="offer.id"
@@ -54,9 +55,10 @@
                 />
               </div>
 
-              <div class="offer-name" :title="offer.name">
-                {{ offer.name }}
-              </div>
+          <div class="offer-name" :title="offer.name">
+  {{ truncateName(offer.name, 20) }}
+</div>
+
 
               <div class="offer-price">
                 <!-- OLD PRICE (STRIKED) -->
@@ -116,40 +118,79 @@ export default {
 
   data() {
     return {
-      visibleCount: 4, // how many cards visible at once (desktop)
-      currentIndex: 0,
-    };
+  canPrev: false,
+  canNext: false,
+  _raf: null,
+};
+
   },
 
   computed: {
-    maxIndex() {
-      return Math.max(0, this.offers.length - this.visibleCount);
-    },
-    atStart() {
-      return this.currentIndex === 0;
-    },
-    atEnd() {
-      return this.currentIndex >= this.maxIndex;
-    },
-    trackStyle() {
-      const step = 100 / this.visibleCount;
-      return {
-        transform: `translateX(-${this.currentIndex * step}%)`,
-      };
-    },
+  atStart() {
+    return !this.canPrev;
   },
+  atEnd() {
+    return !this.canNext;
+  },
+},
+
+mounted() {
+  this.$nextTick(() => {
+    this.updateNavState();
+    window.addEventListener('resize', this.updateNavState, { passive: true });
+  });
+},
+
+beforeUnmount() {
+  window.removeEventListener('resize', this.updateNavState);
+  if (this._raf) cancelAnimationFrame(this._raf);
+},
+
 
   methods: {
-    next() {
-      if (!this.atEnd) {
-        this.currentIndex += 1;
-      }
-    },
-    prev() {
-      if (!this.atStart) {
-        this.currentIndex -= 1;
-      }
-    },
+   next() {
+  const vp = this.$refs.viewport;
+  if (!vp) return;
+
+  const card = vp.querySelector('.offer-card');
+  const step = card ? card.getBoundingClientRect().width : vp.clientWidth;
+
+  vp.scrollBy({ left: step, behavior: 'smooth' });
+},
+
+prev() {
+  const vp = this.$refs.viewport;
+  if (!vp) return;
+
+  const card = vp.querySelector('.offer-card');
+  const step = card ? card.getBoundingClientRect().width : vp.clientWidth;
+
+  vp.scrollBy({ left: -step, behavior: 'smooth' });
+},
+
+onViewportScroll() {
+  if (this._raf) cancelAnimationFrame(this._raf);
+  this._raf = requestAnimationFrame(() => this.updateNavState());
+},
+
+updateNavState() {
+  const vp = this.$refs.viewport;
+  if (!vp) return;
+
+  const left = vp.scrollLeft;
+  const maxLeft = vp.scrollWidth - vp.clientWidth;
+
+  this.canPrev = left > 2;
+  this.canNext = left < maxLeft - 2;
+},
+
+truncateName(name, limit = 20) {
+  const str = String(name ?? '');
+  if (str.length <= limit) return str;
+  return str.slice(0, limit) + '...';
+},
+
+
 
     formatCurrency(value) {
       if (value == null) return '';
@@ -215,39 +256,33 @@ export default {
      * 3. discount_type + discounted_amount (percent/amount)
      */
     discountBadgeFor(offer) {
-      // 1. Direct label from backend
-      if (offer.discountLabel) {
-        return offer.discountLabel;
-      }
+  // 1) Prefer computing % from old vs current price
+  const original = this.oldPrice(offer);
+  const current = this.currentPrice(offer);
 
-      // 2. Calculate from prices
-      const original = this.oldPrice(offer);
-      const current = this.currentPrice(offer);
+  if (original && current && original > current) {
+    const percent = Math.round(((original - current) / original) * 100);
+    return percent > 0 ? `-${percent}%` : null;
+  }
 
-      if (original && current && original > current) {
-        const diff = original - current;
-        const percent = original > 0 ? Math.round((diff / original) * 100) : 0;
-        if (percent > 0) {
-          return `-${percent}%`;
-        }
-      }
+  // 2) Fallback: explicit percent from backend fields
+  if (
+    offer.discount_status &&
+    offer.discount_type === 'percent' &&
+    Number(offer.discounted_amount) > 0
+  ) {
+    return `-${Math.round(Number(offer.discounted_amount))}%`;
+  }
 
-      // 3. Fallback using discount_type / discounted_amount
-      if (
-        offer.discount_status &&
-        offer.discount_type &&
-        offer.discounted_amount > 0
-      ) {
-        if (offer.discount_type === 'percent') {
-          return `-${offer.discounted_amount}%`;
-        }
-        if (offer.discount_type === 'amount') {
-          return `-Rs. ${this.formatCurrency(offer.discounted_amount)}`;
-        }
-      }
+  // 3) Last fallback: extract a number from "DISCOUNT 80%" and convert to "-80%"
+  if (offer.discountLabel) {
+    const m = String(offer.discountLabel).match(/(\d+(?:\.\d+)?)/);
+    if (m) return `-${Math.round(Number(m[1]))}%`;
+  }
 
-      return null;
-    },
+  return null;
+}
+,
   },
 };
 </script>
@@ -255,6 +290,12 @@ export default {
 <style scoped>
 .special-offers {
   margin: 40px 0;
+}
+
+.special-offers .offer-price .old {
+  text-decoration: line-through !important;
+  text-decoration-thickness: 2px;
+  text-decoration-color: currentColor;
 }
 
 .special-offers-inner {
@@ -268,7 +309,7 @@ export default {
 
 /* LEFT PANEL */
 .special-panel {
-  background: #001c80;
+  background: #041553;
   color: #ffffff;
   padding: 40px 32px;
   display: flex;
@@ -290,6 +331,49 @@ export default {
   font-weight: 700;
   margin-bottom: 32px;
 }
+
+/* ===== Typography to match TopNavbar (mitem / mtext-btn style) ===== */
+.special-offers {
+  font-family: inherit; /* same global font as navbar */
+}
+
+/* match navbar vibe: uppercase + tracking + bold */
+.special-badge,
+.special-cta,
+.offer-name {
+ 
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+/* navbar uses smaller uppercase label style */
+.special-badge {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+}
+
+/* navbar-like button text */
+.special-cta {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+/* product name in navbar style */
+.offer-name {
+  font-size: 13px;      /* similar to navbar menu size */
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* prices: keep your colors, just align weight a bit */
+.offer-price .current {
+  font-weight: 500;
+}
+.offer-price .old {
+  font-weight: 500;
+}
+
 
 .special-cta {
   align-self: flex-start;
@@ -330,21 +414,45 @@ export default {
 /* SLIDER AREA */
 .offers-slider {
   position: relative;
-  padding: 26px 40px 30px;
+  padding: 26px 16px 30px; /* less padding on sides */
   background: #ffffff;
-  display: flex;
-  align-items: center;
 }
 
+
 .offers-viewport {
-  overflow: hidden;
   width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+
+  scrollbar-width: none;
 }
+
+.offers-viewport::-webkit-scrollbar {
+  display: none;
+}
+
 
 .offers-track {
   display: flex;
-  transition: transform 0.3s ease;
+  gap: 0; /* keep your padding spacing */
 }
+.offer-card {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+@media (max-width: 768px) {
+  .nav-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
+  }
+}
+
 
 /* CARD */
 .offer-card {
@@ -372,18 +480,7 @@ export default {
 }
 
 /* DISCOUNT BADGE */
-.offer-discount {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: #7c3aed; /* purple */
-  color: #ffffff;
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 8px 12px;
-  border-radius: 999px;
-  box-shadow: 0 4px 10px rgba(76, 29, 149, 0.4);
-}
+
 
 /* NAME + PRICE */
 .offer-name {
@@ -405,7 +502,7 @@ export default {
 /* NEW PRICE (purple, bold) */
 .offer-price .current {
   display: block;
-  font-weight: 700;
+  font-weight: 500;
   color: #4c1d95;
 }
 
@@ -418,21 +515,32 @@ export default {
   color: #9ca3af;
 }
 
-/* NAV BUTTONS */
 .nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+
   border: none;
   background: rgba(17, 24, 39, 0.06);
   width: 32px;
   height: 32px;
   border-radius: 999px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   font-size: 18px;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.15s ease;
-  margin: 0 6px;
+
+  margin: 0; /* IMPORTANT: remove margin so it won't push layout */
 }
+
+.nav-btn.prev { left: 10px; }
+.nav-btn.next { right: 10px; }
+
 
 .nav-btn:hover:not(:disabled) {
   background: rgba(17, 24, 39, 0.15);
@@ -469,6 +577,38 @@ export default {
   }
 }
 
+@media (max-width: 768px) {
+  .nav-btn { display: none; }
+
+  .offers-slider { padding: 20px 0; }
+
+  .offers-track { padding: 0 14px; }
+
+  .offer-card {
+    flex: 0 0 72%;       /* smaller than 85% */
+    max-width: 320px;    /* stops being too big on tablets/large phones */
+    padding: 0 8px;
+    scroll-snap-align: center;
+  }
+
+  .offer-image-wrapper {
+    padding-top: 58%;    /* reduce image height */
+  }
+}
+
+@media (max-width: 480px) {
+  .offer-card {
+    flex: 0 0 78%;       /* phone size */
+    max-width: 280px;    /* even smaller on phones */
+  }
+
+  .offer-image-wrapper {
+    padding-top: 55%;
+  }
+}
+
+
+
 .offer-image-wrapper {
   position: relative;
 }
@@ -486,12 +626,23 @@ export default {
   top: 10px;
   left: 10px;
   z-index: 2;
+
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+
+  background: #d51010; /* light red */
+  color: #f9f7f7;      /* red text */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(185, 28, 28, 0.18);
 }
 
 
-@media (max-width: 480px) {
-  .offer-card {
-    flex: 0 0 100%; /* 1 card visible on phones */
-  }
-}
+
 </style>
