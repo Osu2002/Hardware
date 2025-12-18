@@ -373,6 +373,7 @@ export default {
   transform: scale(1.02);
 }
 
+
 .dot:focus-visible {
   outline: none;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18), 0 0 0 3px rgba(59, 130, 246, 0.35);
