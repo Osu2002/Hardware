@@ -38,6 +38,9 @@ class UomController extends Controller
                     return '<span class="badge bg-danger">Suspended</span>';
                 }
                 return '';
+
+
+                
             })
             ->addColumn('action', function ($row) {
                 $html = '';
