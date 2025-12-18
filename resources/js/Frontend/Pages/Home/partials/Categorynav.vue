@@ -433,13 +433,13 @@ export default {
   justify-content: space-between;
   margin-bottom: 18px;
 }
-
+/* EXACT same style as CategoryBox .section-title */
 .catnav-heading {
   font-size: 1.2rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #111827;
+  color: var(--nav-text, #12355a);
 }
 
 .catnav-arrows {
@@ -614,6 +614,16 @@ export default {
   letter-spacing: 0.06em;
   font-weight: 500;
 }
+
+/* EXACT same style as CategoryBox .section-title */
+.catnav-heading {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--nav-text, #12355a);
+}
+
 
 /* product title like menu text */
 .card-title {
