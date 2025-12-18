@@ -23,80 +23,76 @@ class HomeController extends Controller
    public function index(Request $request)
 {
     // Categories + 8 latest products for each
-   $categories = Category::where('status', 1)
-    ->orderBy('id', 'asc') // or ->oldest()
+  $categories = Category::where('status', 1)
+    ->orderBy('id', 'asc')
+    ->with([
+        'media',
+        'subcategories' => fn($q) => $q->where('status', 1)
+            ->orderBy('sort_order')
+            ->orderBy('title'),
 
-        ->with([
-            'media',
-             'subcategories' => fn($q) => $q->where('status', 1)->orderBy('sort_order')->orderBy('title'),
-            'products' => function ($q) {
-                $q->where('status', 1)
-                    ->with('media')
-                    ->orderBy('created_at', 'desc')
-                    ->take(10);
-            },
-        ])
-        ->get()
-        ->map(function ($c) {
-            $img = optional($c->getFirstMedia('category_image'))->getUrl();
+        // IMPORTANT: no take() here
+        'products' => function ($q) {
+            $q->where('status', 1)
+              ->with('media')
+              ->orderBy('created_at', 'desc');
+        },
+    ])
+    ->get()
+    ->map(function ($c) {
+        $img = optional($c->getFirstMedia('category_image'))->getUrl();
 
-            return [
-                'id'       => $c->id,
-                'title'    => $c->title,
-                'slug'     => $c->slug,
-                'featured' => (bool) $c->featured,
-                'image'    => $img,
+        return [
+            'id'       => $c->id,
+            'title'    => $c->title,
+            'slug'     => $c->slug,
+            'featured' => (bool) $c->featured,
+            'image'    => $img,
 
-                 'subcategories' => $c->subcategories->map(fn($s) => [
+            'subcategories' => $c->subcategories->map(fn($s) => [
                 'id' => $s->id,
                 'title' => $s->title,
                 'slug' => $s->slug,
                 'category_id' => $s->category_id,
             ])->values(),
 
-                // 8 products for this category
-                'products' => $c->products->map(function ($p) {
-    $thumb = optional($p->getFirstMedia('product_images'))->getUrl();
+            // ✅ LIMIT PER CATEGORY HERE
+            'products' => $c->products->take(10)->map(function ($p) {
+                $thumb = optional($p->getFirstMedia('product_images'))->getUrl();
 
-    $basePrice = (float) ($p->price ?? 0);   // original price
-    $currentPrice = $basePrice;             // discounted price
-    $discountPercent = 0;
+                $basePrice = (float) ($p->price ?? 0);
+                $currentPrice = $basePrice;
+                $discountPercent = 0;
 
-    // SAME discount logic as SpecialOffers
-    if ((int) $p->discount_status === 1 && $p->discount_type && (float) $p->discounted_amount > 0) {
-        if ($p->discount_type === 'percent') {
-            $discountPercent = (int) round((float) $p->discounted_amount);
-            $currentPrice = max(0, $basePrice * (1 - ($discountPercent / 100)));
-        } elseif ($p->discount_type === 'amount') {
-            $amount = (float) $p->discounted_amount;
-            $currentPrice = max(0, $basePrice - $amount);
-            $discountPercent = $basePrice > 0 ? (int) round(($amount / $basePrice) * 100) : 0;
-        }
-    }
+                if ((int) $p->discount_status === 1 && $p->discount_type && (float) $p->discounted_amount > 0) {
+                    if ($p->discount_type === 'percent') {
+                        $discountPercent = (int) round((float) $p->discounted_amount);
+                        $currentPrice = max(0, $basePrice * (1 - ($discountPercent / 100)));
+                    } elseif ($p->discount_type === 'amount') {
+                        $amount = (float) $p->discounted_amount;
+                        $currentPrice = max(0, $basePrice - $amount);
+                        $discountPercent = $basePrice > 0 ? (int) round(($amount / $basePrice) * 100) : 0;
+                    }
+                }
 
-    return [
-        'id'   => $p->id,
-        'name' => $p->name,
-        'slug' => $p->slug,
-        'image'=> $thumb,
+                return [
+                    'id'   => $p->id,
+                    'name' => $p->name,
+                    'slug' => $p->slug,
+                    'image'=> $thumb,
+                    'regular_price'    => round($basePrice, 2),
+                    'price'            => round($currentPrice, 2),
+                    'discount_percent' => $discountPercent,
+                    'discount_status'   => (int) $p->discount_status,
+                    'discount_type'     => $p->discount_type,
+                    'discounted_amount' => (float) $p->discounted_amount,
+                    'is_new' => $p->created_at ? $p->created_at->gt(now()->subDays(30)) : false,
+                ];
+            })->values(),
+        ];
+    })
+    ->values();
 
-        // IMPORTANT: send old & new like CategoryNav expects
-        'regular_price'    => round($basePrice, 2),       // OLD price
-        'price'            => round($currentPrice, 2),    // NEW price
-        'discount_percent' => $discountPercent,
-
-        // optional (useful if you want later)
-        'discount_status'   => (int) $p->discount_status,
-        'discount_type'     => $p->discount_type,
-        'discounted_amount' => (float) $p->discounted_amount,
-
-        'is_new' => $p->created_at ? $p->created_at->gt(now()->subDays(30)) : false,
-    ];
-})->values(),
-
-            ];
-        })
-        ->values();
 
     // Brands / attributes stay as you already have:
    $brands = Brand::where('status', 1)
