@@ -427,10 +427,16 @@ truncateName(name, limit = 20) {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
-  touch-action: pan-x;
+touch-action: pan-x pan-y; 
 
   scrollbar-width: none;
 }
+
+.offer-image {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
 
 .offers-viewport::-webkit-scrollbar {
   display: none;
