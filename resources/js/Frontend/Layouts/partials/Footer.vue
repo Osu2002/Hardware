@@ -124,7 +124,7 @@
             <h3 class="mh-footer-heading">Find Us</h3>
             <div class="mh-footer-map">
              <iframe
-  src="https://www.google.com/maps?um=1&ie=UTF-8&fb=1&gl=lk&sa=X&geocode=KUs6rvatAeQ6MUJSO6drCZUV&daddr=8RXR%2B58P,+Embilipitiya"
+  src="https://www.google.com/maps/dir/8RXR%2B58P,+Embilipitiya/Mahinda+Hardware,+8RXR%2B58P,+Embilipitiya/@6.8780032,79.8785536,12z/data=!4m13!4m12!1m5!1m1!1s0x3ae401adf6ae3a4b:0x1595096ba73b5242!2m2!1d80.8408334!2d6.3479709!1m5!1m1!1s0x3ae401adf6ae3a4b:0x1595096ba73b5242!2m2!1d80.8408334!2d6.3479709!5m2!1e4!1e2?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoASAFQAw%3D%3D"
   allowfullscreen
   loading="lazy"
   referrerpolicy="no-referrer-when-downgrade"
