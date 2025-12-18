@@ -54,8 +54,8 @@
                   <i class="fas fa-phone-alt"></i>
                 </div>
                 <div class="mh-footer-contact-text">
-                  <a href="tel:+94771234567">
-                    +94 77 123 4567
+                  <a href="tel:+94715526000">
+                    +94 71 552 6000
                   </a>
                 </div>
               </li>
@@ -80,8 +80,8 @@
                   <i class="far fa-envelope"></i>
                 </div>
                 <div class="mh-footer-contact-text">
-                  <a href="mailto:info@mahindahardware.com">
-                    info@mahindahardware.com
+                  <a href="mailto:mahindahardware@gmail.com">
+                    mahindahardware@gmail.com
                   </a>
                 </div>
               </li>
@@ -92,7 +92,7 @@
                 </div>
                 <div class="mh-footer-contact-text">
                   <span>
-                    123 Main Street, Colombo, Sri Lanka
+                    135/A, Rathnapura Rd, Hinguraara, Embilipitiya
                   </span>
                 </div>
               </li>
@@ -123,13 +123,14 @@
           <div class="mh-footer-col mh-footer-map-col">
             <h3 class="mh-footer-heading">Find Us</h3>
             <div class="mh-footer-map">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63371.80385727562!2d79.82118891953124!3d6.921835199999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae253d10f7a7003%3A0x320b2e4d32d3838d!2sColombo%2C%20Sri%20Lanka!5e0!3m2!1sen!2slk!4v1702300000000!5m2!1sen!2slk"
-                allowfullscreen
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-                title="Store Location"
-              ></iframe>
+             <iframe
+  src="https://www.google.com/maps?um=1&ie=UTF-8&fb=1&gl=lk&sa=X&geocode=KUs6rvatAeQ6MUJSO6drCZUV&daddr=8RXR%2B58P,+Embilipitiya"
+  allowfullscreen
+  loading="lazy"
+  referrerpolicy="no-referrer-when-downgrade"
+  title="Store Location"
+></iframe>
+
             </div>
           </div>
         </div>
