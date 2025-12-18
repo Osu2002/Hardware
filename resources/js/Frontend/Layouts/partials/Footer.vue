@@ -123,13 +123,14 @@
           <div class="mh-footer-col mh-footer-map-col">
             <h3 class="mh-footer-heading">Find Us</h3>
             <div class="mh-footer-map">
-             <iframe
-  src="https://www.google.com/maps/dir/8RXR%2B58P,+Embilipitiya/Mahinda+Hardware,+8RXR%2B58P,+Embilipitiya/@6.8780032,79.8785536,12z/data=!4m13!4m12!1m5!1m1!1s0x3ae401adf6ae3a4b:0x1595096ba73b5242!2m2!1d80.8408334!2d6.3479709!1m5!1m1!1s0x3ae401adf6ae3a4b:0x1595096ba73b5242!2m2!1d80.8408334!2d6.3479709!5m2!1e4!1e2?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoASAFQAw%3D%3D"
-  allowfullscreen
+            <iframe
+  src="https://www.google.com/maps?q=135/A%2C%20Rathnapura%20Rd%2C%20Hinguraara%2C%20Embilipitiya&output=embed"
   loading="lazy"
   referrerpolicy="no-referrer-when-downgrade"
+  allowfullscreen
   title="Store Location"
 ></iframe>
+
 
             </div>
           </div>
