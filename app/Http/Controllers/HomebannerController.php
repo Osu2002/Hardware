@@ -96,7 +96,7 @@ class HomebannerController extends Controller
         $request->validate([
             'name' => ['required'],
             "status"=> ['required'],
-            "editorContent"=> ['required'],
+            // "editorContent"=> ['required'],
             'image' => ['nullable', 'mimes:jpeg,jpg,png,webp', 'max:10000']
         ]);
         // dd($request->all());
@@ -106,7 +106,7 @@ class HomebannerController extends Controller
             $homebanner = new Homebanner();
             $homebanner->name = $request->name;
             $homebanner->status = $request->status;
-            $homebanner->editorContent = $request->editorContent;
+            $homebanner->editorContent = null;
             $homebanner->save();
 
 
@@ -171,9 +171,19 @@ class HomebannerController extends Controller
             $homebanner = Homebanner::find($request->id);
             $homebanner->name = $request->name;
             $homebanner->status = $request->status;
-            $homebanner->editorContent = $request->editorContent;
+           $homebanner->editorContent = null;
             $homebanner->save();
+
+             if ($request->hasFile('image')) {
+            // optionally clear old media if needed
+            $homebanner->clearMediaCollection('Home_Banner_Image');
+            $homebanner
+                ->addMedia($request->file('image'))
+                ->toMediaCollection('Home_Banner_Image');
+        }
             DB::commit();
+
+
 
 
 

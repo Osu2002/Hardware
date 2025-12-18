@@ -1,600 +1,463 @@
 <template>
-  <footer class="site-footer">
-    <div class="footer-top">
-      <div class="container-fluid py-5 px-3 px-md-5">
-        <div class="row align-items-stretch gy-4 gx-md-4">
-
-          <!-- LEFT COLUMN: Header + description + Get in Touch card -->
-          <!-- <div class="col-12 col-md-6 col-lg-5 d-flex px-3 px-md-0"> -->
-          <div class="col-12 col-md-6 col-lg-5 d-flex ps-0 ps-md-3 pe-3">
-
-
-            <!-- <div class="d-flex flex-column h-100 w-100"> -->
-            <div class="d-flex flex-column h-100 w-100">
-              <div class="mb-2 text-center text-md-start">
-                <!-- <img 
-                src="/images/logo1.png" 
-                alt="World Auto" 
-                class="footer-logo d-block mx-auto mx-md-0" /> -->
-                <h2 class="footer-logo-text">World Auto Dealers</h2>
-                <p class="footer-desc">
-                  Have a question, feedback, or need assistance? Fill out the form below and our team will get back to
-                  you
-                  within 24 hours. We're here to help you every step of the way.
-                </p>
-              </div>
-
-              <!-- <div class="contact-card mt-2">
-              <h3 class="contact-card-title">Get in Touch</h3>
-              <template v-if="$page.props.countries?.length">
-                <div class="flags-grid">
-                  <Link
-                    v-for="country in $page.props.countries"
-                    :key="country.id"
-                    :href="route('available', {
-                      countrySlug: country.name.toLowerCase().replace(/\s+/g, '-')
-                    })"
-                    class="flag-link"
-                    :class="{ active: selectedCountry?.id === country.id }"
-                    preserve-state
-                    preserve-scroll
-                    @click="selectCountry(country)"
-                  >
-                    <img
-                      :src="country.media?.[0]?.original_url"
-                      :alt="`${country.name} Flag`"
-                      class="flag-image"
-                    />
-                  </Link>
-                </div>
-              </template>
-</div> -->
-
-            </div>
-          </div>
-
-
-
-          <!-- <div class="col-12 col-md-6 col-lg-7 d-flex align-items-start px-3"> -->
-          <div class="col-12 col-md-6 col-lg-7 d-flex flex-column px-3">
-            <!-- <div class="ratio ratio-16x9 rounded-5 overflow-hidden h-100 w-100"> -->
-            <!-- <div class="ratio ratio-16x9 rounded-5 overflow-hidden h-100 w-100 mt-auto">
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31688.423040114812!2d79.84701563476564!3d6.884269400000006!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae25b93c3fc71b3%3A0x3ffde51c4e6f6f77!2sNikoba%20Online%20Car%20Showroom!5e0!3m2!1sen!2slk!4v1719466160471!5m2!1sen!2slk"
-              class="w-100 h-100 border-0"
-              allowfullscreen
-              loading="lazy"
-              referrerpolicy="no-referrer-when-downgrade"
-            ></iframe>
-          </div> -->
-
-            <div class="footer-marquee">
-              <div class="marquee-wrapper">
-                <div class="marquee-content" id="marqueeText">
-                  WORLD AUTO DEALERS. WORLD AUTO DEALERS. WORLD AUTO DEALERS. WORLD AUTO DEALERS. WORLD AUTO DEALERS.
-                  WORLD AUTO
-                  DEALERS.
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
+  <footer class="site-footer mh-footer">
+    <!-- Top marquee strip -->
+    <div class="mh-footer-marquee-strip">
+      <div class="mh-footer-marquee-inner">
+        <span class="mh-footer-marquee-text">
+          {{ marqueeText.repeat(4) }}
+        </span>
       </div>
-
-
     </div>
 
-    <!-- Middle: link columns + Contact Us & Follow Us -->
-    <div class="footer-links">
-      <div class="container-fluid py-5 px-3 px-md-5">
-        <div class="row 
-                gx-0 gx-md-2 gy-4 mx-0 
-                row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5">
+    <!-- Main footer area with background image -->
+    <div class="mh-footer-main">
+      <div class="mh-footer-bg"></div>
+      <div class="mh-footer-overlay"></div>
 
+      <div class="mh-footer-inner">
+        <div class="mh-footer-grid">
+          <!-- Logo + description -->
+          <div class="mh-footer-col mh-footer-brand">
+            <Link href="/" class="mh-footer-logo-link">
+              <!-- swap the src to your actual logo path -->
+              <img
+                src="/images/mahindalogo.png"
+                alt="Mahinda Hardware & Electrical"
+                class="mh-footer-logo"
+              />
+            </Link>
+            <p class="mh-footer-desc">
+              Your one-stop shop for all electrical and hardware needs.
+             
+            </p>
+          </div>
 
-          <!-- ▸ Dynamic “Company / Quick Links …” columns -->
-          <div class="col text-start ps-0 ps-md-3" v-for="(col, i) in linkCols" :key="i">
-            <h6 class="links-title">{{ col.title }}</h6>
-            <ul class="list-unstyled mb-0">
-              <li v-for="(link, j) in col.links" :key="j" class="mb-2">
-                <Link :href="link.href" class="footer-link">
-                {{ link.text }}
+          <!-- Quick Links -->
+          <div class="mh-footer-col">
+            <h3 class="mh-footer-heading">Quick Links</h3>
+            <ul class="mh-footer-links-list">
+              <li v-for="link in quickLinks" :key="link.text">
+                <Link :href="link.href" class="mh-footer-link">
+                  {{ link.text }}
                 </Link>
               </li>
             </ul>
           </div>
 
+          <!-- Contact Us -->
+          <div class="mh-footer-col">
+            <h3 class="mh-footer-heading">Contact Us</h3>
 
+            <ul class="mh-footer-contact-list">
+              <li>
+                <div class="mh-footer-contact-icon">
+                  <i class="fas fa-phone-alt"></i>
+                </div>
+                <div class="mh-footer-contact-text">
+                  <a href="tel:+94715526000">
+                    +94 71 552 6000
+                  </a>
+                </div>
+              </li>
 
-          <!-- ▸ Our Brands (dynamic) -->
-          <div class="col text-start ps-0 ps-md-3">
-            <h6 class="links-title">Our Brands</h6>
-            <ul class="list-unstyled mb-0">
-              <li v-for="manufacture in $page.props.category_manufactures.slice(0, 8)" :key="manufacture.id"
-                class="mb-2">
-                <Link method="post" :href="route('live.auction')"
-                  :data="{ _method: 'GET', manufacturer: manufacture.name, search: true }" class="footer-link">
-                {{ formatName(manufacture.name) }}
-                </Link>
+              <li>
+                <div class="mh-footer-contact-icon">
+                  <i class="fab fa-whatsapp"></i>
+                </div>
+                <div class="mh-footer-contact-text">
+                  <a
+                    href="https://wa.me/94771234567"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    WhatsApp
+                  </a>
+                </div>
+              </li>
+
+              <li>
+                <div class="mh-footer-contact-icon">
+                  <i class="far fa-envelope"></i>
+                </div>
+                <div class="mh-footer-contact-text">
+                  <a href="mailto:mahindahardware@gmail.com">
+                    mahindahardware@gmail.com
+                  </a>
+                </div>
+              </li>
+
+              <li>
+                <div class="mh-footer-contact-icon">
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="mh-footer-contact-text">
+                  <span>
+                    135/A, Rathnapura Rd, Hinguraara, Embilipitiya
+                  </span>
+                </div>
               </li>
             </ul>
-          </div>
 
-          <!-- ▸ Vehicles Type (dynamic) -->
-          <div class="col text-start ps-0 ps-md-3">
-            <h6 class="links-title">Vehicles Type</h6>
-            <ul class="list-unstyled mb-0">
-              <li v-for="type in $page.props.vehicle_types" :key="type.id" class="mb-2">
-                <Link method="post" :href="route('available')" :data="{ _method: 'GET', type: type.id }"
-                  class="footer-link">
-                {{ formatName(type.title) }}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-
-          <!-- Contact Us + Socials -->
-          <div class="col text-start ps-0 ps-md-3">
-            <h6 class="links-title">Contact Us</h6>
-
-
-            <div v-for="country in $page.props.countries" :key="country.id"
-              class="d-flex align-items-center rounded-pill border border-white px-3 py-1 mb-2"
-              style="width: max-content;">
-              <img :src="country.media?.[0]?.original_url" alt="flag" class="img-fluid" style="max-width: 1.25rem;" />
-              <!-- plain anchor for phone -->
-              <a :href="`tel:${country.phone1}`" class="ms-2 small text-white text-nowrap">
-                {{ country.phone1 }}
+            <!-- Social icons -->
+            <div class="mh-footer-socials">
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener"
+                class="mh-footer-social-link"
+              >
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener"
+                class="mh-footer-social-link"
+              >
+                <i class="fab fa-instagram"></i>
               </a>
             </div>
-
-
-            <div class="follow-section mt-4">
-              <h6 class="links-title">Follow Us</h6>
-              <div class="social-icons d-flex flex-row gap-3">
-                <a href="https://facebook.com" target="_blank" class="social-icon"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://twitter.com" target="_blank" class="social-icon"><i class="fab fa-twitter"></i></a>
-                <a href="https://instagram.com" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
-                <!-- <a href="https://linkedin.com" target="_blank" class="social-icon"><i class="fab fa-linkedin-in"></i></a> -->
-              </div>
-            </div>
           </div>
 
+          <!-- Map -->
+          <div class="mh-footer-col mh-footer-map-col">
+            <h3 class="mh-footer-heading">Find Us</h3>
+            <div class="mh-footer-map">
+            <iframe
+  src="https://www.google.com/maps?q=135/A%2C%20Rathnapura%20Rd%2C%20Hinguraara%2C%20Embilipitiya&output=embed"
+  loading="lazy"
+  referrerpolicy="no-referrer-when-downgrade"
+  allowfullscreen
+  title="Store Location"
+></iframe>
+
+
+            </div>
+          </div>
+        </div>
+
+        <!-- bottom line + text -->
+        <div class="mh-footer-bottom">
+          <div class="mh-footer-bottom-inner">
+            © 2025 Mahinda Hardware & Electrical. All rights reserved.
+          </div>
         </div>
       </div>
     </div>
-
-
-    <div class="footer-bottom">
-      <!-- left: copyright -->
-      <small>© 2025 World Auto Dealers PVT Ltd. All rights reserved</small>
-
-      <!-- right: branded credit block -->
-      <div class="developer-credit">
-        <span>Web Design Services by</span>
-        <a href="https://weblook.com/" target="_blank" rel="noopener" class="developer-logo-link">
-          <img src="/images/web.png" alt="weblock.com" class="developer-logo" />
-        </a>
-      </div>
-
-    </div>
-
   </footer>
 </template>
 
 <script>
 import { Link } from "@inertiajs/inertia-vue3";
 
-
 export default {
   name: "Footer",
   components: { Link },
   data() {
     return {
-      linkCols: [
-        {
-          title: "Company",
-          links: [
-            { text: "About Us", href: "/about" },
-            { text: "Services", href: "/knowledge-center" },
-            { text: "FAQs", href: "/knowledge-center" },
-            { text: "Contact Us", href: "/contact" },
-          ],
-        },
-        {
-          title: "Quick Links",
-          links: [
-            { text: "Get in Touch", href: "/contact" },
-            { text: "Knowledge Center", href: "/knowledge-center" },
-            { text: "Live Auction In Japan", href: "/live-auction" },
-            { text: "How To Order", href: "/knowledge-center" },
-          ],
-        },
+      marqueeText:
+        "MAHINDA HARDWARE & ELECTRICAL • YOUR TRUSTED ELECTRICAL PARTNER • QUALITY PRODUCTS • EXPERT SERVICE • ",
+      quickLinks: [
+        { text: "Home", href: "/" },
+        { text: "Products", href: "/products" },
+        { text: "Services", href: "/services" },
+        { text: "Contact", href: "/contact" },
       ],
     };
-  },
-  methods: {
-    selectCountry(country) {
-      this.selectedCountry = country;
-    },
-    formatName(name) {
-      if (!name) return '';
-      const lower = name.toLowerCase();
-      return lower.charAt(0).toUpperCase() + lower.slice(1);
-    },
-    initMarquee() {
-      const marquee = document.getElementById('marqueeText');
-      if (marquee) {
-        const txt = marquee.textContent;
-        marquee.textContent = txt + ' ' + txt;
-      }
-    },
-  },
-  mounted() {
-    this.initMarquee();
   },
 };
 </script>
 
 <style scoped>
-.footer-logo-text {
-  font-size: 3.5rem;
-  font-weight: 700;
-  margin-bottom: 3rem;
-  margin-top: 7rem;
-  color: #fff;
-}
-
-.footer-logo {
-  max-width: 300px;
-  width: 100%;
-  height: auto;
-  margin-bottom: 10rem;
-}
-
-.site-footer {
-  font-family: Poppins, sans-serif;
-  color: #fff;
-  background: #0a1f44;
-}
-
-.footer-top {
-  background: linear-gradient(90deg, #415a77 0%, #0a3f79 0%, #163353 34%, #142334 67%, #0e1e30 80%, #0d1b2a 100%);
-}
-
-.footer-title {
-  font-size: 2rem;
-  font-weight: 700;
-}
-
-.footer-desc {
-  max-width: 500px;
-  /* ← same as .contact-card’s max-width */
-  width: 100%;
-  line-height: 1.7;
-  text-align: left;
-}
-
-.py-5 {
-  padding-top: 1% !important;
-  padding-bottom: 0rem !important;
-}
-
-.contact-card {
-  background: #fff;
-  border-radius: 2rem;
-
-
-  margin: 1rem 0;
-
-  /* keep your snug sizing */
-  padding: 1.5rem 2rem;
-  width: auto;
-  max-width: 350px;
-
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  /* remove any align-self override */
-}
-
-
-
-
-.contact-card-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 2.5rem;
-  letter-spacing: -0.02em;
-}
-
-
-
-.flags-grid {
-  display: inline-grid;
-  grid-auto-flow: column;
-  grid-auto-columns: min-content;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  margin: 0 auto;
-  /* center the inline-grid */
-  /* drop width/max-width overrides */
-  width: auto;
-  max-width: none;
-}
-
-.flag-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-radius: 0.5rem;
-}
-
-.flag-link:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-}
-
-.flag-image {
-  height: 30px;
-  width: 45px;
-  object-fit: cover;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.footer-links {
-  background: linear-gradient(90deg, #415a77 0%, #0a3f79 0%, #163353 34%, #142334 67%, #0e1e30 80%, #0d1b2a 100%);
-}
-
-.links-title {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-}
-
-.footer-link {
-  color: #fff;
-  text-decoration: none;
-}
-
-.footer-link:hover {
-  text-decoration: underline;
-}
-
-.footer-bottom {
-  background: linear-gradient(90deg, #415a77 0%, #0a3f79 0%, #163353 34%, #142334 67%, #0e1e30 80%, #0d1b2a 100%);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 3rem;
-  font-size: 0.85rem;
-}
-
-.developer-link {
-  color: #fff;
-  text-decoration: none;
-}
-
-.developer-link:hover {
-  text-decoration: underline;
-}
-
-.social-icons {
-  display: flex;
-  gap: 1.25rem;
-  margin-top: 1rem;
-}
-
-.social-icon {
-  color: #fff;
-  font-size: 1.25rem;
-  transition: color 0.2s;
-}
-
-.social-icon:hover {
-  color: #00bfff;
-}
-
-@media (max-width: 767px) {
-  .footer-top .row {
-    flex-direction: column;
-  }
-
-  .footer-bottom {
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: flex-start !important;
-    padding: 1rem 1.5rem !important;
-  }
-
-  /* .footer-top .container-fluid,
-  .footer-links .container-fluid,
-  .footer-bottom {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  } */
-
-  .contact-card {
-    padding: 2.5rem 2rem;
-    max-width: 100%;
-    margin-top: 1.5rem;
-  }
-
-  .footer-links .text-start {
-    padding-left: 1.5rem;
-    /* Adjust padding for larger screens */
-  }
-
-  .contact-card-title {
-    font-size: 1.75rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .flags-grid {
-    grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
-    gap: 0.35rem;
-    padding: 0.25rem;
-  }
-
-  .flag-image {
-    height: 25px;
-    width: 35px;
-  }
-}
-
-@media (max-width: 320px) {
-  .flags-grid {
-    grid-template-columns: repeat(auto-fit, minmax(35px, 1fr));
-    gap: 0.25rem;
-  }
-
-  .flag-image {
-    height: 20px;
-    width: 30px;
-  }
-}
-
-@media (min-width: 992px) {
-  .footer-top .ratio {
-    max-height: 390px;
-  }
-}
-
-
-.footer-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 3rem;
-  background: linear-gradient(90deg,
-      #415a77 0%,
-      #0a3f79 0%,
-      #163353 34%,
-      #142334 67%,
-      #0e1e30 80%,
-      #0d1b2a 100%);
-}
-
-/* new credit block */
-.developer-credit {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.developer-credit span {
-  color: #fff;
-  font-size: 0.72rem;
-}
-
-.developer-logo-link {
-  display: inline-block;
-}
-
-.developer-logo {
-  height: 24px;
-  width: auto;
-  display: block;
-}
-
-
-
-.footer-top .row {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-
-.footer-marquee {
-
-  flex: 1 1 auto;
-  /* drop the hard min-width so it can resize down on small screens */
-  min-width: 0;
-  width: 100%;
-  padding-top: 2.5rem;
-  margin-bottom: 10px;
-  overflow: hidden;
-}
-
-.marquee-wrapper {
+.mh-footer {
   position: relative;
   width: 100%;
-  height: 40vh;
+  color: #f9fafb;
+  font-family: Poppins, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background-color: #020617;
+}
+
+/* ==== Top marquee strip ==== */
+
+.mh-footer-marquee-strip {
+  background: linear-gradient(90deg, #0b1220 0%, #1f2937 40%, #020617 100%);
+  padding: 0.45rem 0;
   overflow: hidden;
-
 }
 
-
-.marquee-content {
-  position: absolute;
+.mh-footer-marquee-inner {
+  display: flex;
   white-space: nowrap;
-  font-size: 12em;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  -webkit-text-stroke: 3.2px rgba(255, 255, 255, 0.8);
-  color: transparent;
-  will-change: transform;
-  animation: marquee 20s linear infinite;
-
-
 }
 
-@keyframes marquee {
+.mh-footer-marquee-text {
+  font-size: 0.65rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  animation: mh-marquee 40s linear infinite;
+}
+
+@keyframes mh-marquee {
   0% {
     transform: translateX(0);
   }
 
   100% {
-    transform: translateX(-10%);
+    transform: translateX(-50%);
   }
 }
 
+/* ==== Main area (background + overlay) ==== */
 
+.mh-footer-main {
+  position: relative;
+  overflow: hidden;
+}
 
-@media (max-width: 768px) {
-  .footer-marquee {
-    padding-top: 1.5rem;
-  }
+.mh-footer-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url("/images/footer-bg.jpg");
+  /* update path if needed */
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.4);
+}
 
-  .marquee-wrapper {
-    height: 25vh;
-  }
+.mh-footer-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      circle at top left,
+      rgba(15, 23, 42, 0.7),
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(15, 23, 42, 0.9),
+      rgba(15, 23, 42, 0.98)
+    );
+}
 
-  .marquee-content {
-    font-size: 6em;
-    letter-spacing: 1px;
-    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
+.mh-footer-inner {
+  position: relative;
+  z-index: 1;
+  padding: 2.5rem 1.5rem 1.75rem;
+}
+
+@media (min-width: 768px) {
+  .mh-footer-inner {
+    padding: 3rem 2.5rem 2rem;
   }
 }
 
-@media (max-width: 480px) {
-  .marquee-wrapper {
-    height: 20vh;
-  }
-
-  .marquee-content {
-    font-size: 4em;
+@media (min-width: 1024px) {
+  .mh-footer-inner {
+    padding: 3.5rem 3rem 2.25rem;
   }
 }
 
+/* ==== Grid layout ==== */
 
-@media (max-width: 767px) {
-  .footer-desc {
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
+.mh-footer-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1.2fr) minmax(
+      0,
+      1.4fr
+    );
+  gap: 2.25rem;
+}
+
+@media (max-width: 991.98px) {
+  .mh-footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 2.5rem;
   }
+}
 
-  .contact-card {
-    /* center the card itself */
-    margin-left: auto;
-    margin-right: auto;
+@media (max-width: 575.98px) {
+  .mh-footer-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ==== Columns ==== */
+
+.mh-footer-col {
+  min-width: 0;
+}
+
+.mh-footer-brand {
+  max-width: 340px;
+}
+
+.mh-footer-logo-link {
+  display: inline-block;
+  margin-bottom: 1.25rem;
+}
+
+.mh-footer-logo {
+  height: 11.5rem;
+  width: auto;
+  filter: brightness(0) invert(1);
+}
+
+.mh-footer-desc {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: rgba(248, 250, 252, 0.8);
+}
+
+/* Headings */
+
+.mh-footer-heading {
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
+/* Quick links */
+
+.mh-footer-links-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mh-footer-links-list li + li {
+  margin-top: 0.55rem;
+}
+
+.mh-footer-link {
+  font-size: 0.9rem;
+  color: rgba(248, 250, 252, 0.72);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.mh-footer-link:hover {
+  color: #ffffff;
+}
+
+/* Contact list */
+
+.mh-footer-contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mh-footer-contact-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-bottom: 0.7rem;
+}
+
+.mh-footer-contact-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  font-size: 0.7rem;
+}
+
+.mh-footer-contact-text a,
+.mh-footer-contact-text span {
+  font-size: 0.9rem;
+  color: rgba(248, 250, 252, 0.78);
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.mh-footer-contact-text a:hover {
+  color: #ffffff;
+}
+
+/* Social */
+
+.mh-footer-socials {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.mh-footer-social-link {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(248, 250, 252, 0.75);
+  font-size: 0.9rem;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.mh-footer-social-link:hover {
+  background: #38bdf8;
+  border-color: #38bdf8;
+  color: #0f172a;
+  transform: translateY(-1px);
+}
+
+/* Map */
+
+.mh-footer-map-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.mh-footer-map {
+  flex: 1;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(15, 23, 42, 0.9);
+  aspect-ratio: 4 / 3;
+}
+
+.mh-footer-map iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Bottom line */
+
+.mh-footer-bottom {
+  margin-top: 1.5rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+  padding-top: 0.8rem;
+  padding-bottom: 1rem;
+}
+
+.mh-footer-bottom-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 0.78rem;
+  color: rgba(248, 250, 252, 0.65);
+}
+
+@media (min-width: 640px) {
+  .mh-footer-bottom-inner {
+    text-align: left;
   }
 }
 </style>

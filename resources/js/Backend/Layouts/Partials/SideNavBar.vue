@@ -5,10 +5,10 @@
     <div class="app-brand demo justify-content-center">
       <a href="/admin" class="app-brand-link" style="justify-content: center">
         <span  v-if="isCollapsed" class="app-brand-logo demo" style="justify-content: center">
-          <img src="/images/main-logo (1).png" alt style="height: 50px; width: auto" />
+          <img src="/images/mahindalogo.png" alt style="height: 50px; width: auto" />
         </span>
         <span v-else class="app-brand-logo demo" style="justify-content: center">
-          <img src="/images/main-logo (1).png" alt style="height: 150px; width: auto" />
+          <img src="/images/mahindalogo.png" alt style="height: 150px; width: auto" />
         </span>
         <span class="app-brand-text demo menu-text fw-bolder ms-2"></span>
       </a>
@@ -35,8 +35,21 @@
         <div data-i18n="Dashboards">Dashboard</div>
         </Link>
       </li>
+       <li class="menu-item" v-bind:class="{
+            active: addActiveClass([
+              'homebanner.index',
+              'homebanner.create',
+              'homebanner.edit',
+            ]),
+          }" v-if="$root.hasPermission('homebanner.view')">
+            <Link :href="route('homebanner.index')" class="menu-link">
+<i class="menu-icon tf-icons bx bx-image"></i>
+
+            <div data-i18n="Home Banner">Home Banner</div>
+            </Link>
+          </li>
       <!-- Inquiry -->
-      <li class="menu-item" v-bind:class="{
+      <!-- <li class="menu-item" v-bind:class="{
         active: addActiveClass([
           'inquiry.index',
           'inquiry.edit'
@@ -46,7 +59,7 @@
         <i class="menu-icon tf-icons bx bx-mail-send"></i>
         <div data-i18n="Inquiry">Inquiry</div>
         </Link>
-      </li>
+      </li> -->
       <!-- Leads -->
       <!-- <li
         class="menu-item"
@@ -64,7 +77,7 @@
         </Link>
       </li> -->
 
-      <li class="menu-item" v-bind:class="{
+      <!-- <li class="menu-item" v-bind:class="{
         'active open': addActiveClass([
           'lead.index',
           'lead.edit',
@@ -116,181 +129,149 @@
             </Link>
           </li>
         </ul>
-      </li>
+      </li> -->
 
       <!-- Media Library -->
-      <li class="menu-item" v-bind:class="{ active: addActiveClass(['media.index']) }"
+      <!-- <li class="menu-item" v-bind:class="{ active: addActiveClass(['media.index']) }"
         v-if="$root.hasPermission('media.view') && !$page.props.branch">
         <Link :href="route('media.index', { c: 'default' })" class="menu-link">
         <i class="menu-icon tf-icons bx bx-photo-album"></i>
         <div data-i18n="Medai Library">Media Library</div>
         </Link>
-      </li>
+      </li> -->
 
       <!-- Vehicle Manufacture (Live-Auction) -->
-      <li class="menu-item"
+      <!-- <li class="menu-item"
         v-bind:class="{ active: addActiveClass(['vehicle_manufacture.live.index', 'vehicle_manufacture.live.edit', 'vehicle_manufacture.live.create']) }"
         v-if="$root.hasPermission('vehicle_manufacture.view') && !$page.props.branch">
         <Link :href="route('vehicle_manufacture.live.index', { c: 'default' })" class="menu-link">
         <i class="menu-icon tf-icons bx bxs-car-garage"></i>
         <div data-i18n="Vehicle Manufacture Live">Vehicle Manufacture (Live-Auction)</div>
         </Link>
-      </li>
+      </li> -->
 
-      <!-- Vehicle CMS -->
-      <li class="menu-item" v-bind:class="{
-        'active open': addActiveClass([
-          'vehicle_cms.users',
-          'vehicle_cms.users.create',
-          'vehicle_cms.users.edit',
-          'vehicle_cms.roles',
-          'vehicle_cms.roles.create',
-          'vehicle_cms.roles.edit',
-          'vehicle_cms.roles.permissions',
-          'vehicle_cms.general',
-          'vehicle_cms.social-auth',
-          'vehicle_cms.mail',
-          'payment-options.index',
-          'currencies.index',
-          'log.index',
+    <!-- Hardware CMS -->
+<li
+  class="menu-item"
+  :class="{
+    'active open': addActiveClass([
+      // Category
+      'category.index','category.create','category.edit',
 
-          'vehicle_type.create',
-          'vehicle_type.edit',
-          'vehicle.type.index',
+      'subcategory.index','subcategory.create','subcategory.edit',
 
-          'vehicle_manufacture.create',
-          'vehicle_manufacture.edit',
-          'vehicle_manufacture.index',
+      // Brands
+      'brand.index','brand.create','brand.edit',
 
-          //   'vehicle_manufacture.live.create',
-          //  'vehicle_manufacture.live.edit',
-          //   'vehicle_manufacture.live.index',
+      // UOM
+      'uom.index','uom.create','uom.edit',
 
-          'vehicle_model.view',
-          'vehicle_model.create',
-          'vehicle_model.edit',
-          'vehicle.model',
+      // Attributes
+      'attribute.index','attribute.create','attribute.edit',
 
-          'vehicle.color',
-          'vehicle.color.view',
-          'vehicle.color.create',
-          'vehicle.color.edit',
+      // Attribute Sets
+      'attribute-set.index','attribute-set.create','attribute-set.edit',
 
-          'vehicle.index',
-          'vehicle.create',
-          'vehicle.edit',
+      // Products
+      'product.index','product.create','product.edit',
+    ]),
+  }"
+  v-if="!$page.props.branch && hasAnyPermission([
+    'category.view',
+     'subcategory.view',
+    'brand.view',
+    'uom.view',
+    'attribute.view',
+    'attribute-set.view',
+    'product.view',
+  ])"
+>
+  <a href="javascript:void(0);" class="menu-link menu-toggle">
+    <i class="menu-icon tf-icons bx bx-car"></i>
+    <div data-i18n="Vehicle_CMS">Hardware CMS</div>
+  </a>
 
-          'vehicle.feature',
-          'vehicle.feature.view',
-          'vehicle.feature.create',
-          'vehicle.feature.edit',
-        ]),
-      }" v-if="!$page.props.branch && hasAnyPermission([
-        'vehicle_type.view',
-        'vehicle_manufacture.view',
-        'vehicle_model.view',
-        'vehicle_color.view',
-        'vehicle.view'
-      ])">
-        <a href="javascript:void(0);" class="menu-link menu-toggle">
-          <i class="menu-icon tf-icons bx bx-car"></i>
+  <ul class="menu-sub">
+    <!-- Category -->
+    <li
+      class="menu-item"
+      :class="{ active: addActiveClass(['category.index','category.create','category.edit']) }"
+      v-if="$root.hasPermission('category.view')"
+    >
+      <Link :href="route('category.index')" class="menu-link">
+        <div data-i18n="Category">Category</div>
+      </Link>
+    </li>
 
-          <div data-i18n="Vehicle_CMS">Vehicle CMS</div>
-        </a>
+    <!-- ✅ Subcategory -->
+<li
+  class="menu-item"
+  :class="{ active: addActiveClass(['subcategory.index','subcategory.create','subcategory.edit']) }"
+  v-if="$root.hasPermission('subcategory.view')"
+>
+  <Link :href="route('subcategory.index')" class="menu-link">
+    <div data-i18n="Subcategory">Subcategory</div>
+  </Link>
+</li>
 
-        <ul class="menu-sub">
-          <li class="menu-item" v-bind:class="{
-            active: addActiveClass([
-              'vehicle_type.users',
-              'vehicle_type.create',
-              'vehicle_type.edit',
-              'vehicle.type.index',
-            ]),
-          }" v-if="$root.hasPermission('vehicle_type.view')">
-            <Link :href="route('vehicle.type.index')" class="menu-link">
-            <div data-i18n="Vehicle type">Vehicle type</div>
-            </Link>
-          </li>
-          <!-- <li class="menu-item" v-bind:class="{
-            active: addActiveClass([
-              'vehicle_manufacture.live.create',
-              'vehicle_manufacture.live.edit',
-              'vehicle_manufacture.live.index',
-            ]),
-          }" v-if="$root.hasPermission('vehicle_manufacture.view')">
-            <Link :href="route('vehicle_manufacture.live.index')" class="menu-link">
-            <div data-i18n="Vehicle Manufacture">Vehicle Manufacture (Live-Auction)</div>
-            </Link>
-          </li>-->
-          <li class="menu-item" v-bind:class="{
-            active: addActiveClass([
-              'vehicle_manufacture',
-              'vehicle_manufacture.create',
-              'vehicle_manufacture.edit',
-              'vehicle_manufacture.index',
-            ]),
-          }" v-if="$root.hasPermission('vehicle_manufacture.view')">
-            <Link :href="route('vehicle_manufacture.index')" class="menu-link">
-            <div data-i18n="Vehicle Manufacture">Vehicle Manufacture</div>
-            </Link>
-          </li>
-          <!-- <li
-            class="menu-item"
-            v-bind:class="{
-              active: addActiveClass(['settings']),
-            }"
-            v-if="$root.hasPermission('system-setting.view')"
-          >
-            <Link :href="route('settings')" class="menu-link">
-              <div data-i18n="General Settings">General Settings</div>
-            </Link>
-          </li>-->
-          <li class="menu-item" v-bind:class="{
-            active: addActiveClass([
-              'vehicle.model',
-              'vehicle_model.create',
-              'vehicle_model.edit',
-            ]),
-          }" v-if="$root.hasPermission('vehicle_model.view')">
-            <Link :href="route('vehicle.model')" class="menu-link">
-            <div data-i18n="Vehicle Model">Vehicle Model</div>
-            </Link>
-          </li>
-          <li class="menu-item" v-bind:class="{
-            active: addActiveClass([
-              'vehicle.color',
-              'vehicle.color.create',
-              'vehicle.color.edit',
-            ]),
-          }" v-if="$root.hasPermission('vehicle_color.view')">
-            <Link :href="route('vehicle.color')" class="menu-link">
-            <div data-i18n="Vehicle Color">Vehicle Color</div>
-            </Link>
-          </li>
-          <li class="menu-item" v-bind:class="{
-            active: addActiveClass([
-              'vehicle.feature',
-              'vehicle.feature.create',
-              'vehicle.feature.edit',
-            ]),
-          }" v-if="$root.hasPermission('vehicle_feature.view')">
-            <Link :href="route('vehicle.feature')" class="menu-link">
-            <div data-i18n="Vehicle Feature">Vehicle Feature</div>
-            </Link>
-          </li>
-          <li class="menu-item" v-bind:class="{
-            active: addActiveClass([
-              'vehicle.index',
-              'vehicle.create',
-              'vehicle.edit',
-            ]),
-          }" v-if="$root.hasPermission('vehicle.view')">
-            <Link :href="route('vehicle.index')" class="menu-link">
-            <div data-i18n="Vehicle">Vehicle</div>
-            </Link>
-          </li>
-        </ul>
-      </li>
+
+    <!-- Brands -->
+    <li
+      class="menu-item"
+      :class="{ active: addActiveClass(['brand.index','brand.create','brand.edit']) }"
+      v-if="$root.hasPermission('brand.view')"
+    >
+      <Link :href="route('brand.index')" class="menu-link">
+        <div data-i18n="Brands">Brands</div>
+      </Link>
+    </li>
+
+    <!-- Units Of Measure -->
+    <li
+      class="menu-item"
+      :class="{ active: addActiveClass(['uom.index','uom.create','uom.edit']) }"
+      v-if="$root.hasPermission('uom.view')"
+    >
+      <Link :href="route('uom.index')" class="menu-link">
+        <div data-i18n="Units Of Measure">Units Of Measure</div>
+      </Link>
+    </li>
+
+    <!-- Attributes -->
+    <li
+      class="menu-item"
+      :class="{ active: addActiveClass(['attribute.index','attribute.create','attribute.edit']) }"
+      v-if="$root.hasPermission('attribute.view')"
+    >
+      <Link :href="route('attribute.index')" class="menu-link">
+        <div data-i18n="Attributes">Attributes</div>
+      </Link>
+    </li>
+
+    <!-- Attribute Sets -->
+    <li
+      class="menu-item"
+      :class="{ active: addActiveClass(['attribute-set.index','attribute-set.create','attribute-set.edit']) }"
+      v-if="$root.hasPermission('attribute-set.view')"
+    >
+      <Link :href="route('attribute-set.index')" class="menu-link">
+        <div data-i18n="Attribute Sets">Attribute Sets</div>
+      </Link>
+    </li>
+
+    <!-- Products -->
+    <li
+      class="menu-item"
+      :class="{ active: addActiveClass(['product.index','product.create','product.edit']) }"
+      v-if="$root.hasPermission('product.view')"
+    >
+      <Link :href="route('product.index')" class="menu-link">
+        <div data-i18n="Products">Products</div>
+      </Link>
+    </li>
+  </ul>
+</li>
+
 
       <!-- Other CMS -->
       <li class="menu-item" v-bind:class="{
@@ -328,9 +309,9 @@
           'advertisements.create',
           'advertisements.edit',
 
-          'homebanner.index',
-          'homebanner.create',
-          'homebanner.edit',
+        //   'homebanner.index',
+        //   'homebanner.create',
+        //   'homebanner.edit',
 
           'events.index',
           'events.create',
@@ -342,14 +323,14 @@
         'system-setting.view',
         'currencies.view'
       ])">
-        <a href="javascript:void(0)" class="menu-link menu-toggle">
+        <!-- <a href="javascript:void(0)" class="menu-link menu-toggle">
           <i class="menu-icon tf-icons bx bx-traffic-cone"></i>
 
           <div data-i18n="Other_CMS">Other CMS</div>
-        </a>
+        </a> -->
 
         <ul class="menu-sub">
-          <li class="menu-item" v-bind:class="{
+          <!-- <li class="menu-item" v-bind:class="{
             active: addActiveClass([
               'testimonials.view',
               'testimonials.create',
@@ -361,9 +342,9 @@
             <Link :href="route('testimonials.index')" class="menu-link">
             <div data-i18n="Vehicle type">Vehicle Testimonials</div>
             </Link>
-          </li>
+          </li> -->
 
-          <li class="menu-item" v-bind:class="{
+          <!-- <li class="menu-item" v-bind:class="{
             active: addActiveClass([
               'newsletter.index',
               'newsletter.create',
@@ -373,7 +354,7 @@
             <Link :href="route('newsletter.index')" class="menu-link">
             <div data-i18n="Newsletter">News Letter</div>
             </Link>
-          </li>
+          </li> -->
           <!-- <li
             class="menu-item"
             v-bind:class="{
@@ -385,7 +366,7 @@
               <div data-i18n="General Settings">General Settings</div>
             </Link>
           </li>-->
-          <li class="menu-item" v-bind:class="{
+          <!-- <li class="menu-item" v-bind:class="{
             active: addActiveClass([
               'homebanner.index',
               'homebanner.create',
@@ -395,9 +376,9 @@
             <Link :href="route('homebanner.index')" class="menu-link">
             <div data-i18n="Home Banner">Home Banner</div>
             </Link>
-          </li>
+          </li> -->
 
-          <li class="menu-item" v-bind:class="{
+          <!-- <li class="menu-item" v-bind:class="{
             active: addActiveClass([
               'advertisements.view',
               'advertisements.create',
@@ -408,9 +389,9 @@
             <Link :href="route('advertisements.index')" class="menu-link">
             <div data-i18n="Advertisements">Advertisements</div>
             </Link>
-          </li>
+          </li> -->
 
-          <li class="menu-item" v-bind:class="{
+          <!-- <li class="menu-item" v-bind:class="{
             active: addActiveClass([
               'events.index',
               'events.create',
@@ -420,7 +401,7 @@
             <Link :href="route('events.index')" class="menu-link">
             <div data-i18n="News And Events">News And Events</div>
             </Link>
-          </li>
+          </li> -->
         </ul>
       </li>
 
@@ -439,7 +420,7 @@
         </Link>
       </li>
       <!-- Country-->
-      <li class="menu-item" v-bind:class="{
+      <!-- <li class="menu-item" v-bind:class="{
         active: addActiveClass([
           'country.index',
           'country.create',
@@ -451,9 +432,9 @@
 
         <div data-i18n="Country">Country</div>
         </Link>
-      </li>
+      </li> -->
       <!-- Affiliate Config-->
-      <li class="menu-item" v-bind:class="{
+      <!-- <li class="menu-item" v-bind:class="{
         active: addActiveClass([
           'settings.affiliate-pages',
         ])
@@ -463,11 +444,11 @@
 
         <div data-i18n="Affiliate Config">Affiliate Config</div>
         </Link>
-      </li>
+      </li> -->
 
-      
+
      <!-- Fuel List Management -->
-     <li
+     <!-- <li
        class="menu-item"
        v-bind:class="{ active: addActiveClass(['fuels.index']) }"
        v-if="!$page.props.branch && hasAnyPermission(['system-setting.view'])"
@@ -476,7 +457,7 @@
          <i class="menu-icon tf-icons bx bx-purchase-tag"></i>
          <div data-i18n="Fuel List Management">Fuel List Management</div>
        </Link>
-     </li>
+     </li> -->
 
 
 
@@ -516,9 +497,9 @@
               'settings.users.edit',
             ]),
           }" v-if="$root.hasPermission('backend-user.view')">
-            <Link :href="route('settings.users')" class="menu-link">
+            <!-- <Link :href="route('settings.users')" class="menu-link">
             <div data-i18n="Backend Users">Backend Users</div>
-            </Link>
+            </Link> -->
           </li>
           <li class="menu-item" v-bind:class="{
             active: addActiveClass([
@@ -528,9 +509,9 @@
               'settings.roles.permissions',
             ]),
           }" v-if="$root.hasPermission('roles-permissions.view')">
-            <Link :href="route('settings.roles')" class="menu-link">
+            <!-- <Link :href="route('settings.roles')" class="menu-link">
             <div data-i18n="Roles & Permissions">Roles & Permissions</div>
-            </Link>
+            </Link> -->
           </li>
           <li class="menu-item" v-bind:class="{
             active: addActiveClass(['settings.general']),
@@ -539,13 +520,13 @@
             <div data-i18n="General Settings">General Settings</div>
             </Link>
           </li>
-          <li class="menu-item" v-bind:class="{
+          <!-- <li class="menu-item" v-bind:class="{
             active: addActiveClass(['settings.social-auth']),
           }" v-if="$root.hasPermission('system-setting.view')">
             <Link :href="route('settings.social-auth')" class="menu-link">
             <div data-i18n="Social Auth Settings">Social Auth Settings</div>
             </Link>
-          </li>
+          </li> -->
           <li class="menu-item" v-bind:class="{
             active: addActiveClass(['currencies.index']),
           }" v-if="$root.hasPermission('currencies.view')">
@@ -553,13 +534,13 @@
             <div data-i18n="Currencies">Currencies</div>
             </Link>
           </li>
-          <li class="menu-item" v-bind:class="{
+          <!-- <li class="menu-item" v-bind:class="{
             active: addActiveClass(['settings.mail']),
           }" v-if="$root.hasPermission('system-setting.view')">
             <Link :href="route('settings.mail')" class="menu-link">
             <div data-i18n="Mail Settings">Mail Settings</div>
             </Link>
-          </li>
+          </li> -->
         </ul>
       </li>
 

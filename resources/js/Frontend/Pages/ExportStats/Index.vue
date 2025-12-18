@@ -55,6 +55,7 @@
                             ]" />
                     </div>
 
+                    
                     <!-- grade -->
                     <div class="col-md-4">
                         <SelectInputComponent id="grads" v-model="form.grade" placeholder="SELECT GRADE"
@@ -115,12 +116,12 @@
 <script>
 
 import { useForm } from "@inertiajs/inertia-vue3";
-import SelectInputComponent from "../Home/partials/SelectInputComponent.vue";
+// import SelectInputComponent from "../Home/partials/SelectInputComponent.vue";
 import axios from "axios";
 
 export default {
     components: {
-        SelectInputComponent
+        // SelectInputComponent
     },
 
     data() {
