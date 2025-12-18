@@ -580,7 +580,7 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #ef4444;
+  background: #d51010;
   color: #ffffff;
   font-weight: 800;
   font-size: 0.78rem;

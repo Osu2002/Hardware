@@ -623,7 +623,7 @@ updateNavState() {
   height: 38px;
   border-radius: 50%;
 
-  background: #1a175c; /* light red */
+  background: #d51010; /* light red */
   color: #f9f7f7;      /* red text */
 
   display: flex;
