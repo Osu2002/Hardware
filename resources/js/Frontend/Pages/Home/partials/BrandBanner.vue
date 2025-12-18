@@ -26,6 +26,7 @@
       </div>
 
       <!-- SWIPER SLIDER -->
+       <div class="brand-slider-row">
       <Swiper
         class="brand-swiper"
         :modules="modules"
@@ -59,6 +60,7 @@
           </div>
         </SwiperSlide>
       </Swiper>
+      </div>
     </div>
   </section>
 </template>
@@ -131,16 +133,30 @@ export default {
 <style scoped>
 .brand-banner {
   margin: 40px 0;
-  padding: 24px 32px;
-  background: #f9fafb;
   border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+  overflow: hidden; /* IMPORTANT so slider respects rounded corners */
+  
 }
 
-.brand-banner-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* Give padding ONLY to header */
+.brand-banner-header {
+  padding: 24px 3px 12px;
+   font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--nav-text, #12355a);
+}
+
+/* Slider has NO side padding */
+.brand-slider-row {
+  padding: 0; /* touches left/right edges */
+}
+
+/* Swiper full width */
+.brand-swiper {
+  width: 100%;
+  padding: 0 0 20px; /* only bottom padding if you want */
 }
 
 /* Header */
@@ -173,7 +189,7 @@ export default {
   background: #ffffff;
   border-radius: 12px;
   padding: 16px 12px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  /* box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06); */
   display: flex;
   flex-direction: column;
   align-items: center;
