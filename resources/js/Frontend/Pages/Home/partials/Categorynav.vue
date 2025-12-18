@@ -489,7 +489,7 @@ export default {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  touch-action: pan-x;
+ touch-action: pan-x pan-y; 
   overscroll-behavior-x: contain;
 
   /* makes end-of-list fully reachable + nicer snap offsets */

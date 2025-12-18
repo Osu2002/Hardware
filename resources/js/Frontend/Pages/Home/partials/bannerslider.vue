@@ -36,7 +36,7 @@
     </div>
 
     <!-- Arrows -->
-    <button
+    <!-- <button
       v-if="showArrows && safeBanners.length > 1"
       class="arrow arrow--prev"
       type="button"
@@ -53,9 +53,9 @@
           stroke-linejoin="round"
         />
       </svg>
-    </button>
+    </button> -->
 
-    <button
+    <!-- <button
       v-if="showArrows && safeBanners.length > 1"
       class="arrow arrow--next"
       type="button"
@@ -72,7 +72,7 @@
           stroke-linejoin="round"
         />
       </svg>
-    </button>
+    </button> -->
 
     <!-- Dots -->
     <div
