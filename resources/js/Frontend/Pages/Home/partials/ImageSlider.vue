@@ -13,7 +13,7 @@
     @keydown.right.prevent="next"
     tabindex="0"
   >
-    <!-- Track -->
+   
     <div class="track" :style="trackStyle" @transitionend="onTransitionEnd">
       <div
         v-for="(s, i) in slidesExtended"
