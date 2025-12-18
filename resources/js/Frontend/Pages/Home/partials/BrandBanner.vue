@@ -148,6 +148,8 @@ export default {
   color: var(--nav-text, #12355a);
 }
 
+
+
 /* Slider has NO side padding */
 .brand-slider-row {
   padding: 0; /* touches left/right edges */
@@ -166,6 +168,7 @@ export default {
   justify-content: space-between;
   margin-bottom: 4px;
 }
+
 
 .brand-banner-title {
   font-size: 1.4rem;
@@ -195,6 +198,7 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  border: 1px solid #e5e7eb;
 }
 
 /* Brand logo */
@@ -202,7 +206,7 @@ export default {
   width: 100%;
   height: 60px;
   border-radius: 10px;
-  background: #f3f4f6;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
