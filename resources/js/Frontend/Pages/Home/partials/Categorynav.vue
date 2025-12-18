@@ -595,9 +595,43 @@ export default {
   flex-direction: column;
 }
 
+/* ===== Typography to match SpecialOffers / TopNavbar (mitem style) ===== */
+.catnav-section {
+  font-family: inherit;
+}
+
+/* headings + key text use navbar vibe */
+.catnav-heading,
+.card-title,
+.btn-buy {
+  /* text-transform: uppercase; */
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+
+/* heading a bit more premium */
+.catnav-heading {
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+/* product title like menu text */
+.card-title {
+  font-size: 13px; /* similar to navbar */
+}
+
+/* price weights consistent */
+.card-price {
+  font-weight: 500;
+}
+.card-old-price {
+  font-weight: 500;
+}
+
+
 .card-title {
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 500;
   color: #111827;
   text-align: center;
   line-height: 1.3;
@@ -620,9 +654,9 @@ export default {
 .card-old-price {
   position: relative;
   display: inline-block;
-  color: #979ca49e;
-  font-weight: 600;
-  font-size: 0.78rem;
+  color: #9ca3af;
+  font-weight: 500;
+  font-size: 0.82rem;
 }
 
 .card-old-price::after {
@@ -637,8 +671,8 @@ export default {
 }
 
 .card-price {
-  color: #f97316;
-  font-weight: 800;
+  color: #4c1d95;
+  font-weight: 500;
   font-size: 0.92rem;
 }
 
@@ -703,20 +737,20 @@ export default {
 }
 
 .btn-buy {
-  background: #22c55e;
+  background: #071c61;
   color: #ffffff;
   border: none;
   padding: 6px 14px;
   border-radius: 8px;
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 500;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .btn-buy:hover {
-  background: #16a34a;
-  transform: translateY(-1px);
+  background: #1165b8b2;
+  transform: translateY(-4px);
 }
 
 /* tablet: ~3 visible */
