@@ -75,15 +75,16 @@
                                 option-value="id"
                                 v-model="form.uom_id"
                             />
-                            <SelectInputComponent
-                                class="mb-3 col-md-4"
-                                id="attribute_set"
-                                label="Attribute Set"
-                                :options="attributeSets"
-                                option-label="name"
-                                option-value="id"
-                                v-model="form.attribute_set_id"
-                            />
+                           <SelectInputComponent
+  class="mb-3 col-md-4"
+  id="attribute_set"
+  label="Attribute Set"
+  :options="[{ id: '', name: '-- (Optional) --' }, ...attributeSets]"
+  option-label="name"
+  option-value="id"
+  v-model="form.attribute_set_id"
+/>
+
                         </div>
 
                         <!-- Dynamic Attributes -->
@@ -195,16 +196,17 @@
   v-model="form.category_id"
 />
 
- <SelectInputComponent
-    class="mb-3 col-md-6"
-    id="subcategory_id"
-    label="Sub Category"
-    :options="filteredSubcategories"
-    option-label="title"
-    option-value="id"
-    :error="form.errors.subcategory_id"
-    v-model="form.subcategory_id"
-  />
+<SelectInputComponent
+  class="mb-3 col-md-6"
+  id="subcategory_id"
+  label="Sub Category"
+  :options="[{ id: '', title: '-- (Optional) --' }, ...filteredSubcategories]"
+  option-label="title"
+  option-value="id"
+  :error="form.errors.subcategory_id"
+  v-model="form.subcategory_id"
+/>
+
                                 <div class="text-muted small">
                                     Hold Ctrl / Cmd to multi-select
                                 </div>
@@ -348,13 +350,13 @@
 
   <div class="mb-3 col-md-3">
     <label class="form-label">Warranty Period</label>
-    <input
-      type="number"
-      min="0"
-      class="form-control"
-      v-model="form.warranty_period"
-      placeholder="e.g., 12 (months)"
-    />
+   <input
+  type="text"
+  class="form-control"
+  v-model="form.warranty_period"
+  placeholder="e.g., 1 year / 12 months"
+/>
+
     <div class="text-danger">{{ form.errors.warranty_period }}</div>
   </div>
 
