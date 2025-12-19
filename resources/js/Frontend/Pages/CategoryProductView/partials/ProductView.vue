@@ -13,9 +13,10 @@
       </template>
 
       <span class="crumb-separator">/</span>
-      <span class="crumb-current">
-        {{ product.name }}
-      </span>
+     <span class="crumb-current" :title="product.name">
+  {{ truncateName(product.name) }}
+</span>
+
     </nav>
 
     <!-- Main layout -->
@@ -64,9 +65,10 @@
 
       <!-- Info -->
       <div class="product-info">
-        <h1 class="title">
-          {{ product.name }}
-        </h1>
+      <h1 class="title" :title="product.name">
+  {{ truncateName(product.name) }}
+</h1>
+
 
         <div v-if="product.brandLogo" class="brand-logo-row">
   <span class="brand-label">Brand:</span>
@@ -241,6 +243,12 @@ export default {
         maximumFractionDigits: 2,
       });
     },
+    truncateName(text, max = 32) {
+  if (!text) return '';
+  const s = String(text).trim();
+  return s.length > max ? s.slice(0, max) + '...' : s;
+},
+
 
     goToProduct(slug) {
       // Reuse the same route when clicking related products
