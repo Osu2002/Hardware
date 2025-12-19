@@ -255,7 +255,7 @@ export default {
 <style scoped>
 .product-page {
   padding: 40px 0 60px;
-  background: #f3f4f6;
+  /* background: #f3f4f6; */
 }
 
 /* breadcrumb */
