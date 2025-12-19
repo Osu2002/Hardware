@@ -210,6 +210,11 @@ class ProductController extends Controller
             'discount_status' => ['required', 'in:0,1'],
             'discount_type' => ['required_if:discount_status,1', 'nullable', 'in:percent,amount'],
             'discounted_amount' => ['required_if:discount_status,1', 'nullable', 'numeric', 'min:0'],
+            'in_stock'        => ['nullable', 'in:0,1'],
+'stock_count'     => ['nullable', 'integer', 'min:0'],
+'warranty_period' => ['nullable', 'integer', 'min:0'],
+'warranty_type'   => ['nullable', 'max:120'],
+
 
             'category_id' => ['nullable', 'exists:categories,id'],
 'subcategory_id' => [
@@ -234,6 +239,19 @@ class ProductController extends Controller
                 $r->attributes_map ?? []
             );
 
+            $inStock = $r->input('in_stock');
+$inStock = ($inStock === '' || $inStock === null) ? null : (int)$inStock;
+
+$stockCount = $r->input('stock_count');
+$stockCount = ($stockCount === '' || $stockCount === null) ? null : (int)$stockCount;
+
+$warrantyPeriod = $r->input('warranty_period');
+$warrantyPeriod = ($warrantyPeriod === '' || $warrantyPeriod === null) ? null : (int)$warrantyPeriod;
+
+$warrantyType = $r->input('warranty_type');
+$warrantyType = ($warrantyType === '' || $warrantyType === null) ? null : $warrantyType;
+
+
             $product = Product::create([
                 'name' => $r->name,
                 'slug' => $slug,
@@ -253,6 +271,11 @@ class ProductController extends Controller
                 'discount_type'     => $r->discount_status ? $r->discount_type : null,
                 'discounted_amount' => $r->discount_status ? $r->discounted_amount : null,
                 'subcategory_id' => $r->subcategory_id,
+                'in_stock'        => $inStock,
+'stock_count'     => $stockCount,
+'warranty_period' => $warrantyPeriod,
+'warranty_type'   => $warrantyType,
+
 
             ]);
 
@@ -327,6 +350,11 @@ public function destroyImage(Product $product, $media)
             'discount_status' => ['required', 'in:0,1'],
             'discount_type' => ['required_if:discount_status,1', 'nullable', 'in:percent,amount'],
             'discounted_amount' => ['required_if:discount_status,1', 'nullable', 'numeric', 'min:0'],
+            'in_stock'        => ['nullable', 'in:0,1'],
+'stock_count'     => ['nullable', 'integer', 'min:0'],
+'warranty_period' => ['nullable', 'integer', 'min:0'],
+'warranty_type'   => ['nullable', 'max:120'],
+
             'category_id' => ['nullable', 'exists:categories,id'],
 'subcategory_id' => [
     'nullable',
@@ -346,6 +374,18 @@ public function destroyImage(Product $product, $media)
                 $r->attribute_set_id ? (int)$r->attribute_set_id : null,
                 $r->attributes_map ?? []
             );
+            $inStock = $r->input('in_stock');
+$inStock = ($inStock === '' || $inStock === null) ? null : (int)$inStock;
+
+$stockCount = $r->input('stock_count');
+$stockCount = ($stockCount === '' || $stockCount === null) ? null : (int)$stockCount;
+
+$warrantyPeriod = $r->input('warranty_period');
+$warrantyPeriod = ($warrantyPeriod === '' || $warrantyPeriod === null) ? null : (int)$warrantyPeriod;
+
+$warrantyType = $r->input('warranty_type');
+$warrantyType = ($warrantyType === '' || $warrantyType === null) ? null : $warrantyType;
+
 
             $product->update([
                 'name' => $r->name,
@@ -365,6 +405,11 @@ public function destroyImage(Product $product, $media)
                 'discount_type'     => $r->discount_status ? $r->discount_type : null,
                 'discounted_amount' => $r->discount_status ? $r->discounted_amount : null,
                 'subcategory_id' => $r->subcategory_id,
+                'in_stock'        => $inStock,
+'stock_count'     => $stockCount,
+'warranty_period' => $warrantyPeriod,
+'warranty_type'   => $warrantyType,
+
 
             ]);
 

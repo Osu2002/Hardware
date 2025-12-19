@@ -15,7 +15,8 @@ class Product extends Model implements HasMedia
     protected $fillable = [
         'name','slug','sku','status','sort_order','brand_id','uom_id',
         'attribute_set_id','primary_category_id','price','sale_price', 'attributes_json',
-        'short_description','description','discount_status','discount_type','discounted_amount','subcategory_id',
+        'short_description','description','discount_status','discount_type','discounted_amount',
+        'subcategory_id','in_stock','stock_count','warranty_period','warranty_type',
     ];
 
  protected $casts = [
