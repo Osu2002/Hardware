@@ -68,9 +68,50 @@
           {{ product.name }}
         </h1>
 
-        <p v-if="product.brand" class="brand">
-          Brand: <span>{{ product.brand }}</span>
-        </p>
+        <div v-if="product.brandLogo" class="brand-logo-row">
+  <span class="brand-label">Brand:</span>
+  <img :src="product.brandLogo" :alt="product.brand || 'Brand'" class="brand-logo" />
+</div>
+
+<p v-else-if="product.brand" class="brand">
+  Brand: <span>{{ product.brand }}</span>
+</p>
+
+<div v-if="product.attributes && product.attributes.length" class="attrs">
+  <div class="attr-row" v-for="a in product.attributes" :key="a.code">
+    <div class="attr-label">{{ a.label }}</div>
+
+    <div class="attr-value">
+      <template v-if="a.type === 'color'">
+        <span class="color-swatch" :style="{ background: a.value }"></span>
+        {{ a.value }}
+      </template>
+      <template v-else>
+        {{ a.value }}<span v-if="a.unit"> {{ a.unit }}</span>
+      </template>
+    </div>
+  </div>
+</div>
+
+<div v-if="product.inStock !== null && product.inStock !== undefined" class="meta-row">
+  <div class="meta-label">Availability</div>
+  <div class="meta-value" :class="product.inStock == 1 ? 'instock' : 'outstock'">
+    {{ product.inStock == 1 ? 'In Stock' : 'Out of Stock' }}
+    <span v-if="product.stockCount !== null && product.stockCount !== undefined">
+      ({{ product.stockCount }})
+    </span>
+  </div>
+</div>
+
+<div v-if="product.warrantyPeriod || product.warrantyType" class="meta-row">
+  <div class="meta-label">Warranty</div>
+  <div class="meta-value">
+    <span v-if="product.warrantyPeriod">{{ product.warrantyPeriod }}</span>
+    <span v-if="product.warrantyPeriod && product.warrantyType"> • </span>
+    <span v-if="product.warrantyType">{{ product.warrantyType }}</span>
+  </div>
+</div>
+
 
         <div class="price-block">
           <div class="price-main">
@@ -512,4 +553,53 @@ export default {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+.brand-logo-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
+}
+.brand-label{ font-size:0.9rem; color:#6b7280; }
+.brand-logo{
+  height:26px;
+  max-width:140px;
+  object-fit:contain;
+}
+
+.attrs{
+  border-top:1px solid #eee;
+  padding-top:12px;
+  margin-top:10px;
+  margin-bottom:12px;
+}
+.attr-row{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:6px 0;
+  border-bottom:1px dashed #eee;
+}
+.attr-label{ color:#6b7280; font-size:0.9rem; }
+.attr-value{ color:#111827; font-weight:600; font-size:0.9rem; text-align:right; }
+
+.color-swatch{
+  display:inline-block;
+  width:12px;height:12px;
+  border-radius:3px;
+  border:1px solid #ddd;
+  vertical-align:middle;
+  margin-right:6px;
+}
+
+.meta-row{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:6px 0;
+}
+.meta-label{ color:#6b7280; font-size:0.9rem; }
+.meta-value{ font-weight:700; font-size:0.9rem; }
+.instock{ color:#16a34a; }
+.outstock{ color:#dc2626; }
+
 </style>

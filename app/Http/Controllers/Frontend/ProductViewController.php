@@ -13,7 +13,7 @@ class ProductViewController extends Controller
         // Fetch product by slug
         $product = Product::where('slug', $slug)
             ->where('status', 1)
-            ->with(['media', 'brand', 'categories'])
+            ->with(['media', 'brand', 'categories', 'attributeSet.attributes',])
             ->firstOrFail();
 
         // --- Price + discount calculation (same logic style as in HomeController) ---
@@ -21,6 +21,51 @@ class ProductViewController extends Controller
         $oldPrice       = $basePrice;   // original price
         $currentPrice   = $basePrice;
         $discountLabel  = null;
+        $values = $product->attributes_json ?? [];
+
+$attrs = collect();
+if ($product->attributeSet && $product->attributeSet->attributes) {
+    $attrs = $product->attributeSet->attributes
+        ->sortBy(fn($a) => (int)($a->pivot->sort_order ?? 0))
+        ->values();
+}
+
+$displayAttributes = $attrs->map(function ($a) use ($values) {
+    $code = (string) $a->code;
+
+    if (!array_key_exists($code, $values)) return null;
+
+    $val = $values[$code];
+    if ($val === null || $val === '') return null;
+
+    // basic formatting
+    if ($a->type === 'boolean') {
+        $val = ((int)$val === 1) ? 'Yes' : 'No';
+    }
+
+    return [
+        'code'  => $code,
+        'label' => (string) $a->name,
+        'value' => $val,
+        'unit'  => $a->unit,
+        'type'  => (string) $a->type,
+    ];
+})->filter()->values();
+
+
+$brandLogo = null;
+
+// Option 1: Brand uses Spatie MediaLibrary (recommended)
+// collection name example: 'brand_logo' (change if yours differs)
+if ($product->brand && method_exists($product->brand, 'getFirstMediaUrl')) {
+    $brandLogo = $product->brand->getFirstMediaUrl('brand_logo') ?: null;
+}
+
+// Option 2: Brand has a DB column like `logo` or `logo_url`
+if (!$brandLogo && $product->brand) {
+    $brandLogo = $product->brand->logo_url ?? $product->brand->logo ?? null;
+}
+
 
         if ($product->discount_status && $product->discount_type && $product->discounted_amount > 0) {
             if ($product->discount_type === 'percent') {
@@ -58,6 +103,7 @@ class ProductViewController extends Controller
             'slug'  => $product->slug,
 
             'brand' => optional($product->brand)->title,
+             'brandLogo' => $brandLogo, 
 
             'categories' => $product->categories
                 ->map(fn ($c) => [
@@ -77,35 +123,46 @@ class ProductViewController extends Controller
             'short_description' => $product->short_description,
             'description'       => $product->description,
 
+            'attributes' => $displayAttributes,
+    'inStock'        => $product->in_stock,         // 1 / 0 / null
+    'stockCount'     => $product->stock_count,      // int / null
+    'warrantyPeriod' => $product->warranty_period,  // int / null
+    'warrantyType'   => $product->warranty_type, 
+
             'is_new' => $product->created_at
                 ? $product->created_at->gt(now()->subDays(30))
                 : false,
         ];
 
-        // --- (Optional) related products from same primary category ---
-        $related = Product::where('status', 1)
-            ->where('id', '!=', $product->id)
-            ->when($product->primary_category_id, function ($q) use ($product) {
-                $q->where('primary_category_id', $product->primary_category_id);
-            })
-            ->with('media')
-            ->orderBy('created_at', 'desc')
-            ->take(8)
-            ->get()
-            ->map(function ($p) {
-                $thumb = optional($p->getFirstMedia('product_images'))->getUrl();
-                $base  = $p->price ?? 0;
-                $current = $p->sale_price ?? $base;
+       $categoryIds = $product->categories->pluck('id')->all();
 
-                return [
-                    'id'    => $p->id,
-                    'name'  => $p->name,
-                    'slug'  => $p->slug,
-                    'image' => $thumb,
-                    'price' => round($current, 2),
-                ];
-            })
-            ->values();
+$related = Product::where('status', 1)
+    ->where('id', '!=', $product->id)
+    ->when(!empty($categoryIds), function ($q) use ($categoryIds) {
+        $q->whereHas('categories', fn ($cq) => $cq->whereIn('categories.id', $categoryIds));
+    }, function ($q) {
+        // no category => no related
+        $q->whereRaw('1=0');
+    })
+    ->with('media')
+    ->orderBy('created_at', 'desc')
+    ->take(8)
+    ->get()
+    ->map(function ($p) {
+        $thumb = optional($p->getFirstMedia('product_images'))->getUrl();
+        $base  = $p->price ?? 0;
+        $current = $p->sale_price ?? $base;
+
+        return [
+            'id'    => $p->id,
+            'name'  => $p->name,
+            'slug'  => $p->slug,
+            'image' => $thumb,
+            'price' => round($current, 2),
+        ];
+    })
+    ->values();
+
 
         return Inertia::render('CategoryProductView/index', [
             'product'         => $productPayload,
