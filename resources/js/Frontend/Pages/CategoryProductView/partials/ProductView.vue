@@ -611,4 +611,9 @@ export default {
 .instock{ color:#16a34a; }
 .outstock{ color:#dc2626; }
 
+
+.badge-discount{
+  padding-top: 6px;
+}
+
 </style>
