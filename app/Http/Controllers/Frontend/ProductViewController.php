@@ -67,21 +67,27 @@ if (!$brandLogo && $product->brand) {
 }
 
 
-        if ($product->discount_status && $product->discount_type && $product->discounted_amount > 0) {
-            if ($product->discount_type === 'percent') {
-                $currentPrice = max(0, $basePrice * (1 - ($product->discounted_amount / 100)));
-                $discountLabel = 'DISCOUNT ' . rtrim(rtrim($product->discounted_amount, '0'), '.') . '%';
-            } elseif ($product->discount_type === 'amount') {
-                $currentPrice = max(0, $basePrice - $product->discounted_amount);
+      if ($product->discount_status && $product->discount_type && $product->discounted_amount > 0) {
+    if ($product->discount_type === 'percent') {
+        $currentPrice = max(0, $basePrice * (1 - ($product->discounted_amount / 100)));
 
-                if ($basePrice > 0) {
-                    $percent = round(($product->discounted_amount / $basePrice) * 100);
-                    $discountLabel = 'DISCOUNT ' . $percent . '%';
-                } else {
-                    $discountLabel = 'SAVE Rs. ' . number_format($product->discounted_amount, 2);
-                }
-            }
+        $pct = (string) $product->discounted_amount;
+        $pct = rtrim(rtrim($pct, '0'), '.'); // 10.00 -> 10
+        $discountLabel = $pct . '%';         // ✅ "10%" (NOT "DISCOUNT 10%")
+
+    } elseif ($product->discount_type === 'amount') {
+        $currentPrice = max(0, $basePrice - $product->discounted_amount);
+
+        if ($basePrice > 0) {
+            $percent = round(($product->discounted_amount / $basePrice) * 100);
+            $discountLabel = $percent . '%'; // ✅ "10%"
+        } else {
+            // optional: keep this, or set null if you never want Rs labels
+            $discountLabel = 'Rs ' . number_format($product->discounted_amount, 2);
         }
+    }
+}
+
 
         // --- Media / gallery ---
         $primaryImage = optional($product->getFirstMedia('product_images'))->getUrl();

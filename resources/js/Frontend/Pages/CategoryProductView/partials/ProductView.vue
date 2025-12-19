@@ -31,12 +31,12 @@
           />
 
           <div class="badges">
-            <span v-if="product.is_new" class="badge badge-new">NEW</span>
+            <!-- <span v-if="product.is_new" class="badge badge-new">NEW</span> -->
             <span
               v-if="product.discountLabel"
               class="badge badge-discount"
             >
-              {{ product.discountLabel }}
+              -{{ product.discountLabel }}  OFF
             </span>
           </div>
         </div>
@@ -112,20 +112,25 @@
   </div>
 </div>
 
+<div class="price-block">
 
-        <div class="price-block">
-          <div class="price-main">
-            Rs{{ formatPrice(product.price) }}
-          </div>
+  <!-- <span v-if="product.discountLabel" class="badge badge-discount">
+  -{{ product.discountLabel }}
+</span> -->
 
-          <div v-if="product.oldPrice" class="price-old">
-            Rs{{ formatPrice(product.oldPrice) }}
-          </div>
 
-          <div v-if="product.discountLabel" class="price-label">
-            {{ product.discountLabel }}
-          </div>
-        </div>
+ <del v-if="product.oldPrice" class="price-old">
+  Rs{{ formatPrice(product.oldPrice) }}
+</del>
+
+
+  <div class="price-main">
+    Rs{{ formatPrice(product.price) }}
+  </div>
+
+ 
+</div>
+
 
         <p
           v-if="product.short_description"
@@ -398,10 +403,10 @@ export default {
 
 .price-block {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
   margin-bottom: 12px;
-  flex-wrap: wrap;
 }
 
 .price-main {
@@ -411,17 +416,21 @@ export default {
 }
 
 .price-old {
+  display: inline-block;
   font-size: 0.95rem;
-  text-decoration: line-through;
   color: #9ca3af;
+  padding-top: 8px;
+  text-decoration: line-through !important;
+  text-decoration-thickness: 2px;
 }
+
 
 .price-label {
   font-size: 0.8rem;
   font-weight: 700;
   color: #dc2626;
   background: #fee2e2;
-  padding: 2px 8px;
+  padding: 8px 8px 2px; /* top padding added */
   border-radius: 999px;
 }
 
