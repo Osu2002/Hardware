@@ -59,9 +59,8 @@
       <section class="product-info" aria-label="Product information">
         <header class="header">
           <h1 class="title" :title="product.name">
-  {{ truncateName(product.name, 28) }}
-</h1>
-
+            {{ truncateName(product.name, 28) }}
+          </h1>
 
           <div class="brand-row">
             <template v-if="product.brandLogo">
@@ -77,7 +76,6 @@
 
         <div class="price-area" aria-label="Pricing">
           <div class="price-line">
-            
             <div class="price-main">Rs {{ formatPrice(product.price) }}</div>
 
             <div class="price-meta" v-if="product.discountLabel || product.oldPrice">
@@ -167,23 +165,83 @@
     <section v-if="relatedProducts && relatedProducts.length" class="related-section" aria-label="Related products">
       <h2 class="section-title">Related Products</h2>
 
-      <div class="related-grid">
-        <article
-          v-for="p in relatedProducts"
-          :key="p.id"
-          class="related-item"
-          @click="goToProduct(p.slug)"
-          role="button"
-          tabindex="0"
-        >
-          <div class="related-media">
-            <img :src="p.image" :alt="p.name" class="related-image" loading="lazy" decoding="async" />
+      <!-- CategoryNav-style: 5 visible on desktop + swipe/scroll on smaller devices -->
+      <div class="related-slider">
+        <div class="slider-viewport" aria-label="Related products slider">
+          <div class="slider-track">
+            <article
+              v-for="p in relatedProducts"
+              :key="p.id"
+              class="product-card"
+              @click="goToProduct(p.slug)"
+              role="button"
+              tabindex="0"
+            >
+              <div class="card-inner">
+                <div class="card-image-wrapper">
+                  <span
+                    v-if="hasDiscount(p)"
+                    class="badge-discount"
+                    :title="`Discount: ${discountPercent(p)}%`"
+                  >
+                    -{{ discountPercent(p) }}%
+                  </span>
+
+                  <img
+                    :src="p.image"
+                    :alt="p.name"
+                    class="card-image"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+
+                <div class="card-body">
+                  <h3 class="card-title" :title="p.name">
+                    {{ truncateName(p.name, 20) }}
+                  </h3>
+
+                  <div class="card-price-row">
+                    <div class="card-price-stack">
+                      <del v-if="hasDiscount(p)" class="card-old-price">
+                        Rs{{ formatPrice(basePrice(p)) }}
+                      </del>
+
+                      <div class="card-price">
+                        Rs{{ formatPrice(currentPrice(p)) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card-footer">
+                  <button
+                    type="button"
+                    class="btn-heart"
+                    :class="{ active: isWished(p) }"
+                    @click.stop="toggleWish(p)"
+                    aria-label="Add to wishlist"
+                    title="Wishlist"
+                  >
+                    <svg viewBox="0 0 24 24" class="heart-icon" aria-hidden="true">
+                      <path
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                      />
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn-buy"
+                    @click.stop="goToProduct(p.slug)"
+                  >
+                    BUY
+                  </button>
+                </div>
+              </div>
+            </article>
           </div>
-          <div class="related-body">
-            <h3 class="related-title">{{ p.name }}</h3>
-            <div class="related-price">Rs {{ formatPrice(p.price) }}</div>
-          </div>
-        </article>
+        </div>
       </div>
     </section>
 
@@ -222,6 +280,9 @@ export default {
           ? this.product.gallery[0].id
           : null,
       pageUrl: '',
+
+      // Related-products wishlist UI (CategoryNav-style)
+      wished: new Set(),
     };
   },
 
@@ -274,6 +335,58 @@ export default {
       if (!text) return '';
       const s = String(text).trim();
       return s.length > max ? s.slice(0, max) + '...' : s;
+    },
+
+    // ---------- Related: Discount logic (CategoryNav-style) ----------
+    discountPercent(product) {
+      const p = Number(product?.discount_percent);
+      if (Number.isFinite(p) && p > 0) return Math.round(p);
+
+      const oldP = this.basePrice(product);
+      const nowP = this.currentPrice(product);
+
+      if (Number.isFinite(oldP) && oldP > 0 && Number.isFinite(nowP) && nowP > 0 && nowP < oldP) {
+        return Math.round(((oldP - nowP) / oldP) * 100);
+      }
+
+      return 0;
+    },
+
+    basePrice(product) {
+      return (
+        Number(
+          product?.regular_price ??
+            product?.oldPrice ??
+            product?.old_price ??
+            0
+        ) || 0
+      );
+    },
+
+    currentPrice(product) {
+      return Number(product?.price ?? 0) || 0;
+    },
+
+    hasDiscount(product) {
+      const base = this.basePrice(product);
+      const now = this.currentPrice(product);
+      return base > 0 && now > 0 && now < base && this.discountPercent(product) > 0;
+    },
+
+    toggleWish(product) {
+      const id = product?.id;
+      if (id == null) return;
+
+      const next = new Set(this.wished);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+
+      this.wished = next;
+    },
+
+    isWished(product) {
+      const id = product?.id;
+      return id != null && this.wished.has(id);
     },
 
     goToProduct(slug) {
@@ -375,6 +488,7 @@ export default {
   transform: translateZ(0) scale(1);
   transition: transform 360ms ease, filter 360ms ease;
   will-change: transform, filter;
+    background: #fff !important;
 }
 
 .main-image-wrapper:hover .main-image {
@@ -401,9 +515,9 @@ export default {
 }
 
 .badge-discount {
-      border-color: rgba(239, 68, 68, 0.25);
-    background: rgba(239, 68, 68, 0.08);
-    color: #b91c1c;
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
 }
 
 .hover-hint {
@@ -546,7 +660,6 @@ export default {
   text-decoration-color: rgba(14, 14, 15, 0.758) !important;
   text-decoration-skip-ink: auto;
 }
-
 
 .pill {
   display: inline-flex;
@@ -729,72 +842,317 @@ export default {
   border-bottom: 1px solid var(--line);
 }
 
-/* Related */
+/* Related (CategoryNav card design + horizontal swipe) */
 .related-section {
   padding-top: clamp(16px, 2.6vw, 26px);
 }
 
-.related-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 12px;
+.related-slider {
+  position: relative;
+  --gap: 12px;
+  --card-basis: calc((100% - (var(--gap) * 4)) / 5); /* 5 visible */
 }
 
-.related-item {
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  overflow: hidden;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.02), transparent 60%);
+.slider-viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  padding: 6px 0;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  touch-action: pan-x pan-y;
+  overscroll-behavior-x: contain;
+
+  scroll-padding-left: 6px;
+  scroll-padding-right: 6px;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.slider-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.slider-track {
+  display: flex;
+  gap: var(--gap);
+  padding: 0 6px;
+}
+
+.product-card {
+  flex: 0 0 var(--card-basis);
+  box-sizing: border-box;
   cursor: pointer;
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  scroll-snap-align: start;
 }
 
-.related-item:hover {
+.card-inner {
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.product-card:hover .card-inner {
   transform: translateY(-2px);
-  border-color: rgba(100, 116, 139, 0.25);
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.10);
 }
 
-.related-media {
+.card-image-wrapper {
   position: relative;
   padding-top: 70%;
-  background: rgba(15, 23, 42, 0.02);
+  background: #f9fafb;
+  overflow: hidden;
 }
 
-.related-image {
+.card-image {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  transform: scale(1);
-  transition: transform 260ms ease;
+  background: #ffffff;
+  transition: transform 0.28s ease;
 }
 
-.related-item:hover .related-image {
-  transform: scale(1.05);
+.product-card:hover .card-image {
+  transform: scale(1.08);
 }
 
-.related-body {
-  padding: 10px 12px 12px;
-  display: grid;
-  gap: 6px;
-}
-
-.related-title {
-  font-size: 0.95rem;
+/* discount badge (circle) */
+.badge-discount {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #d51010;
+  color: #ffffff;
   font-weight: 800;
-  line-height: 1.25;
-  color: var(--text);
-  margin: 0;
-  min-height: 2.5em;
+  font-size: 0.78rem;
+  z-index: 2;
+  box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
 }
 
-.related-price {
-  font-size: 0.95rem;
-  font-weight: 900;
-  color: #f97316;
+.card-body {
+  padding: 10px 10px 6px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #111827;
+  text-align: center;
+  line-height: 1.3;
+  min-height: 2.8em;
+}
+
+.card-price-row {
+  margin-top: 6px;
+  text-align: center;
+}
+
+.card-price-stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
+/* OLD PRICE */
+.card-old-price {
+  position: relative;
+  display: inline-block;
+  color: #9ca3af;
+  font-weight: 500;
+  font-size: 0.82rem;
+}
+
+.card-old-price::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: currentColor;
+  transform: translateY(-50%);
+}
+
+.card-price {
+  color: #4c1d95;
+  font-weight: 500;
+  font-size: 0.92rem;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px 10px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn-heart {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.btn-heart:hover {
+  transform: translateY(-1px);
+  border-color: #fca5a5;
+  background: #fff1f2;
+}
+
+.btn-heart.active {
+  border-color: #ef4444;
+  background: #fee2e2;
+}
+
+.heart-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* default = outline heart */
+.btn-heart {
+  color: #9ca3af;
+}
+
+.btn-heart .heart-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+/* active = filled heart */
+.btn-heart.active {
+  color: #ef4444;
+}
+
+.btn-heart.active .heart-icon {
+  fill: currentColor;
+  stroke: none;
+}
+
+.btn-buy {
+  background: #071c61;
+  color: #ffffff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.btn-buy:hover {
+  background: #1165b8b2;
+  transform: translateY(-4px);
+}
+
+/* tablet: ~3 visible */
+@media (max-width: 1024px) {
+  .related-slider {
+    --card-basis: calc((100% - (var(--gap) * 2)) / 3);
+  }
+}
+
+/* mobile: ~2 visible + swipe */
+@media (max-width: 768px) {
+  .related-slider {
+    --gap: 8px;
+    --card-basis: clamp(150px, 44vw, 185px);
+  }
+
+  .slider-track {
+    padding: 0 8px;
+  }
+
+  .product-card {
+    scroll-snap-stop: always;
+  }
+
+  .card-image-wrapper {
+    padding-top: 62%;
+  }
+
+  .card-body {
+    padding: 8px 8px 4px;
+  }
+
+  .card-title {
+    font-size: 0.78rem;
+    min-height: 2.4em;
+  }
+
+  .card-price {
+    font-size: 0.86rem;
+  }
+
+  .card-old-price {
+    font-size: 0.72rem;
+  }
+
+  .card-footer {
+    padding: 6px 8px 8px;
+    gap: 8px;
+  }
+
+  .btn-heart {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+
+  .heart-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .btn-buy {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+  }
+
+  .badge-discount {
+    width: 38px;
+    height: 38px;
+    font-size: 0.72rem;
+    right: 6px;
+    top: 6px;
+  }
+}
+
+/* very small: still swipeable but not oversized */
+@media (max-width: 480px) {
+  .related-slider {
+    --card-basis: clamp(180px, 78vw, 260px);
+  }
 }
 
 /* Mobile sticky CTA */
@@ -818,12 +1176,6 @@ export default {
 }
 
 /* Responsive */
-@media (max-width: 1100px) {
-  .related-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 900px) {
   .product-main {
     grid-template-columns: 1fr;
@@ -838,20 +1190,12 @@ export default {
     justify-content: flex-start;
     text-align: left;
   }
-
-  .related-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 640px) {
   .thumb-img {
     width: 64px;
     height: 64px;
-  }
-
-  .related-grid {
-    grid-template-columns: 1fr;
   }
 
   .actions {
