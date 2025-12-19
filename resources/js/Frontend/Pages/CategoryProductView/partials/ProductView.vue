@@ -1,51 +1,46 @@
 <template>
   <div class="product-page">
     <!-- Breadcrumb -->
-    <nav class="breadcrumb">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/" class="crumb-link">Home</a>
 
-      <template v-for="cat in product.categories" :key="cat.id">
-        <span class="crumb-separator">/</span>
-        <!-- Adjust URL if your category route is different -->
-        <a :href="`/category/${cat.slug}`" class="crumb-link">
-          {{ cat.title }}
-        </a>
+      <template v-if="product.categories && product.categories.length">
+        <template v-for="cat in product.categories" :key="cat.id">
+          <span class="crumb-separator">/</span>
+          <a :href="`/category/${cat.slug}`" class="crumb-link">
+            {{ cat.title }}
+          </a>
+        </template>
       </template>
 
       <span class="crumb-separator">/</span>
-     <span class="crumb-current" :title="product.name">
-  {{ truncateName(product.name) }}
-</span>
-
+      <span class="crumb-current" :title="product.name">
+        {{ truncateName(product.name, 28) }}
+      </span>
     </nav>
 
-    <!-- Main layout -->
+    <!-- Main -->
     <div class="product-main">
       <!-- Gallery -->
-      <div class="product-gallery">
-        <div class="main-image-wrapper">
+      <section class="product-gallery" aria-label="Product gallery">
+        <div class="main-image-wrapper" role="button" tabindex="0" aria-label="Product image">
           <img
             v-if="activeImageUrl"
             :src="activeImageUrl"
             :alt="product.name"
             class="main-image"
+            loading="eager"
+            decoding="async"
           />
 
-          <div class="badges">
-            <!-- <span v-if="product.is_new" class="badge badge-new">NEW</span> -->
-            <span
-              v-if="product.discountLabel"
-              class="badge badge-discount"
-            >
-              -{{ product.discountLabel }}  OFF
-            </span>
+          <div class="badges" v-if="product.discountLabel">
+            <span class="badge badge-discount">-{{ product.discountLabel }} OFF</span>
           </div>
+
+          <div class="hover-hint" aria-hidden="true">Hover to zoom</div>
         </div>
 
-        <div
-          v-if="product.gallery && product.gallery.length"
-          class="thumbs-row"
-        >
+        <div v-if="product.gallery && product.gallery.length" class="thumbs-row" aria-label="Gallery thumbnails">
           <button
             v-for="img in product.gallery"
             :key="img.id"
@@ -53,147 +48,161 @@
             class="thumb-btn"
             :class="{ active: img.id === activeImageId }"
             @click="activeImageId = img.id"
+            :aria-label="`View image ${img.id}`"
           >
-            <img
-              :src="img.url"
-              :alt="product.name"
-              class="thumb-img"
-            />
+            <img :src="img.url" :alt="product.name" class="thumb-img" loading="lazy" decoding="async" />
           </button>
         </div>
-      </div>
+      </section>
 
       <!-- Info -->
-      <div class="product-info">
-      <h1 class="title" :title="product.name">
-  {{ truncateName(product.name) }}
+      <section class="product-info" aria-label="Product information">
+        <header class="header">
+          <h1 class="title" :title="product.name">
+  {{ truncateName(product.name, 28) }}
 </h1>
 
 
-        <div v-if="product.brandLogo" class="brand-logo-row">
-  <span class="brand-label">Brand:</span>
-  <img :src="product.brandLogo" :alt="product.brand || 'Brand'" class="brand-logo" />
-</div>
+          <div class="brand-row">
+            <template v-if="product.brandLogo">
+              <span class="brand-label">Brand</span>
+              <img :src="product.brandLogo" :alt="product.brand || 'Brand'" class="brand-logo" />
+            </template>
+            <template v-else-if="product.brand">
+              <span class="brand-label">Brand</span>
+              <span class="brand-text">{{ product.brand }}</span>
+            </template>
+          </div>
+        </header>
 
-<p v-else-if="product.brand" class="brand">
-  Brand: <span>{{ product.brand }}</span>
-</p>
+        <div class="price-area" aria-label="Pricing">
+          <div class="price-line">
+            
+            <div class="price-main">Rs {{ formatPrice(product.price) }}</div>
 
-<div v-if="product.attributes && product.attributes.length" class="attrs">
-  <div class="attr-row" v-for="a in product.attributes" :key="a.code">
-    <div class="attr-label">{{ a.label }}</div>
+            <div class="price-meta" v-if="product.discountLabel || product.oldPrice">
+              <span v-if="product.discountLabel" class="pill pill-discount">Save {{ product.discountLabel }}</span>
+              <del v-if="product.oldPrice" class="price-old">Rs {{ formatPrice(product.oldPrice) }}</del>
+            </div>
+          </div>
+        </div>
 
-    <div class="attr-value">
-      <template v-if="a.type === 'color'">
-        <span class="color-swatch" :style="{ background: a.value }"></span>
-        {{ a.value }}
-      </template>
-      <template v-else>
-        {{ a.value }}<span v-if="a.unit"> {{ a.unit }}</span>
-      </template>
-    </div>
-  </div>
-</div>
-
-<div v-if="product.inStock !== null && product.inStock !== undefined" class="meta-row">
-  <div class="meta-label">Availability</div>
-  <div class="meta-value" :class="product.inStock == 1 ? 'instock' : 'outstock'">
-    {{ product.inStock == 1 ? 'In Stock' : 'Out of Stock' }}
-    <span v-if="product.stockCount !== null && product.stockCount !== undefined">
-      ({{ product.stockCount }})
-    </span>
-  </div>
-</div>
-
-<div v-if="product.warrantyPeriod || product.warrantyType" class="meta-row">
-  <div class="meta-label">Warranty</div>
-  <div class="meta-value">
-    <span v-if="product.warrantyPeriod">{{ product.warrantyPeriod }}</span>
-    <span v-if="product.warrantyPeriod && product.warrantyType"> • </span>
-    <span v-if="product.warrantyType">{{ product.warrantyType }}</span>
-  </div>
-</div>
-
-<div class="price-block">
-
-  <!-- <span v-if="product.discountLabel" class="badge badge-discount">
-  -{{ product.discountLabel }}
-</span> -->
-
-
- <del v-if="product.oldPrice" class="price-old">
-  Rs{{ formatPrice(product.oldPrice) }}
-</del>
-
-
-  <div class="price-main">
-    Rs{{ formatPrice(product.price) }}
-  </div>
-
- 
-</div>
-
-
-        <p
-          v-if="product.short_description"
-          class="short-desc"
-        >
+        <p v-if="product.short_description" class="short-desc">
           {{ product.short_description }}
         </p>
 
-        <div class="actions">
-          <button type="button" class="btn-primary">
-            BUY NOW
-          </button>
-          <button type="button" class="btn-outline">
-            ADD TO CART
-          </button>
+        <div v-if="product.attributes && product.attributes.length" class="attrs" aria-label="Attributes">
+          <div class="attrs-grid">
+            <div class="attr-row" v-for="a in product.attributes" :key="a.code">
+              <div class="attr-label">{{ a.label }}</div>
+
+              <div class="attr-value">
+                <template v-if="a.type === 'color'">
+                  <span class="color-swatch" :style="{ background: a.value }" aria-hidden="true"></span>
+                  <span class="attr-text">{{ a.value }}</span>
+                </template>
+                <template v-else>
+                  <span class="attr-text">{{ a.value }}<span v-if="a.unit"> {{ a.unit }}</span></span>
+                </template>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+
+        <div class="meta" aria-label="Availability and warranty">
+          <div v-if="product.inStock !== null && product.inStock !== undefined" class="meta-row">
+            <div class="meta-label">Availability</div>
+            <div class="meta-value" :class="product.inStock == 1 ? 'instock' : 'outstock'">
+              {{ product.inStock == 1 ? 'In Stock' : 'Out of Stock' }}
+              <span v-if="product.stockCount !== null && product.stockCount !== undefined" class="meta-sub">
+                ({{ product.stockCount }})
+              </span>
+            </div>
+          </div>
+
+          <div v-if="product.warrantyPeriod || product.warrantyType" class="meta-row">
+            <div class="meta-label">Warranty</div>
+            <div class="meta-value">
+              <span v-if="product.warrantyPeriod">{{ product.warrantyPeriod }}</span>
+              <span v-if="product.warrantyPeriod && product.warrantyType" class="dot">•</span>
+              <span v-if="product.warrantyType">{{ product.warrantyType }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions: WhatsApp only (Buy Now + Add to Cart removed/hidden) -->
+        <div class="actions" aria-label="Purchase actions">
+          <a
+            class="btn-whatsapp"
+            :href="whatsAppLink"
+            target="_blank"
+            rel="noopener"
+            aria-label="Contact on WhatsApp"
+          >
+            <span class="wa-icon" aria-hidden="true">
+              <!-- WhatsApp SVG -->
+              <svg viewBox="0 0 32 32" width="20" height="20" fill="currentColor" focusable="false">
+                <path
+                  d="M19.11 17.34c-.28-.14-1.64-.81-1.9-.9-.26-.1-.45-.14-.64.14-.19.28-.74.9-.9 1.09-.17.19-.33.21-.61.07-.28-.14-1.18-.43-2.25-1.38-.83-.74-1.39-1.66-1.55-1.94-.17-.28-.02-.43.12-.57.12-.12.28-.33.43-.5.14-.17.19-.28.28-.47.1-.19.05-.36-.02-.5-.07-.14-.64-1.55-.88-2.12-.23-.55-.47-.48-.64-.49h-.55c-.19 0-.5.07-.76.36-.26.28-1 1-1 2.43 0 1.43 1.02 2.81 1.16 3 .14.19 2.01 3.07 4.87 4.3.68.29 1.21.47 1.62.6.68.22 1.3.19 1.79.12.55-.08 1.64-.67 1.87-1.31.23-.64.23-1.19.16-1.31-.07-.12-.26-.19-.55-.33z"
+                />
+                <path
+                  d="M26.67 5.33A14.67 14.67 0 0 0 3.33 23.1L2 30l6.98-1.3A14.66 14.66 0 0 0 30.67 16c0-3.92-1.53-7.6-4-10.67zM16 28a11.9 11.9 0 0 1-6.06-1.65l-.43-.25-4.14.77.79-4.03-.28-.41A12 12 0 1 1 16 28z"
+                />
+              </svg>
+            </span>
+            <span class="wa-text">WhatsApp to Order</span>
+            <span class="wa-sub">Chat with product details</span>
+          </a>
+        </div>
+      </section>
     </div>
 
     <!-- Description -->
-    <section
-      v-if="product.description"
-      class="product-description"
-    >
-      <h2>Description</h2>
-      <!-- assuming HTML stored in DB -->
+    <section v-if="product.description" class="product-description" aria-label="Description">
+      <h2 class="section-title">Description</h2>
       <div class="description-body" v-html="product.description" />
     </section>
 
-    <!-- Related products -->
-    <section
-      v-if="relatedProducts && relatedProducts.length"
-      class="related-section"
-    >
-      <h2>Related Products</h2>
+    <!-- Related -->
+    <section v-if="relatedProducts && relatedProducts.length" class="related-section" aria-label="Related products">
+      <h2 class="section-title">Related Products</h2>
 
       <div class="related-grid">
         <article
           v-for="p in relatedProducts"
           :key="p.id"
-          class="related-card"
+          class="related-item"
           @click="goToProduct(p.slug)"
+          role="button"
+          tabindex="0"
         >
-          <div class="related-image-wrapper">
-            <img
-              :src="p.image"
-              :alt="p.name"
-              class="related-image"
-            />
+          <div class="related-media">
+            <img :src="p.image" :alt="p.name" class="related-image" loading="lazy" decoding="async" />
           </div>
           <div class="related-body">
-            <h3 class="related-title">
-              {{ p.name }}
-            </h3>
-            <div class="related-price">
-              Rs{{ formatPrice(p.price) }}
-            </div>
+            <h3 class="related-title">{{ p.name }}</h3>
+            <div class="related-price">Rs {{ formatPrice(p.price) }}</div>
           </div>
         </article>
       </div>
     </section>
+
+    <!-- Mobile sticky action -->
+    <div class="mobile-sticky">
+      <a class="mobile-wa" :href="whatsAppLink" target="_blank" rel="noopener" aria-label="Contact on WhatsApp">
+        <span class="wa-icon" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="18" height="18" fill="currentColor" focusable="false">
+            <path
+              d="M19.11 17.34c-.28-.14-1.64-.81-1.9-.9-.26-.1-.45-.14-.64.14-.19.28-.74.9-.9 1.09-.17.19-.33.21-.61.07-.28-.14-1.18-.43-2.25-1.38-.83-.74-1.39-1.66-1.55-1.94-.17-.28-.02-.43.12-.57.12-.12.28-.33.43-.5.14-.17.19-.28.28-.47.1-.19.05-.36-.02-.5-.07-.14-.64-1.55-.88-2.12-.23-.55-.47-.48-.64-.49h-.55c-.19 0-.5.07-.76.36-.26.28-1 1-1 2.43 0 1.43 1.02 2.81 1.16 3 .14.19 2.01 3.07 4.87 4.3.68.29 1.21.47 1.62.6.68.22 1.3.19 1.79.12.55-.08 1.64-.67 1.87-1.31.23-.64.23-1.19.16-1.31-.07-.12-.26-.19-.55-.33z"
+            />
+            <path
+              d="M26.67 5.33A14.67 14.67 0 0 0 3.33 23.1L2 30l6.98-1.3A14.66 14.66 0 0 0 30.67 16c0-3.92-1.53-7.6-4-10.67zM16 28a11.9 11.9 0 0 1-6.06-1.65l-.43-.25-4.14.77.79-4.03-.28-.41A12 12 0 1 1 16 28z"
+            />
+          </svg>
+        </span>
+        <span>WhatsApp to Order</span>
+      </a>
+    </div>
   </div>
 </template>
 
@@ -202,14 +211,8 @@ export default {
   name: 'ProductView',
 
   props: {
-    product: {
-      type: Object,
-      required: true,
-    },
-    relatedProducts: {
-      type: Array,
-      default: () => [],
-    },
+    product: { type: Object, required: true },
+    relatedProducts: { type: Array, default: () => [] },
   },
 
   data() {
@@ -218,7 +221,14 @@ export default {
         this.product.gallery && this.product.gallery.length
           ? this.product.gallery[0].id
           : null,
+      pageUrl: '',
     };
+  },
+
+  mounted() {
+    if (typeof window !== 'undefined') {
+      this.pageUrl = window.location.href || '';
+    }
   },
 
   computed: {
@@ -226,12 +236,28 @@ export default {
       if (!this.product.gallery || !this.product.gallery.length) {
         return this.product.primaryImage || '';
       }
-
-      const img = this.product.gallery.find(
-        (g) => g.id === this.activeImageId,
-      );
-
+      const img = this.product.gallery.find((g) => g.id === this.activeImageId);
       return (img && img.url) || this.product.primaryImage || '';
+    },
+
+    whatsAppLink() {
+      // Sri Lanka: 071 552 6000 -> +94 71 552 6000 -> 94715526000
+      const phone = '94715526000';
+
+      const name = this.product && this.product.name ? String(this.product.name) : '';
+      const price = this.product && this.product.price != null ? `Rs ${this.formatPrice(this.product.price)}` : '';
+      const brand = this.product && this.product.brand ? String(this.product.brand) : '';
+
+      const lines = [
+        'Hi, I would like to buy this product.',
+        name ? `Product: ${name}` : null,
+        brand ? `Brand: ${brand}` : null,
+        price ? `Price: ${price}` : null,
+        this.pageUrl ? `Link: ${this.pageUrl}` : null,
+      ].filter(Boolean);
+
+      const text = encodeURIComponent(lines.join('\n'));
+      return `https://wa.me/${phone}?text=${text}`;
     },
   },
 
@@ -243,81 +269,101 @@ export default {
         maximumFractionDigits: 2,
       });
     },
-    truncateName(text, max = 32) {
-  if (!text) return '';
-  const s = String(text).trim();
-  return s.length > max ? s.slice(0, max) + '...' : s;
-},
 
+    truncateName(text, max = 32) {
+      if (!text) return '';
+      const s = String(text).trim();
+      return s.length > max ? s.slice(0, max) + '...' : s;
+    },
 
     goToProduct(slug) {
-      // Reuse the same route when clicking related products
       this.$inertia.visit(`/products/${slug}`);
-      // or, if Ziggy is enabled:
-      // this.$inertia.visit(route('products.show', slug));
     },
   },
 };
 </script>
 
 <style scoped>
+/* Design system */
 .product-page {
-  padding: 40px 0 60px;
-  /* background: #f3f4f6; */
+  --bg: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: rgba(15, 23, 42, 0.10);
+  --soft: rgba(15, 23, 42, 0.06);
+  --accent: #16a34a; /* WhatsApp / CTA */
+  --accent-2: #22c55e;
+  --warn: #ef4444;
+
+  background: var(--bg);
+  color: var(--text);
+  padding: clamp(16px, 2.6vw, 36px) 0 clamp(28px, 4vw, 60px);
 }
 
-/* breadcrumb */
+/* Breadcrumb */
 .breadcrumb {
-  font-size: 0.85rem;
-  color: #6b7280;
-  margin-bottom: 18px;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: clamp(14px, 2vw, 18px);
 }
 
 .crumb-link {
-  color: #4b5563;
+  color: var(--muted);
   text-decoration: none;
+  transition: color 160ms ease, text-decoration-color 160ms ease;
 }
 
 .crumb-link:hover {
+  color: var(--text);
   text-decoration: underline;
-}
-
-.crumb-current {
-  font-weight: 600;
-  color: #111827;
+  text-decoration-color: var(--line);
+  text-underline-offset: 3px;
 }
 
 .crumb-separator {
-  color: #9ca3af;
+  color: rgba(100, 116, 139, 0.7);
 }
 
-/* main layout */
+.crumb-current {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* Layout */
 .product-main {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: 32px;
-  align-items: flex-start;
-  margin-bottom: 32px;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(16px, 3vw, 46px);
+  align-items: start;
+  padding-bottom: clamp(14px, 2.2vw, 24px);
+  border-bottom: 1px solid var(--line);
 }
 
-/* gallery */
+/* Gallery (no block/card background; only subtle borders) */
 .product-gallery {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 16px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  min-width: 0;
 }
 
 .main-image-wrapper {
   position: relative;
-  padding-top: 70%;
-  background: #f9fafb;
-  border-radius: 8px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: radial-gradient(80% 80% at 50% 40%, rgba(34, 197, 94, 0.08), transparent 60%),
+              linear-gradient(180deg, rgba(15, 23, 42, 0.02), transparent 55%);
   overflow: hidden;
+  padding-top: 78%;
+  isolation: isolate;
+  cursor: zoom-in;
+  outline: none;
+  background: #fff !important;
+}
+
+.main-image-wrapper:focus-visible {
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.22);
 }
 
 .main-image {
@@ -326,214 +372,394 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: #ffffff;
+  transform: translateZ(0) scale(1);
+  transition: transform 360ms ease, filter 360ms ease;
+  will-change: transform, filter;
+}
+
+.main-image-wrapper:hover .main-image {
+  transform: scale(1.07);
+  filter: saturate(1.06) contrast(1.02);
 }
 
 .badges {
   position: absolute;
-  left: 10px;
-  top: 10px;
+  left: 12px;
+  top: 12px;
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 8px;
+  z-index: 2;
 }
 
 .badge {
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 4px 9px;
-  border-radius: 4px;
-  color: #ffffff;
-}
-
-.badge-new {
-  background: #1d4ed8;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #fff;
 }
 
 .badge-discount {
-  background: #dc2626;
+      border-color: rgba(239, 68, 68, 0.25);
+    background: rgba(239, 68, 68, 0.08);
+    color: #b91c1c;
+}
+
+.hover-hint {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  font-size: 0.78rem;
+  color: rgba(100, 116, 139, 0.9);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  transform: translateY(0);
+  transition: opacity 220ms ease, transform 220ms ease;
+  opacity: 0.92;
+}
+
+.main-image-wrapper:hover .hover-hint {
+  opacity: 1;
+  transform: translateY(-2px);
 }
 
 .thumbs-row {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 10px;
+  margin-top: 12px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: 6px;
+  scroll-snap-type: x mandatory;
 }
 
-.thumb-btn {
-  border: 1px solid transparent;
-  border-radius: 6px;
-  padding: 0;
-  background: transparent;
-  flex: 0 0 auto;
+.thumbs-row::-webkit-scrollbar {
+  height: 8px;
 }
-
-.thumb-btn.active {
-  border-color: #22c55e;
-}
-
-.thumb-img {
-  display: block;
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-  background: #ffffff;
-  border-radius: 6px;
-}
-
-/* info */
-.product-info {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 20px 18px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
-}
-
-.title {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 6px;
-}
-
-.brand {
-  font-size: 0.9rem;
-  color: #6b7280;
-  margin-bottom: 14px;
-}
-
-.brand span {
-  font-weight: 600;
-  color: #111827;
-}
-
-.price-block {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.price-main {
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: #f97316;
-}
-
-.price-old {
-  display: inline-block;
-  font-size: 0.95rem;
-  color: #9ca3af;
-  padding-top: 8px;
-  text-decoration: line-through !important;
-  text-decoration-thickness: 2px;
-}
-
-
-.price-label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #dc2626;
-  background: #fee2e2;
-  padding: 8px 8px 2px; /* top padding added */
+.thumbs-row::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.25);
   border-radius: 999px;
 }
 
-.short-desc {
-  font-size: 0.95rem;
-  color: #4b5563;
-  margin-bottom: 20px;
+.thumb-btn {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 0;
+  background: transparent;
+  transition: transform 180ms ease, border-color 180ms ease;
 }
 
-.actions {
+.thumb-btn:hover {
+  transform: translateY(-1px);
+}
+
+.thumb-btn.active {
+  border-color: rgba(34, 197, 94, 0.55);
+}
+
+.thumb-img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(15, 23, 42, 0.02);
+}
+
+/* Info (no background blocks; only structured spacing & dividers) */
+.product-info {
+  min-width: 0;
+  padding-top: 6px;
+}
+
+.header {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.title {
+  font-size: clamp(1.2rem, 2.1vw, 1.85rem);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  font-weight: 850;
+  margin: 0 0 10px;
+}
+
+.brand-row {
   display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 28px;
+}
+
+.brand-label {
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.brand-text {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.brand-logo {
+  height: 26px;
+  max-width: 160px;
+  object-fit: contain;
+  filter: saturate(1.05);
+}
+
+.price-area {
+  padding: 14px 0 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.price-line {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.price-main {
+  font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+  font-weight: 900;
+  letter-spacing: -0.015em;
+  color: #f97316;
+}
+
+.price-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
 }
 
-.btn-primary,
-.btn-outline {
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  padding: 8px 20px;
-  cursor: pointer;
-  border: 1px solid transparent;
+.price-old{
+  text-decoration-line: line-through !important;
+  text-decoration-thickness: 1px !important;   /* light line */
+  text-decoration-color: rgba(14, 14, 15, 0.758) !important;
+  text-decoration-skip-ink: auto;
 }
 
-.btn-primary {
-  background: #22c55e;
-  color: #ffffff;
-  border-color: #22c55e;
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  border: 1px solid var(--line);
+  background: rgba(15, 23, 42, 0.02);
+  color: var(--text);
 }
 
-.btn-primary:hover {
-  background: #16a34a;
+.pill-discount {
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
 }
 
-.btn-outline {
-  background: #ffffff;
-  color: #111827;
-  border-color: #d1d5db;
+.short-desc {
+  margin: 14px 0 0;
+  font-size: 0.98rem;
+  color: rgba(51, 65, 85, 0.95);
+  line-height: 1.6;
 }
 
-.btn-outline:hover {
-  background: #f3f4f6;
+/* Attributes */
+.attrs {
+  padding: 16px 0 6px;
+  border-bottom: 1px solid var(--line);
 }
 
-/* description */
+.attrs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.attr-row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.attr-label {
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.attr-value {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.92rem;
+  font-weight: 750;
+  color: var(--text);
+  text-align: right;
+}
+
+.attr-text {
+  word-break: break-word;
+}
+
+.color-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+/* Meta */
+.meta {
+  padding: 14px 0 0;
+}
+
+.meta-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 6px 0;
+}
+
+.meta-label {
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.meta-value {
+  font-weight: 850;
+  font-size: 0.92rem;
+}
+
+.meta-sub {
+  font-weight: 750;
+  opacity: 0.85;
+}
+
+.dot {
+  margin: 0 8px;
+  color: rgba(100, 116, 139, 0.6);
+}
+
+.instock {
+  color: #16a34a;
+}
+.outstock {
+  color: #dc2626;
+}
+
+/* Actions */
+.actions {
+  padding-top: 16px;
+}
+
+.btn-whatsapp {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  row-gap: 2px;
+  align-items: center;
+
+  text-decoration: none;
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.16), rgba(34, 197, 94, 0.06));
+  color: var(--text);
+
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.btn-whatsapp:hover {
+  transform: translateY(-1px);
+  border-color: rgba(34, 197, 94, 0.55);
+  box-shadow: 0 16px 40px rgba(34, 197, 94, 0.18);
+}
+
+.btn-whatsapp:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.22);
+}
+
+.wa-icon {
+  grid-row: 1 / span 2;
+  color: var(--accent);
+}
+
+.wa-text {
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.wa-sub {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* Description */
 .product-description {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 18px 18px 20px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
-  margin-bottom: 28px;
+  padding-top: clamp(16px, 2.6vw, 26px);
 }
 
-.product-description h2 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 10px;
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  margin: 0 0 10px;
 }
 
 .description-body {
-  font-size: 0.95rem;
-  color: #4b5563;
+  color: rgba(51, 65, 85, 0.96);
+  line-height: 1.75;
+  font-size: 0.98rem;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
 }
 
-/* related */
-.related-section h2 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 12px;
+/* Related */
+.related-section {
+  padding-top: clamp(16px, 2.6vw, 26px);
 }
 
 .related-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
+  margin-top: 12px;
 }
 
-.related-card {
-  background: #ffffff;
-  border-radius: 8px;
-  cursor: pointer;
-  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05);
+.related-item {
+  border: 1px solid var(--line);
+  border-radius: 16px;
   overflow: hidden;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.02), transparent 60%);
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.related-card:hover {
+.related-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.18);
+  border-color: rgba(100, 116, 139, 0.25);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.10);
 }
 
-.related-image-wrapper {
-  padding-top: 70%;
-  background: #f9fafb;
+.related-media {
   position: relative;
+  padding-top: 70%;
+  background: rgba(15, 23, 42, 0.02);
 }
 
 .related-image {
@@ -542,86 +768,104 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: #ffffff;
+  transform: scale(1);
+  transition: transform 260ms ease;
+}
+
+.related-item:hover .related-image {
+  transform: scale(1.05);
 }
 
 .related-body {
-  padding: 8px 10px 10px;
-  text-align: center;
+  padding: 10px 12px 12px;
+  display: grid;
+  gap: 6px;
 }
 
 .related-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #111827;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--text);
+  margin: 0;
   min-height: 2.5em;
-  margin-bottom: 4px;
 }
 
 .related-price {
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 900;
   color: #f97316;
 }
 
-/* responsive */
-@media (max-width: 768px) {
-  .product-main {
-    grid-template-columns: minmax(0, 1fr);
+/* Mobile sticky CTA */
+.mobile-sticky {
+  display: none;
+}
+
+.mobile-wa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+  font-weight: 900;
+  border-radius: 14px;
+  padding: 12px 14px;
+  color: #0b1f14;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.22), rgba(34, 197, 94, 0.10));
+  border: 1px solid rgba(34, 197, 94, 0.38);
+  box-shadow: 0 14px 34px rgba(34, 197, 94, 0.18);
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .related-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
-.brand-logo-row{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:14px;
-}
-.brand-label{ font-size:0.9rem; color:#6b7280; }
-.brand-logo{
-  height:26px;
-  max-width:140px;
-  object-fit:contain;
+
+@media (max-width: 900px) {
+  .product-main {
+    grid-template-columns: 1fr;
+  }
+
+  .attr-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .attr-value {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .related-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-.attrs{
-  border-top:1px solid #eee;
-  padding-top:12px;
-  margin-top:10px;
-  margin-bottom:12px;
-}
-.attr-row{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  padding:6px 0;
-  border-bottom:1px dashed #eee;
-}
-.attr-label{ color:#6b7280; font-size:0.9rem; }
-.attr-value{ color:#111827; font-weight:600; font-size:0.9rem; text-align:right; }
+@media (max-width: 640px) {
+  .thumb-img {
+    width: 64px;
+    height: 64px;
+  }
 
-.color-swatch{
-  display:inline-block;
-  width:12px;height:12px;
-  border-radius:3px;
-  border:1px solid #ddd;
-  vertical-align:middle;
-  margin-right:6px;
+  .related-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    display: none; /* replaced by sticky CTA on small screens */
+  }
+
+  .mobile-sticky {
+    display: block;
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 50;
+  }
 }
-
-.meta-row{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  padding:6px 0;
-}
-.meta-label{ color:#6b7280; font-size:0.9rem; }
-.meta-value{ font-weight:700; font-size:0.9rem; }
-.instock{ color:#16a34a; }
-.outstock{ color:#dc2626; }
-
-
-.badge-discount{
-  padding-top: 6px;
-}
-
 </style>
