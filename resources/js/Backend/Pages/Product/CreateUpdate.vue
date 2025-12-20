@@ -75,15 +75,16 @@
                                 option-value="id"
                                 v-model="form.uom_id"
                             />
-                            <SelectInputComponent
-                                class="mb-3 col-md-4"
-                                id="attribute_set"
-                                label="Attribute Set"
-                                :options="attributeSets"
-                                option-label="name"
-                                option-value="id"
-                                v-model="form.attribute_set_id"
-                            />
+                           <SelectInputComponent
+  class="mb-3 col-md-4"
+  id="attribute_set"
+  label="Attribute Set"
+  :options="[{ id: '', name: '-- (Optional) --' }, ...attributeSets]"
+  option-label="name"
+  option-value="id"
+  v-model="form.attribute_set_id"
+/>
+
                         </div>
 
                         <!-- Dynamic Attributes -->
@@ -195,16 +196,17 @@
   v-model="form.category_id"
 />
 
- <SelectInputComponent
-    class="mb-3 col-md-6"
-    id="subcategory_id"
-    label="Sub Category"
-    :options="filteredSubcategories"
-    option-label="title"
-    option-value="id"
-    :error="form.errors.subcategory_id"
-    v-model="form.subcategory_id"
-  />
+<SelectInputComponent
+  class="mb-3 col-md-6"
+  id="subcategory_id"
+  label="Sub Category"
+  :options="[{ id: '', title: '-- (Optional) --' }, ...filteredSubcategories]"
+  option-label="title"
+  option-value="id"
+  :error="form.errors.subcategory_id"
+  v-model="form.subcategory_id"
+/>
+
                                 <div class="text-muted small">
                                     Hold Ctrl / Cmd to multi-select
                                 </div>
@@ -323,6 +325,53 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row">
+  <div class="mb-3 col-md-3">
+    <label class="form-label">In-stock Status</label>
+    <select class="form-select" v-model="form.in_stock">
+      <option value="">-- (Optional) --</option>
+      <option value="1">In Stock</option>
+      <option value="0">Out of Stock</option>
+    </select>
+    <div class="text-danger">{{ form.errors.in_stock }}</div>
+  </div>
+
+  <div class="mb-3 col-md-3">
+    <label class="form-label">In-stock Count</label>
+    <input
+      type="number"
+      min="0"
+      class="form-control"
+      v-model="form.stock_count"
+      placeholder="Optional"
+    />
+    <div class="text-danger">{{ form.errors.stock_count }}</div>
+  </div>
+
+  <div class="mb-3 col-md-3">
+    <label class="form-label">Warranty Period</label>
+   <input
+  type="text"
+  class="form-control"
+  v-model="form.warranty_period"
+  placeholder="e.g., 1 year / 12 months"
+/>
+
+    <div class="text-danger">{{ form.errors.warranty_period }}</div>
+  </div>
+
+  <div class="mb-3 col-md-3">
+    <label class="form-label">Warranty Type</label>
+    <input
+      type="text"
+      class="form-control"
+      v-model="form.warranty_type"
+      placeholder="e.g., Manufacturer / Seller / No warranty"
+    />
+    <div class="text-danger">{{ form.errors.warranty_type }}</div>
+  </div>
+</div>
+
 
                         <div class="row">
                             <div class="mb-3 col-md-6">
@@ -470,6 +519,11 @@ export default {
                 discount_status: "0",
                 discount_type: "",
                 discounted_amount: "",
+                in_stock: "",          // "" means "not set" → controller converts to null
+stock_count: "",
+warranty_period: "",
+warranty_type: "",
+
             }),
 
             // { code: value }
@@ -538,6 +592,11 @@ existingPreviews: (this.images || []).map(x => ({
             this.form.discount_type = p.discount_type ?? "";
             this.form.discounted_amount = p.discounted_amount ?? "";
             this.form.subcategory_id = p.subcategory_id ?? "";
+            this.form.in_stock = (p.in_stock === null || p.in_stock === undefined) ? "" : String(p.in_stock);
+this.form.stock_count = p.stock_count ?? "";
+this.form.warranty_period = p.warranty_period ?? "";
+this.form.warranty_type = p.warranty_type ?? "";
+
 
 
             // load saved JSON {code:value}

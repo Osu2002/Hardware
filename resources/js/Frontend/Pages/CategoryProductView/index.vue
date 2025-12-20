@@ -37,8 +37,10 @@ export default {
 
 <style>
 .product-container {
-  max-width: 1120px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 12px;
 }
+
+
 </style>
