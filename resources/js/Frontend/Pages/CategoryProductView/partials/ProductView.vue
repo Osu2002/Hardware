@@ -443,7 +443,7 @@ export default {
 
 .crumb-current {
   color: var(--text);
-  font-weight: 700;
+  font-weight: 500;
 }
 
 /* Layout */
@@ -485,16 +485,22 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  transform: translateZ(0) scale(1);
+
+  /* 👇 reduce visible size */
+  transform: translateZ(0) scale(0.55);
+  transform-origin: center;
+
   transition: transform 360ms ease, filter 360ms ease;
   will-change: transform, filter;
-    background: #fff !important;
+  background: #fff !important;
 }
 
 .main-image-wrapper:hover .main-image {
-  transform: scale(1.07);
+  /* 👇 keep hover zoom but still smaller than before */
+  transform: scale(0.68);
   filter: saturate(1.06) contrast(1.02);
 }
+
 
 .badges {
   position: absolute;
@@ -507,7 +513,7 @@ export default {
 
 .badge {
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.02em;
   padding: 7px 10px;
   border-radius: 999px;
@@ -600,15 +606,16 @@ export default {
   font-size: clamp(1.2rem, 2.1vw, 1.85rem);
   line-height: 1.18;
   letter-spacing: -0.02em;
-  font-weight: 850;
+  font-weight: 500;
   margin: 0 0 10px;
 }
 
 .brand-row {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 28px;
+  flex-direction: column;   /* 👈 stack vertically */
+  align-items: flex-start;  /* left align */
+  gap: 6px;                 /* space between Brand text and logo */
+  min-height: unset;
 }
 
 .brand-label {
@@ -623,11 +630,11 @@ export default {
 }
 
 .brand-logo {
-  height: 26px;
-  max-width: 160px;
+  height: 32px;         /* adjust if needed */
+  max-width: 180px;
   object-fit: contain;
-  filter: saturate(1.05);
 }
+
 
 .price-area {
   padding: 14px 0 10px;
@@ -642,9 +649,9 @@ export default {
 
 .price-main {
   font-size: clamp(1.25rem, 2.2vw, 1.8rem);
-  font-weight: 900;
+  font-weight: 500;
   letter-spacing: -0.015em;
-  color: #f97316;
+  color: #071c61;
 }
 
 .price-meta {
@@ -667,7 +674,7 @@ export default {
   border-radius: 999px;
   padding: 6px 10px;
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 600;
   border: 1px solid var(--line);
   background: rgba(15, 23, 42, 0.02);
   color: var(--text);
@@ -716,7 +723,7 @@ export default {
   gap: 8px;
   align-items: center;
   font-size: 0.92rem;
-  font-weight: 750;
+  font-weight: 550;
   color: var(--text);
   text-align: right;
 }
@@ -752,7 +759,7 @@ export default {
 }
 
 .meta-value {
-  font-weight: 850;
+  font-weight: 550;
   font-size: 0.92rem;
 }
 
@@ -813,7 +820,7 @@ export default {
 }
 
 .wa-text {
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
@@ -829,7 +836,7 @@ export default {
 
 .section-title {
   font-size: 1.15rem;
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: -0.01em;
   margin: 0 0 10px;
 }
@@ -1135,7 +1142,7 @@ export default {
     font-size: 0.75rem;
   }
 
-  .badge-discount {
+  .card-image-wrapper .badge-discount {
     width: 38px;
     height: 38px;
     font-size: 0.72rem;
@@ -1161,14 +1168,50 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 10px;
+
   text-decoration: none;
-  font-weight: 900;
+  font-weight: 700;
+
   border-radius: 14px;
-  padding: 12px 14px;
-  color: #0b1f14;
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.22), rgba(34, 197, 94, 0.10));
-  border: 1px solid rgba(34, 197, 94, 0.38);
-  box-shadow: 0 14px 34px rgba(34, 197, 94, 0.18);
+  padding: 13px 14px;
+
+  /* ✅ solid WhatsApp green */
+  background: #025f24;
+  border: 1px solid #056c2e;
+
+  color: #ffffff;
+
+
+}
+
+/* Related card discount badge (circle) */
+.card-image-wrapper .badge-discount {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+  font-weight: 800;
+  font-size: 0.78rem;
+}
+
+.mobile-wa:active {
+  transform: scale(0.98);
 }
 
 /* Responsive */
