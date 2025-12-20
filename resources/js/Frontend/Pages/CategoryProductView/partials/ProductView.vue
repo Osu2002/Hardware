@@ -925,22 +925,18 @@ export default {
 }
 
 /* discount badge (circle) */
-.badge-discount {
-  position: absolute;
-  right: 8px;
-  top: 8px;
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #d51010;
-  color: #ffffff;
-  font-weight: 800;
+.badge-main-discount {
   font-size: 0.78rem;
-  z-index: 2;
-  box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+  position: static; /* important: NOT absolute */
+  width: auto;
+  height: auto;
 }
 
 .card-body {
