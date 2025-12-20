@@ -1,0 +1,1 @@
+.category-container{max-width:1320px;margin:0 auto;padding:0 12px 40px}.category-layout{display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:start}@media (max-width: 1024px){.category-layout{grid-template-columns:1fr}}
