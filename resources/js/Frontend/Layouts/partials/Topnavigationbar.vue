@@ -161,7 +161,7 @@
                         </Link>
 
                         <!-- Brands dropdown -->
-                       <div
+                       <!-- <div
   class="mitem has-dd"
   @mouseenter="brandsOpen = true"
   @mouseleave="brandsOpen = false"
@@ -187,7 +187,7 @@
       <Link :href="route('index')" role="menuitem">All Brands</Link>
     </li>
   </ul>
-</div>
+</div> -->
 
                         <Link :href="route('index')" class="mitem">
                             FEATURED
@@ -336,7 +336,7 @@
   </Link>
 
   <!-- ✅ BRANDS (compact) -->
-  <div
+  <!-- <div
     class="mitem has-dd"
     @mouseenter="brandsOpenCompact = true"
     @mouseleave="brandsOpenCompact = false"
@@ -364,7 +364,7 @@
         </Link>
       </li>
     </ul>
-  </div>
+  </div> -->
 
   <Link :href="route('index')" class="mitem">FEATURED</Link>
   <Link :href="route('index')" class="mitem">OFFERS</Link>
@@ -507,7 +507,7 @@
                         </ul>
                     </li>
 
-                    <li class="acc">
+                    <!-- <li class="acc">
                         <button @click="acc.brands = !acc.brands">
                             Brands
                             <i
@@ -535,7 +535,7 @@
                                 >
                             </li>
                         </ul>
-                    </li>
+                    </li> -->
 
                     <li>
                         <Link
@@ -1044,7 +1044,7 @@ topBrands() {
 
 .mh-menu-compact .mitem {
     padding-bottom: 4px;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .mh-compact-right {

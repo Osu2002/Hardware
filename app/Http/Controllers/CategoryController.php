@@ -87,6 +87,11 @@ class CategoryController extends Controller
         $category->addMedia($request->file('vehicle_type_image'))
                  ->toMediaCollection('category_image');
     }
+
+     if ($request->hasFile('category_banner_image')) {
+        $category->addMedia($request->file('category_banner_image'))
+            ->toMediaCollection('category_banner');
+    }
     return redirect()->route('category.index');
 }
 
@@ -118,6 +123,8 @@ class CategoryController extends Controller
         'status' => ['required'],
         'featured' => ['required'],
         'vehicle_type_image' => ['nullable', 'mimes:jpeg,jpg,png,webp', 'max:10000'],
+        // ✅ NEW:
+        'category_banner_image' => ['nullable', 'mimes:jpeg,jpg,png,webp', 'max:12000'],
     ]);
 
     DB::beginTransaction();
@@ -130,14 +137,23 @@ class CategoryController extends Controller
 
     DB::commit();
 
+    // Category Image
     if ($request->hasFile('vehicle_type_image')) {
         $category->clearMediaCollection('category_image');
         $category->addMedia($request->file('vehicle_type_image'))
-                 ->toMediaCollection('category_image');
+            ->toMediaCollection('category_image');
+    }
+
+    // ✅ Banner Image
+    if ($request->hasFile('category_banner_image')) {
+        $category->clearMediaCollection('category_banner');
+        $category->addMedia($request->file('category_banner_image'))
+            ->toMediaCollection('category_banner');
     }
 
     return redirect()->route('category.index');
 }
+
 
 
     public function destroy(Request $request)
