@@ -371,6 +371,16 @@
     <div class="text-danger">{{ form.errors.warranty_type }}</div>
   </div>
 </div>
+<div class="mb-3 col-md-3">
+  <label class="form-label">Featured</label>
+  <select class="form-select" v-model="form.isfeatured">
+    <option value="">-- (Optional) --</option>
+    <option value="1">Yes</option>
+    <option value="0">No</option>
+  </select>
+  <div class="text-danger">{{ form.errors.isfeatured }}</div>
+</div>
+
 
 
                         <div class="row">
@@ -502,6 +512,7 @@ export default {
                 sku: "",
                 status: "1",
                 sort_order: 0,
+                isfeatured: "", 
                 brand_id: "",
                 uom_id: "",
                 attribute_set_id: "",
@@ -596,6 +607,9 @@ existingPreviews: (this.images || []).map(x => ({
 this.form.stock_count = p.stock_count ?? "";
 this.form.warranty_period = p.warranty_period ?? "";
 this.form.warranty_type = p.warranty_type ?? "";
+this.form.isfeatured =
+  (p.isfeatured === null || p.isfeatured === undefined) ? "" : String(p.isfeatured);
+
 
 
 

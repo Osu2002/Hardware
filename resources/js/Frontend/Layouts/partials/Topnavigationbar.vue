@@ -77,9 +77,11 @@
 <!-- ✅ UPDATED: Categories (Category + Subcategory dropdown) -->
 <div
   class="mitem has-dd mh-cats"
+  :class="{ active: isActive(['category.*']) }"
   @mouseenter="mega = true"
   @mouseleave="mega = false; activeCatId = null"
 >
+
   <button
     type="button"
     class="mtext-btn mh-dd-btn"
@@ -152,13 +154,14 @@
   </transition>
 </div>
 
-                        <Link
-                            :href="route('index')"
-                            class="mitem"
-                            :class="{ active: isActive('index') }"
-                        >
-                            HOME
-                        </Link>
+                     <Link
+  :href="route('index')"
+  class="mitem"
+  :class="{ active: isActive('index') }"
+>
+  HOME
+</Link>
+
 
                         <!-- Brands dropdown -->
                        <!-- <div
@@ -189,22 +192,34 @@
   </ul>
 </div> -->
 
-                        <Link :href="route('index')" class="mitem">
-                            FEATURED
-                        </Link>
-
-                       <Link :href="route('index')" class="mitem">
-    SPECIAL OFFERS
+                    <Link
+  :href="route('featuredproducts.index')"
+  class="mitem"
+  :class="{ active: isActive(['featuredproducts.*']) }"
+>
+  FEATURED
 </Link>
 
 
-                        <Link
-                            :href="route('contact')"
-                            class="mitem"
-                            :class="{ active: isActive('contact') }"
-                        >
-                            CONTACT US
-                        </Link>
+<Link
+  :href="route('specialoffers.index')"
+  class="mitem"
+  :class="{ active: isActive(['specialoffers.*']) }"
+>
+  SPECIAL OFFERS
+</Link>
+
+
+
+
+                   <Link
+  :href="route('contact')"
+  class="mitem"
+  :class="{ active: isActive('contact') }"
+>
+  CONTACT US
+</Link>
+
                     </nav>
 
                     <!-- Search -->
@@ -250,10 +265,12 @@
                <nav class="mh-menu mh-menu-compact">
   <!-- ✅ CATEGORIES (compact) -->
   <div
-    class="mitem has-dd mh-cats"
-    @mouseenter="megaCompact = true"
-    @mouseleave="megaCompact = false; activeCatIdCompact = null"
-  >
+  class="mitem has-dd mh-cats"
+  :class="{ active: isActive(['category.*']) }"
+  @mouseenter="megaCompact = true"
+  @mouseleave="megaCompact = false; activeCatIdCompact = null"
+>
+
     <button
       type="button"
       class="mtext-btn mh-dd-btn"
@@ -366,8 +383,24 @@
     </ul>
   </div> -->
 
-  <Link :href="route('index')" class="mitem">FEATURED</Link>
-  <Link :href="route('index')" class="mitem">OFFERS</Link>
+<Link
+  :href="route('featuredproducts.index')"
+  class="mitem"
+  :class="{ active: isActive(['featuredproducts.*']) }"
+>
+  FEATURED
+</Link>
+
+
+<Link
+  :href="route('specialoffers.index')"
+  class="mitem"
+  :class="{ active: isActive(['specialoffers.*']) }"
+>
+  OFFERS
+</Link>
+
+
 
   <Link
     :href="route('contact')"
@@ -538,18 +571,12 @@
                     </li> -->
 
                     <li>
-                        <Link
-                            :href="route('index')"
-                            @click="drawer = false"
-                            >Featured</Link
-                        >
+                       <Link :href="route('featuredproducts.index')" @click="drawer = false">Featured</Link>
+
                     </li>
                     <li>
-                        <Link
-                            :href="route('index')"
-                            @click="drawer = false"
-                            >Special Offers</Link
-                        >
+                       <Link :href="route('specialoffers.index')" @click="drawer = false">Special Offers</Link>
+
                     </li>
                     <li>
                         <Link
@@ -576,59 +603,72 @@ export default {
     props: {
         cartTotal: { type: Number, default: 0 },
         logoSrc: { type: String, default: "/images/mahindalogo.png" },
-        categories: Array, // optional – falls back to $page.props.categories
-        brands: Array, // optional – falls back to $page.props.brands
+        categories: Array, // optional – falls back to $page.props.categories / $page.props.navCategories
+        brands: Array,     // optional – falls back to $page.props.brands / $page.props.navBrands
     },
     data() {
         return {
             q: "",
             mega: false,
-            megaCompact: false, 
+            megaCompact: false,
             brandsOpen: false,
-             brandsOpenCompact: false,
+            brandsOpenCompact: false,
             drawer: false,
             scrolled: false,
             acc: { product: true, brands: false },
             activeCatId: null,
-            activeCatIdCompact: null, 
+            activeCatIdCompact: null,
         };
     },
     computed: {
         loggedIn() {
             return !!this.$page?.props?.logged_customer;
         },
+
+        // ✅ FIX: robust fallbacks across all pages
         cats() {
-            return this.categories ?? this.$page?.props?.categories ?? [];
+            return (
+                this.categories ??
+                this.$page?.props?.categories ??
+                this.$page?.props?.navCategories ??
+                []
+            );
         },
         brs() {
-            return this.brands ?? this.$page?.props?.brands ?? [];
+            return (
+                this.brands ??
+                this.$page?.props?.brands ??
+                this.$page?.props?.navBrands ??
+                []
+            );
         },
 
-         activeCategoryCompact() {      // ✅ add
-    if (!this.activeCatIdCompact) return null;
-    return (this.topCategories || []).find(
-      c => Number(c.id) === Number(this.activeCatIdCompact)
-    ) || null;
-  },
-  activeSubcategoriesCompact() { // ✅ add
-    return this.activeCategoryCompact?.subcategories || [];
-  },
-activeCategory() {
-  if (!this.activeCatId) return null;
-  return (this.topCategories || []).find(
-    c => Number(c.id) === Number(this.activeCatId)
-  ) || null;
-},
-activeSubcategories() {
-  return this.activeCategory?.subcategories || [];
-},
+        activeCategoryCompact() {
+            if (!this.activeCatIdCompact) return null;
+            return (this.topCategories || []).find(
+                (c) => Number(c.id) === Number(this.activeCatIdCompact)
+            ) || null;
+        },
+        activeSubcategoriesCompact() {
+            return this.activeCategoryCompact?.subcategories || [];
+        },
 
-      topCategories() {
-  return (this.cats || []).slice(0, 10);
-},
-topBrands() {
-  return (this.brs || []).slice(0, 10);
-},
+        activeCategory() {
+            if (!this.activeCatId) return null;
+            return (this.topCategories || []).find(
+                (c) => Number(c.id) === Number(this.activeCatId)
+            ) || null;
+        },
+        activeSubcategories() {
+            return this.activeCategory?.subcategories || [];
+        },
+
+        topCategories() {
+            return (this.cats || []).slice(0, 10);
+        },
+        topBrands() {
+            return (this.brs || []).slice(0, 10);
+        },
 
         brandDropdown() {
             return this.topBrands.slice(0, 8);
@@ -641,16 +681,21 @@ topBrands() {
         window.removeEventListener("scroll", this.onScroll);
     },
     methods: {
+        toggleMega() {
+            this.mega = !this.mega;
+            if (this.mega) this.activeCatId = null;
+        },
 
-        toggleMega() { // ✅ ADD THIS
-      this.mega = !this.mega;
+        // ✅ ADD: compact version used in template
+        toggleMegaCompact() {
+            this.megaCompact = !this.megaCompact;
+            if (this.megaCompact) this.activeCatIdCompact = null;
+        },
 
-    if (this.mega) this.activeCatId = null;
-    },
         onScroll() {
-            // match React behaviour: compact bar appears after ~80px scroll
             this.scrolled = window.scrollY > 80;
         },
+
         submitSearch() {
             this.$inertia.get(
                 route("index"),
@@ -659,31 +704,33 @@ topBrands() {
             );
         },
 
-         subcategoryHref(cat, sub) {
-    // safest: keep your existing category route and pass subcategory as query
-    const base = route("category.list", cat.id);
-    return base + "?subcategory=" + encodeURIComponent(sub.id);
-  },
-        isActive(name) {
-            try {
-                const url = route(name);
-                const path = new URL(url, window.location.origin).pathname;
-                return window.location.pathname === path;
-            } catch {
-                return false;
-            }
+        categoryHref(c) {
+            return route("category.list", c.id);
         },
+
+        // ✅ FIX: match CategoryListController which expects `sub`
+        subcategoryHref(cat, sub) {
+            const base = route("category.list", cat.id);
+            return base + "?sub=" + encodeURIComponent(sub.id);
+        },
+isActive(names) {
+  const arr = Array.isArray(names) ? names : [names];
+  try {
+    return arr.some((n) => route().current(n)); // supports wildcards like "category.*"
+  } catch {
+    return false;
+  }
+},
+
+
         formatMoney(n) {
             return (n || 0).toFixed(2);
         },
-        categoryHref(c) {
-            // keep existing /category/{id} behaviour
-            return route("category.list", c.id);
-        },
+
         brandHref(b) {
-            // keep existing brand filter behaviour on index route
             return route("index", { brand: b.slug || this.slug(b.title) });
         },
+
         slug(s = "") {
             return String(s)
                 .trim()
@@ -691,43 +738,83 @@ topBrands() {
                 .replace(/\s+/g, "-")
                 .replace(/[^a-z0-9-]/g, "");
         },
+
         onMegaKeydown(e) {
-  const k = e.key;
+            const k = e.key;
 
-  if (k === "Escape") {
-    e.preventDefault();
-    this.mega = false;
-    this.activeCatId = null;
-    return;
-  }
+            if (k === "Escape") {
+                e.preventDefault();
+                this.mega = false;
+                this.activeCatId = null;
+                return;
+            }
 
-  if (!["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"].includes(k)) return;
+            if (!["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"].includes(k)) return;
 
-  e.preventDefault();
+            e.preventDefault();
 
-  const root = e.currentTarget;
+            const root = e.currentTarget;
 
-  if (k === "ArrowRight") {
-    const firstSub = root.querySelector(".mega-right a.mega-sublink");
-    if (firstSub) return firstSub.focus();
-  }
+            if (k === "ArrowRight") {
+                const firstSub = root.querySelector(".mega-right a.mega-sublink");
+                if (firstSub) return firstSub.focus();
+            }
 
-  if (k === "ArrowLeft") {
-    const activeCat = root.querySelector(".mega-item.active a.mega-link");
-    if (activeCat) return activeCat.focus();
-  }
+            if (k === "ArrowLeft") {
+                const activeCat = root.querySelector(".mega-item.active a.mega-link");
+                if (activeCat) return activeCat.focus();
+            }
 
-  const items = Array.from(
-    root.querySelectorAll("a.mega-link, a.mega-sublink")
-  ).filter((el) => el && el.offsetParent !== null);
+            const items = Array.from(
+                root.querySelectorAll("a.mega-link, a.mega-sublink")
+            ).filter((el) => el && el.offsetParent !== null);
 
-  if (!items.length) return;
+            if (!items.length) return;
 
-  const idx = items.indexOf(document.activeElement);
-  const dir = k === "ArrowDown" ? 1 : -1;
-  const next = items[(Math.max(0, idx) + dir + items.length) % items.length];
-  next && next.focus();
-},
+            const idx = items.indexOf(document.activeElement);
+            const dir = k === "ArrowDown" ? 1 : -1;
+            const next = items[(Math.max(0, idx) + dir + items.length) % items.length];
+            next && next.focus();
+        },
+
+        // ✅ ADD: compact keydown handler used in template
+        onMegaKeydownCompact(e) {
+            const k = e.key;
+
+            if (k === "Escape") {
+                e.preventDefault();
+                this.megaCompact = false;
+                this.activeCatIdCompact = null;
+                return;
+            }
+
+            if (!["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"].includes(k)) return;
+
+            e.preventDefault();
+
+            const root = e.currentTarget;
+
+            if (k === "ArrowRight") {
+                const firstSub = root.querySelector(".mega-right a.mega-sublink");
+                if (firstSub) return firstSub.focus();
+            }
+
+            if (k === "ArrowLeft") {
+                const activeCat = root.querySelector(".mega-item.active a.mega-link");
+                if (activeCat) return activeCat.focus();
+            }
+
+            const items = Array.from(
+                root.querySelectorAll("a.mega-link, a.mega-sublink")
+            ).filter((el) => el && el.offsetParent !== null);
+
+            if (!items.length) return;
+
+            const idx = items.indexOf(document.activeElement);
+            const dir = k === "ArrowDown" ? 1 : -1;
+            const next = items[(Math.max(0, idx) + dir + items.length) % items.length];
+            next && next.focus();
+        },
     },
 };
 </script>

@@ -224,6 +224,8 @@ class ProductController extends Controller
         // ✅ warranty_period is TEXT now (you can type "1 year", "12 months", etc.)
         'warranty_period' => ['nullable', 'max:120'],
         'warranty_type'   => ['nullable', 'max:120'],
+        'isfeatured' => ['nullable', 'in:0,1'],
+
 
         // category is optional
         'category_id' => ['nullable', 'exists:categories,id'],
@@ -256,6 +258,9 @@ class ProductController extends Controller
 
         $attributeSetId = $r->input('attribute_set_id');
         $attributeSetId = ($attributeSetId === '' || $attributeSetId === null) ? null : (int)$attributeSetId;
+        $isFeatured = $r->input('isfeatured');
+$isFeatured = ($isFeatured === '' || $isFeatured === null) ? null : (int)$isFeatured;
+
 
         // build attributes JSON (returns [] if no set)
         $attributesJson = $this->buildAttributesJsonOrFail(
@@ -305,6 +310,8 @@ class ProductController extends Controller
             'stock_count'     => $stockCount,
             'warranty_period' => $warrantyPeriod,
             'warranty_type'   => $warrantyType,
+            'isfeatured' => $isFeatured,
+
         ]);
 
         // categories sync (optional)
@@ -397,6 +404,7 @@ public function update(Request $r)
 
         'category_id' => ['nullable', 'exists:categories,id'],
 
+        'isfeatured' => ['nullable', 'in:0,1'],
         'subcategory_id' => [
             'nullable',
             Rule::exists('subcategories', 'id')
@@ -407,6 +415,9 @@ public function update(Request $r)
     DB::beginTransaction();
     try {
         $product = Product::findOrFail($r->id);
+        $isFeatured = $r->input('isfeatured');
+$isFeatured = ($isFeatured === '' || $isFeatured === null) ? null : (int)$isFeatured;
+
 
         $sku = $r->sku ?: ($product->sku ?: $this->generateUniqueSku());
 
@@ -450,6 +461,8 @@ public function update(Request $r)
 
             'attribute_set_id' => $attributeSetId,
             'attributes_json'  => $attributesJson,
+            'isfeatured' => $isFeatured,
+
 
             'price' => $r->price,
             'sale_price' => $r->sale_price,

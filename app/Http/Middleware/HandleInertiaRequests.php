@@ -5,9 +5,12 @@ namespace App\Http\Middleware;
 use App\Http\Controllers\PropertyController;
 use App\Models\Branch;
 use App\Models\Property;
+use App\Models\Category;
+use App\Models\Brand;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Middleware;
 use Laravel\Jetstream\Http\Middleware\ShareInertiaData;
@@ -21,13 +24,6 @@ class HandleInertiaRequests extends Middleware
      * @var string
      */
     protected $rootView = 'app';
-    // public function rootView(Request $request)
-    // {
-        // if ($request->route()->getPrefix() == 'admin') {
-            // return 'app';
-        //  }
-        // return 'frontend';
-    // }
 
     /**
      * Determines the current asset version.
@@ -39,7 +35,6 @@ class HandleInertiaRequests extends Middleware
     public function version(Request $request): ?string
     {
         return parent::version($request);
-        // return $this->rootView . parent::version($request);
     }
 
     /**
@@ -57,12 +52,54 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error')
             ],
             'permission' => Auth::check() ? auth()->user()->getUserPermisionByNameArray() : null,
-            'logged_customer' => Auth::guard('customer')->user(),// this get logged user
+            'logged_customer' => Auth::guard('customer')->user(), // this get logged user
             'recaptcha_site_key' => config('services.google_recaptcha.site_key'),
+
+            /**
+             * ✅ SAFE GLOBAL NAV DATA
+             * These are LIGHTWEIGHT lists for the navbar only.
+             * Cached to avoid repeated queries.
+             */
+            'navCategories' => fn () => Cache::remember('navCategories_v1', now()->addMinutes(30), function () {
+                return Category::where('status', 1)
+                    ->orderBy('id', 'asc')
+                    ->with([
+                        'subcategories' => fn ($q) => $q->where('status', 1)
+                            ->orderBy('sort_order')
+                            ->orderBy('title'),
+                    ])
+                    ->get()
+                    ->map(function ($c) {
+                        return [
+                            'id' => $c->id,
+                            'title' => $c->title,
+                            'slug' => $c->slug,
+                            'subcategories' => $c->subcategories->map(fn ($s) => [
+                                'id' => $s->id,
+                                'title' => $s->title,
+                                'slug' => $s->slug,
+                                'category_id' => $s->category_id,
+                            ])->values(),
+                        ];
+                    })
+                    ->values();
+            }),
+
+            'navBrands' => fn () => Cache::remember('navBrands_v1', now()->addMinutes(60), function () {
+                return Brand::where('status', 1)
+                    ->orderBy('id', 'asc')
+                    ->get()
+                    ->map(fn ($b) => [
+                        'id' => $b->id,
+                        'title' => $b->title,
+                        'slug' => $b->slug,
+                    ])
+                    ->values();
+            }),
         ]);
     }
 
-        /**
+    /**
      * Handle the incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -71,9 +108,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function handle(Request $request, Closure $next)
     {
-        // dd(func_get_args()[2]);
         if ($rootView = func_get_args()[2] ?? null) {
-
             $this->rootView = $rootView;
         }
 
