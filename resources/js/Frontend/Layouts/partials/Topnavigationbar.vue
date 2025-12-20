@@ -77,9 +77,11 @@
 <!-- ✅ UPDATED: Categories (Category + Subcategory dropdown) -->
 <div
   class="mitem has-dd mh-cats"
+  :class="{ active: isActive(['category.*']) }"
   @mouseenter="mega = true"
   @mouseleave="mega = false; activeCatId = null"
 >
+
   <button
     type="button"
     class="mtext-btn mh-dd-btn"
@@ -152,13 +154,14 @@
   </transition>
 </div>
 
-                        <Link
-                            :href="route('index')"
-                            class="mitem"
-                            :class="{ active: isActive('index') }"
-                        >
-                            HOME
-                        </Link>
+                     <Link
+  :href="route('index')"
+  class="mitem"
+  :class="{ active: isActive('index') }"
+>
+  HOME
+</Link>
+
 
                         <!-- Brands dropdown -->
                        <!-- <div
@@ -189,22 +192,34 @@
   </ul>
 </div> -->
 
-                      <Link :href="route('featuredproducts.index')" class="mitem">FEATURED</Link>
+                    <Link
+  :href="route('featuredproducts.index')"
+  class="mitem"
+  :class="{ active: isActive(['featuredproducts.*']) }"
+>
+  FEATURED
+</Link>
 
 
-                      <Link :href="route('specialoffers.index')" class="mitem">
+<Link
+  :href="route('specialoffers.index')"
+  class="mitem"
+  :class="{ active: isActive(['specialoffers.*']) }"
+>
   SPECIAL OFFERS
 </Link>
 
 
 
-                        <Link
-                            :href="route('contact')"
-                            class="mitem"
-                            :class="{ active: isActive('contact') }"
-                        >
-                            CONTACT US
-                        </Link>
+
+                   <Link
+  :href="route('contact')"
+  class="mitem"
+  :class="{ active: isActive('contact') }"
+>
+  CONTACT US
+</Link>
+
                     </nav>
 
                     <!-- Search -->
@@ -250,10 +265,12 @@
                <nav class="mh-menu mh-menu-compact">
   <!-- ✅ CATEGORIES (compact) -->
   <div
-    class="mitem has-dd mh-cats"
-    @mouseenter="megaCompact = true"
-    @mouseleave="megaCompact = false; activeCatIdCompact = null"
-  >
+  class="mitem has-dd mh-cats"
+  :class="{ active: isActive(['category.*']) }"
+  @mouseenter="megaCompact = true"
+  @mouseleave="megaCompact = false; activeCatIdCompact = null"
+>
+
     <button
       type="button"
       class="mtext-btn mh-dd-btn"
@@ -366,9 +383,23 @@
     </ul>
   </div> -->
 
-<Link :href="route('featuredproducts.index')" class="mitem">FEATURED</Link>
+<Link
+  :href="route('featuredproducts.index')"
+  class="mitem"
+  :class="{ active: isActive(['featuredproducts.*']) }"
+>
+  FEATURED
+</Link>
 
- <Link :href="route('specialoffers.index')" class="mitem">OFFERS</Link>
+
+<Link
+  :href="route('specialoffers.index')"
+  class="mitem"
+  :class="{ active: isActive(['specialoffers.*']) }"
+>
+  OFFERS
+</Link>
+
 
 
   <Link
@@ -682,16 +713,15 @@ export default {
             const base = route("category.list", cat.id);
             return base + "?sub=" + encodeURIComponent(sub.id);
         },
+isActive(names) {
+  const arr = Array.isArray(names) ? names : [names];
+  try {
+    return arr.some((n) => route().current(n)); // supports wildcards like "category.*"
+  } catch {
+    return false;
+  }
+},
 
-        isActive(name) {
-            try {
-                const url = route(name);
-                const path = new URL(url, window.location.origin).pathname;
-                return window.location.pathname === path;
-            } catch {
-                return false;
-            }
-        },
 
         formatMoney(n) {
             return (n || 0).toFixed(2);
