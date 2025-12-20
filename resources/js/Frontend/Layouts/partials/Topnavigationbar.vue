@@ -192,9 +192,10 @@
                       <Link :href="route('featuredproducts.index')" class="mitem">FEATURED</Link>
 
 
-                       <Link :href="route('index')" class="mitem">
-    SPECIAL OFFERS
+                      <Link :href="route('specialoffers.index')" class="mitem">
+  SPECIAL OFFERS
 </Link>
+
 
 
                         <Link
@@ -367,7 +368,8 @@
 
 <Link :href="route('featuredproducts.index')" class="mitem">FEATURED</Link>
 
-  <Link :href="route('index')" class="mitem">OFFERS</Link>
+ <Link :href="route('specialoffers.index')" class="mitem">OFFERS</Link>
+
 
   <Link
     :href="route('contact')"
@@ -542,11 +544,8 @@
 
                     </li>
                     <li>
-                        <Link
-                            :href="route('index')"
-                            @click="drawer = false"
-                            >Special Offers</Link
-                        >
+                       <Link :href="route('specialoffers.index')" @click="drawer = false">Special Offers</Link>
+
                     </li>
                     <li>
                         <Link

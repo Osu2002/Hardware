@@ -17,6 +17,7 @@ use App\Http\Controllers\Frontend\CategoryListController;
 
 use App\Http\Controllers\Frontend\ProductViewController;
 use App\Http\Controllers\Frontend\FeaturedProductListController;
+use App\Http\Controllers\Frontend\SpecialOffersController;
 
 
 /*
@@ -136,6 +137,7 @@ Route::get('/category/{category}', [CategoryListController::class, 'show'])
     Route::get('/featured', [FeaturedProductListController::class, 'index'])
     ->name('featuredproducts.index');
 
-
+Route::get('/special-offers', [SpecialOffersController::class, 'index'])
+    ->name('specialoffers.index');
 
 
