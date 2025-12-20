@@ -603,12 +603,13 @@ export default {
 }
 
 .title {
-  font-size: clamp(1.2rem, 2.1vw, 1.85rem);
-  line-height: 1.18;
-  letter-spacing: -0.02em;
-  font-weight: 500;
+  font-size: clamp(1.55rem, 2.6vw, 2rem); /* increased */
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  font-weight: 500; /* slightly stronger */
   margin: 0 0 10px;
 }
+
 
 .brand-row {
   display: flex;
@@ -619,22 +620,38 @@ export default {
 }
 
 .brand-label {
-  font-size: 0.92rem;
+  font-size: 0.76rem;  /* was 0.92rem */
   color: var(--muted);
 }
 
 .brand-text {
-  font-size: 0.92rem;
+  font-size: 0.76rem;  /* was 0.92rem */
   font-weight: 700;
   color: var(--text);
 }
 
+
 .brand-logo {
-  height: 32px;         /* adjust if needed */
-  max-width: 180px;
+  height: 20px;          /* smaller than your current 32px */
+  max-width: 150px;      /* prevents huge wide logos */
+  width: auto;
   object-fit: contain;
 }
 
+@media (max-width: 900px) {
+  .brand-logo {
+    height: 22px;
+    max-width: 130px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .brand-logo {
+    height: 18px;
+    max-width: 110px;
+  }
+}
 
 .price-area {
   padding: 14px 0 10px;
@@ -648,11 +665,12 @@ export default {
 }
 
 .price-main {
-  font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+  font-size: clamp(1.69rem, 2.8vw, 2.35rem); /* increased */
   font-weight: 500;
   letter-spacing: -0.015em;
   color: #071c61;
 }
+
 
 .price-meta {
   display: flex;
@@ -691,6 +709,7 @@ export default {
   font-size: 0.98rem;
   color: rgba(51, 65, 85, 0.95);
   line-height: 1.6;
+  letter-spacing: 0.03em;
 }
 
 /* Attributes */
@@ -836,9 +855,11 @@ export default {
 
 .section-title {
   font-size: 1.15rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  
   margin: 0 0 10px;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .description-body {
@@ -847,6 +868,7 @@ export default {
   font-size: 0.98rem;
   padding-bottom: 22px;
   border-bottom: 1px solid var(--line);
+  letter-spacing: 0.03em;
 }
 
 /* Related (CategoryNav card design + horizontal swipe) */
@@ -1209,6 +1231,48 @@ export default {
   font-weight: 800;
   font-size: 0.78rem;
   z-index: 2;
+}
+/* === Typography: match TopNavbar feel === */
+.product-page {
+  /* Use the same app font everywhere (fallback stack) */
+  font-family: var(
+    --mh-font-family,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    "Liberation Sans",
+    sans-serif
+  );
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+
+  /* Base “navbar-like” rhythm (subtle) */
+  letter-spacing: 0.01em;
+}
+
+/* Apply the TopNavbar “menu typography” broadly inside ProductView */
+.product-page :is(
+  .breadcrumb,
+  .crumb-link,
+  .brand-label,
+  .attr-label,
+  .meta-label,
+  .pill,
+  .badge,
+  .section-title,
+  .wa-text,
+  .btn-buy,
+  .card-title,
+  .mobile-wa
+) {
+  font-weight: 500;
+  /* text-transform: uppercase; */
+  letter-spacing: 0.04em;
 }
 
 .mobile-wa:active {
