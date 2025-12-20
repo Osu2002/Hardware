@@ -2,15 +2,15 @@
   <section class="category-banner">
     <div class="banner-wrap">
       <img
-        v-if="category && category.image"
-        :src="category.image"
+        v-if="category && category.banner"
+        :src="category.banner"
         :alt="category.title || 'Category banner'"
         class="banner-img"
         loading="lazy"
       />
 
       <div v-else class="banner-fallback">
-        <span>No category image</span>
+        <span>No category banner image</span>
       </div>
 
       <div class="banner-overlay"></div>
@@ -36,11 +36,6 @@ export default {
   margin: 10px 0 18px;
 }
 
-/* Responsive banner height:
-   - minimum 220px (small phones)
-   - fluid in between (based on viewport width)
-   - maximum 420px (large screens)
-*/
 .banner-wrap {
   position: relative;
   border-radius: 14px;
@@ -55,8 +50,6 @@ export default {
   height: clamp(260px, 32vw, 520px);
 }
 
-
-/* Image fill */
 .banner-img {
   display: block;
   object-fit: cover;
@@ -64,7 +57,6 @@ export default {
   background: #ffffff;
 }
 
-/* Fallback when no image */
 .banner-fallback {
   display: flex;
   align-items: center;
@@ -73,7 +65,6 @@ export default {
   font-size: 0.95rem;
 }
 
-/* Overlay */
 .banner-overlay {
   position: absolute;
   inset: 0;
@@ -85,7 +76,6 @@ export default {
   );
 }
 
-/* Title positioning */
 .banner-content {
   position: absolute;
   left: 16px;
@@ -103,7 +93,6 @@ export default {
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 }
 
-/* On very small devices give a bit less rounded corners and padding */
 @media (max-width: 480px) {
   .banner-wrap {
     border-radius: 12px;

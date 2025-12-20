@@ -51,6 +51,18 @@
                 <div class="text-danger">{{ form.errors.vehicle_type_image }}</div>
               </div>
             </div>
+            <div class="mb-3 col-md-6">
+  <label for="category_banner_image" class="form-label me-3">Category Banner Image</label>
+  <br />
+  <FileInputComponent
+    :isRequired="false"
+    id="category_banner_image"
+    :prvImage="category_banner_image"
+    v-model="form.category_banner_image"
+  />
+  <div class="text-danger">{{ form.errors.category_banner_image }}</div>
+</div>
+
 
             <div class="mt-2">
               <button type="submit" class="btn btn-main me-2" :disabled="form.processing">
@@ -88,6 +100,7 @@ export default {
         featured: "",
         // Keep SAME request key to avoid changing server/media handling:
         vehicle_type_image: "",
+        category_banner_image: "",
       }),
     };
   },
@@ -106,7 +119,12 @@ export default {
   if (!this.category?.media?.length) return "";
   const m = this.category.media.find(x => x.collection_name === "category_image");
   return m ? m.original_url : "";
-}
+},
+  category_banner_image() {
+    if (!this.category?.media?.length) return "";
+    const m = this.category.media.find(x => x.collection_name === "category_banner");
+    return m ? m.original_url : "";
+  },
 
   },
 

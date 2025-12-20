@@ -6,36 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class CategoryListController extends Controller
 {
-    /**
-     * Show products for a single category (12 per page: 3 x 4 grid).
-     */
     public function show(Category $category, Request $request)
     {
         if ((int) $category->status !== 1) {
             abort(404);
         }
 
-        // ✅ same as HomeController: category_image
         $category->load('media');
 
-        $categoryBanner = optional($category->getFirstMedia('category_image'))->getUrl();
-
-        /**
-         * OPTIONAL FALLBACK:
-         * If you also store image path in DB column like $category->image = "categories/banner.jpg"
-         * under storage/app/public/categories/banner.jpg
-         */
-        if (empty($categoryBanner) && !empty($category->image)) {
-            $categoryBanner = Str::startsWith($category->image, ['http://', 'https://'])
-                ? $category->image
-                : Storage::url($category->image); // -> /storage/...
-        }
+        // ✅ Use banner collection ONLY
+        $banner = optional($category->getFirstMedia('category_banner'))->getUrl();
 
         $products = Product::where('status', 1)
             ->whereHas('categories', function ($q) use ($category) {
@@ -63,10 +47,10 @@ class CategoryListController extends Controller
 
         return Inertia::render('CategoryListView/index', [
             'category' => [
-                'id'    => $category->id,
-                'title' => $category->title,
-                'slug'  => $category->slug,
-                'image' => $categoryBanner, // ✅ now will pass correctly
+                'id'     => $category->id,
+                'title'  => $category->title,
+                'slug'   => $category->slug,
+                'banner' => $banner, // ✅ IMPORTANT
             ],
             'products' => $products,
         ]);
