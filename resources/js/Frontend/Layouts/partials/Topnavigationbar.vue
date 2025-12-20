@@ -189,9 +189,8 @@
   </ul>
 </div> -->
 
-                        <Link :href="route('index')" class="mitem">
-                            FEATURED
-                        </Link>
+                      <Link :href="route('featuredproducts.index')" class="mitem">FEATURED</Link>
+
 
                        <Link :href="route('index')" class="mitem">
     SPECIAL OFFERS
@@ -366,7 +365,8 @@
     </ul>
   </div> -->
 
-  <Link :href="route('index')" class="mitem">FEATURED</Link>
+<Link :href="route('featuredproducts.index')" class="mitem">FEATURED</Link>
+
   <Link :href="route('index')" class="mitem">OFFERS</Link>
 
   <Link
@@ -538,11 +538,8 @@
                     </li> -->
 
                     <li>
-                        <Link
-                            :href="route('index')"
-                            @click="drawer = false"
-                            >Featured</Link
-                        >
+                       <Link :href="route('featuredproducts.index')" @click="drawer = false">Featured</Link>
+
                     </li>
                     <li>
                         <Link
