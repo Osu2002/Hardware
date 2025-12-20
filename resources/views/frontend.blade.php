@@ -117,7 +117,7 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.12.4/dist/sweetalert2.min.css
 <body>
     @inertia
   <!--Use the below code snippet to provide real time updates to the live chat plugin without the need of copying and paste each time to your website when changes are made via PBX-->
-<call-us-selector phonesystem-url="https://nikoba.3cx.jp" party="LiveChat348139"></call-us-selector>
+{{-- <call-us-selector phonesystem-url="https://nikoba.3cx.jp" party="LiveChat348139"></call-us-selector> --}}
 
 <!--Incase you don't want real time updates to the live chat plugin when options are changed, use the below code snippet. Please note that each time you change the settings you will need to copy and paste the snippet code to your website-->
 <!--<call-us
