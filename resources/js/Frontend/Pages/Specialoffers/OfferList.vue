@@ -344,7 +344,7 @@ export default {
   left: 0;
   right: 0;
   top: 50%;
-  height: 2px;
+  height: 1.5px;
   background: currentColor;
   transform: translateY(-50%);
 }

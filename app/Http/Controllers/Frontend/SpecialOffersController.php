@@ -71,13 +71,72 @@ class SpecialOffersController extends Controller
         }
 
         // ✅ Sidebar data
-        $subcategories = class_exists(Subcategory::class)
-            ? Subcategory::query()->select('id', 'title')->orderBy('title')->get()
-            : collect([]);
+       // ✅ Sidebar filter data: ONLY subcategories/brands that have offers
 
-        $brandsList = class_exists(Brand::class)
-            ? Brand::query()->select('id', 'title')->orderBy('title')->get()
-            : collect([]);
+$offersBase = Product::query();
+
+// only active (if exists)
+if (Schema::hasColumn('products', 'status')) {
+    $offersBase->where('status', 1);
+}
+
+// only discounted (your real columns)
+if (Schema::hasColumn('products', 'discount_status')) {
+    $offersBase->where('discount_status', 1);
+}
+if (Schema::hasColumn('products', 'discounted_amount')) {
+    $offersBase->where('discounted_amount', '>', 0);
+}
+
+// --- Subcategories that have offers (respect current brand filter) ---
+$subIds = collect([]);
+if (Schema::hasColumn('products', 'subcategory_id')) {
+    $q = (clone $offersBase);
+
+    // if user selected brands, limit subcategories to those brands
+    $brands = $filters['brands'];
+    if (Schema::hasColumn('products', 'brand_id') && is_array($brands) && count($brands)) {
+        $brandIds = array_values(array_filter(array_map('intval', $brands)));
+        if (count($brandIds)) $q->whereIn('brand_id', $brandIds);
+    }
+
+    $subIds = $q->whereNotNull('subcategory_id')
+        ->distinct()
+        ->pluck('subcategory_id');
+}
+
+$subcategories = class_exists(Subcategory::class)
+    ? Subcategory::query()
+        ->select('id', 'title')
+        ->when($subIds->count(), fn($qq) => $qq->whereIn('id', $subIds))
+        ->orderBy('title')
+        ->get()
+    : collect([]);
+
+// --- Brands that have offers (respect current subcategory filter) ---
+$brandIds = collect([]);
+if (Schema::hasColumn('products', 'brand_id')) {
+    $q = (clone $offersBase);
+
+    // if user selected subcategory, limit brands to that subcategory
+    $sub = $filters['sub'];
+    if ($sub && Schema::hasColumn('products', 'subcategory_id')) {
+        $q->where('subcategory_id', (int) $sub);
+    }
+
+    $brandIds = $q->whereNotNull('brand_id')
+        ->distinct()
+        ->pluck('brand_id');
+}
+
+$brandsList = class_exists(Brand::class)
+    ? Brand::query()
+        ->select('id', 'title')
+        ->when($brandIds->count(), fn($qq) => $qq->whereIn('id', $brandIds))
+        ->orderBy('title')
+        ->get()
+    : collect([]);
+
 
         // ✅ paginate
         $products = $query->paginate($perPage)->withQueryString();
