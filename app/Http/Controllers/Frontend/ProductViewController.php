@@ -147,7 +147,6 @@ $related = Product::where('status', 1)
     ->when(!empty($categoryIds), function ($q) use ($categoryIds) {
         $q->whereHas('categories', fn ($cq) => $cq->whereIn('categories.id', $categoryIds));
     }, function ($q) {
-        // no category => no related
         $q->whereRaw('1=0');
     })
     ->with('media')
@@ -156,18 +155,41 @@ $related = Product::where('status', 1)
     ->get()
     ->map(function ($p) {
         $thumb = optional($p->getFirstMedia('product_images'))->getUrl();
-        $base  = $p->price ?? 0;
-        $current = $p->sale_price ?? $base;
+
+        $basePrice = (float) ($p->price ?? 0);
+        $currentPrice = $basePrice;
+        $discountPercent = 0;
+
+        if ((int) $p->discount_status === 1 && $p->discount_type && (float) $p->discounted_amount > 0) {
+            if ($p->discount_type === 'percent') {
+                $discountPercent = (int) round((float) $p->discounted_amount);
+                $currentPrice = max(0, $basePrice * (1 - ($discountPercent / 100)));
+            } elseif ($p->discount_type === 'amount') {
+                $amount = (float) $p->discounted_amount;
+                $currentPrice = max(0, $basePrice - $amount);
+                $discountPercent = $basePrice > 0 ? (int) round(($amount / $basePrice) * 100) : 0;
+            }
+        }
 
         return [
-            'id'    => $p->id,
-            'name'  => $p->name,
-            'slug'  => $p->slug,
-            'image' => $thumb,
-            'price' => round($current, 2),
+            'id'   => $p->id,
+            'name' => $p->name,
+            'slug' => $p->slug,
+            'image'=> $thumb,
+
+            // ✅ these make ProductView.vue show badge + old price
+            'regular_price'    => round($basePrice, 2),
+            'price'            => round($currentPrice, 2),
+            'discount_percent' => $discountPercent,
+
+            // optional (not required, but good for debugging/consistency)
+            'discount_status'   => (int) $p->discount_status,
+            'discount_type'     => $p->discount_type,
+            'discounted_amount' => (float) $p->discounted_amount,
         ];
     })
     ->values();
+
 
 
         return Inertia::render('CategoryProductView/index', [

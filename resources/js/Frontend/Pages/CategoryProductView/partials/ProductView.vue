@@ -1208,6 +1208,7 @@ export default {
   color: #b91c1c;
   font-weight: 800;
   font-size: 0.78rem;
+  z-index: 2;
 }
 
 .mobile-wa:active {
