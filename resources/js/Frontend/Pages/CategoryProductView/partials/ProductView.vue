@@ -58,9 +58,10 @@
       <!-- Info -->
       <section class="product-info" aria-label="Product information">
         <header class="header">
-          <h1 class="title" :title="product.name">
-            {{ truncateName(product.name, 28) }}
-          </h1>
+        <h1 class="title" :title="product.name">
+  {{ product.name }}
+</h1>
+
 
           <div class="brand-row">
             <template v-if="product.brandLogo">
@@ -603,11 +604,17 @@ export default {
 }
 
 .title {
-  font-size: clamp(1.55rem, 2.6vw, 2rem); /* increased */
+  font-size: clamp(1.55rem, 2.6vw, 2rem);
   line-height: 1.15;
   letter-spacing: 0.04em;
-  font-weight: 500; /* slightly stronger */
+  font-weight: 500;
   margin: 0 0 10px;
+
+  /* ✅ wrap instead of cut */
+  white-space: normal;
+  overflow-wrap: anywhere; /* breaks very long words too */
+  word-break: break-word;
+  hyphens: auto;
 }
 
 
@@ -632,7 +639,7 @@ export default {
 
 
 .brand-logo {
-  height: 20px;          /* smaller than your current 32px */
+  height: 30px;          /* smaller than your current 32px */
   max-width: 150px;      /* prevents huge wide logos */
   width: auto;
   object-fit: contain;
@@ -640,7 +647,7 @@ export default {
 
 @media (max-width: 900px) {
   .brand-logo {
-    height: 22px;
+    height: 28px;
     max-width: 130px;
   }
 }
@@ -648,7 +655,7 @@ export default {
 /* Mobile */
 @media (max-width: 640px) {
   .brand-logo {
-    height: 18px;
+    height: 25px;
     max-width: 110px;
   }
 }
