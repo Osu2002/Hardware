@@ -1139,10 +1139,13 @@ export default {
 }
 
 /* Mobile */
+/* Mobile: make related cards smaller */
 @media (max-width: 768px) {
   .related-slider {
     --gap: 8px;
-    --card-basis: clamp(150px, 44vw, 185px);
+
+    /* ✅ smaller width cards (more compact) */
+    --card-basis: clamp(135px, 40vw, 165px);
   }
 
   .slider-track {
@@ -1153,64 +1156,88 @@ export default {
     scroll-snap-stop: always;
   }
 
+  /* ✅ reduce image height */
   .card-image-wrapper {
-    padding-top: 62%;
+    padding-top: 56%;
   }
 
+  /* ✅ tighter padding */
   .card-body {
-    padding: 8px 8px 4px;
+    padding: 6px 6px 3px;
   }
 
+  /* ✅ smaller text */
   .card-title {
-    font-size: 0.78rem;
-    min-height: 2.4em;
+    font-size: 0.74rem;
+    min-height: 2.2em;
+    line-height: 1.25;
   }
 
   .card-price {
-    font-size: 0.86rem;
+    font-size: 0.82rem;
   }
 
   .card-old-price {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
   }
 
   .card-footer {
-    padding: 6px 8px 8px;
-    gap: 8px;
+    padding: 5px 6px 6px;
+    gap: 6px;
   }
 
+  /* ✅ smaller buttons */
   .btn-heart {
-    width: 30px;
-    height: 30px;
-    border-radius: 9px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
   }
 
   .heart-icon {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
 
   .btn-buy {
-    padding: 5px 10px;
-    border-radius: 8px;
-    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 7px;
+    font-size: 0.72rem;
   }
 
+  /* ✅ smaller discount badge */
   .card-image-wrapper .badge-discount {
-    width: 38px;
-    height: 38px;
-    font-size: 0.72rem;
+    width: 34px;
+    height: 34px;
+    font-size: 0.68rem;
     right: 6px;
     top: 6px;
   }
 }
 
-/* Very small */
+/* Very small phones: even smaller */
 @media (max-width: 480px) {
   .related-slider {
-    --card-basis: clamp(180px, 78vw, 260px);
+    --gap: 8px;
+
+    /* ✅ smaller than before */
+    --card-basis: clamp(125px, 72vw, 190px);
+  }
+
+  .card-image-wrapper {
+    padding-top: 54%;
+  }
+
+  .card-title {
+    font-size: 0.72rem;
+    min-height: 2.1em;
+  }
+
+  .btn-buy {
+    font-size: 0.7rem;
+    padding: 4px 8px;
   }
 }
+
 
 /* Mobile sticky CTA */
 .mobile-sticky {
