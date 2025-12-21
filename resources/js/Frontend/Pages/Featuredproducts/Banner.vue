@@ -38,6 +38,16 @@ export default {
 
 <style scoped>
 /* ✅ EXACT same rules as CategoryBanner */
+
+.featured-banner {
+  font-family: "Abadi MT Condensed Light", "Abadi MT Condensed", "Abadi MT", Abadi,
+    system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.featured-banner * {
+  font-family: inherit;
+}
+
 .featured-banner {
   margin: 10px 0 18px;
 }

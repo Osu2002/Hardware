@@ -398,7 +398,7 @@ export default {
 </script>
 
 <style scoped>
-/* Design system */
+/* Design system + Typography (ABADI) */
 .product-page {
   --bg: #ffffff;
   --text: #0f172a;
@@ -409,9 +409,24 @@ export default {
   --accent-2: #22c55e;
   --warn: #ef4444;
 
+  /* ✅ Abadi font stack (Windows) + fallbacks */
+  font-family: "Abadi MT Condensed Light", "Abadi MT Condensed", "Abadi MT", Abadi,
+    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+    "Liberation Sans", sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  letter-spacing: 0.02em;
+
   background: var(--bg);
   color: var(--text);
-  padding: clamp(16px, 2.6vw, 36px) 0 clamp(28px, 4vw, 60px);
+  /* padding: clamp(16px, 2.6vw, 36px) 0 clamp(28px, 4vw, 60px); */
+}
+
+/* ✅ ensure v-html description also uses Abadi */
+.product-page :deep(.description-body),
+.product-page :deep(.description-body *) {
+  font-family: inherit;
 }
 
 /* Breadcrumb */
@@ -501,7 +516,6 @@ export default {
   transform: scale(0.68);
   filter: saturate(1.06) contrast(1.02);
 }
-
 
 .badges {
   position: absolute;
@@ -612,35 +626,33 @@ export default {
 
   /* ✅ wrap instead of cut */
   white-space: normal;
-  overflow-wrap: anywhere; /* breaks very long words too */
+  overflow-wrap: anywhere;
   word-break: break-word;
   hyphens: auto;
 }
 
-
 .brand-row {
   display: flex;
-  flex-direction: column;   /* 👈 stack vertically */
-  align-items: flex-start;  /* left align */
-  gap: 6px;                 /* space between Brand text and logo */
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
   min-height: unset;
 }
 
 .brand-label {
-  font-size: 0.76rem;  /* was 0.92rem */
+  font-size: 0.76rem;
   color: var(--muted);
 }
 
 .brand-text {
-  font-size: 0.76rem;  /* was 0.92rem */
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--text);
 }
 
-
 .brand-logo {
-  height: 30px;          /* smaller than your current 32px */
-  max-width: 150px;      /* prevents huge wide logos */
+  height: 30px;
+  max-width: 150px;
   width: auto;
   object-fit: contain;
 }
@@ -652,7 +664,6 @@ export default {
   }
 }
 
-/* Mobile */
 @media (max-width: 640px) {
   .brand-logo {
     height: 25px;
@@ -672,12 +683,11 @@ export default {
 }
 
 .price-main {
-  font-size: clamp(1.69rem, 2.8vw, 2.35rem); /* increased */
+  font-size: clamp(1.69rem, 2.8vw, 2.35rem);
   font-weight: 500;
   letter-spacing: -0.015em;
   color: #071c61;
 }
-
 
 .price-meta {
   display: flex;
@@ -686,9 +696,9 @@ export default {
   gap: 10px;
 }
 
-.price-old{
+.price-old {
   text-decoration-line: line-through !important;
-  text-decoration-thickness: 1px !important;   /* light line */
+  text-decoration-thickness: 1px !important;
   text-decoration-color: rgba(14, 14, 15, 0.758) !important;
   text-decoration-skip-ink: auto;
 }
@@ -862,7 +872,6 @@ export default {
 
 .section-title {
   font-size: 1.15rem;
-  
   margin: 0 0 10px;
   font-weight: 700 !important;
   text-transform: uppercase;
@@ -886,7 +895,7 @@ export default {
 .related-slider {
   position: relative;
   --gap: 12px;
-  --card-basis: calc((100% - (var(--gap) * 4)) / 5); /* 5 visible */
+  --card-basis: calc((100% - (var(--gap) * 4)) / 5);
 }
 
 .slider-viewport {
@@ -960,7 +969,6 @@ export default {
   transform: scale(1.08);
 }
 
-/* discount badge (circle) */
 .badge-main-discount {
   font-size: 0.78rem;
   font-weight: 500;
@@ -970,7 +978,7 @@ export default {
   border: 1px solid rgba(239, 68, 68, 0.25);
   background: rgba(239, 68, 68, 0.08);
   color: #b91c1c;
-  position: static; /* important: NOT absolute */
+  position: static;
   width: auto;
   height: auto;
 }
@@ -1003,13 +1011,13 @@ export default {
   align-items: center;
 }
 
-/* OLD PRICE */
 .card-old-price {
   position: relative;
   display: inline-block;
   color: #9ca3af;
   font-weight: 500;
   font-size: 0.82rem;
+  text-decoration: none;
 }
 
 .card-old-price::after {
@@ -1049,6 +1057,7 @@ export default {
   justify-content: center;
   cursor: pointer;
   transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  color: #9ca3af;
 }
 
 .btn-heart:hover {
@@ -1060,28 +1069,16 @@ export default {
 .btn-heart.active {
   border-color: #ef4444;
   background: #fee2e2;
+  color: #ef4444;
 }
 
 .heart-icon {
   width: 18px;
   height: 18px;
   display: block;
-}
-
-/* default = outline heart */
-.btn-heart {
-  color: #9ca3af;
-}
-
-.btn-heart .heart-icon {
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
-}
-
-/* active = filled heart */
-.btn-heart.active {
-  color: #ef4444;
 }
 
 .btn-heart.active .heart-icon {
@@ -1106,14 +1103,42 @@ export default {
   transform: translateY(-4px);
 }
 
-/* tablet: ~3 visible */
+/* Related card discount badge (circle) */
+.card-image-wrapper .badge-discount {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: #d51010;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.78rem;
+  z-index: 2;
+  box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
+}
+
+/* Tablet */
 @media (max-width: 1024px) {
   .related-slider {
     --card-basis: calc((100% - (var(--gap) * 2)) / 3);
   }
 }
 
-/* mobile: ~2 visible + swipe */
+/* Mobile */
 @media (max-width: 768px) {
   .related-slider {
     --gap: 8px;
@@ -1180,7 +1205,7 @@ export default {
   }
 }
 
-/* very small: still swipeable but not oversized */
+/* Very small */
 @media (max-width: 480px) {
   .related-slider {
     --card-basis: clamp(180px, 78vw, 260px);
@@ -1204,83 +1229,9 @@ export default {
   border-radius: 14px;
   padding: 13px 14px;
 
-  /* ✅ solid WhatsApp green */
   background: #025f24;
   border: 1px solid #056c2e;
-
   color: #ffffff;
-
-
-}
-
-/* Related card discount badge (circle) */
-.card-image-wrapper .badge-discount {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-
-  width: 46px;
-  height: 46px;
-  border-radius: 999px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0;
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
-
-  border: 1px solid rgba(239, 68, 68, 0.25);
- background: #d51010;
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 0.78rem;
-  z-index: 2;
-   box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
-}
-/* === Typography: match TopNavbar feel === */
-.product-page {
-  /* Use the same app font everywhere (fallback stack) */
-  font-family: var(
-    --mh-font-family,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    "Helvetica Neue",
-    Arial,
-    "Noto Sans",
-    "Liberation Sans",
-    sans-serif
-  );
-
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-
-  /* Base “navbar-like” rhythm (subtle) */
-  letter-spacing: 0.01em;
-}
-
-/* Apply the TopNavbar “menu typography” broadly inside ProductView */
-.product-page :is(
-  .breadcrumb,
-  .crumb-link,
-  .brand-label,
-  .attr-label,
-  .meta-label,
-  .pill,
-  .badge,
-  .section-title,
-  .wa-text,
-  .btn-buy,
-  .card-title,
-  .mobile-wa
-) {
-  font-weight: 500;
-  /* text-transform: uppercase; */
-  letter-spacing: 0.04em;
 }
 
 .mobile-wa:active {
@@ -1311,7 +1262,7 @@ export default {
   }
 
   .actions {
-    display: none; /* replaced by sticky CTA on small screens */
+    display: none;
   }
 
   .mobile-sticky {
@@ -1324,4 +1275,23 @@ export default {
     z-index: 50;
   }
 }
+
+.product-page :deep(.related-section),
+.product-page :deep(.related-section *),
+.product-page :deep(.product-card),
+.product-page :deep(.product-card *) {
+  font-family: inherit !important;
+}
+
+/* ✅ STRONGEST: force Abadi everywhere inside ProductView */
+.product-page :deep(*) {
+  font-family: inherit !important;
+  
+}
+
+.product-page :deep(*) {
+  letter-spacing: 0.04rem !important;
+}
+
 </style>
+

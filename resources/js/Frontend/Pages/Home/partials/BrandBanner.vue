@@ -131,50 +131,50 @@ export default {
 </script>
 
 <style scoped>
+/* ✅ SAME FONT as FeaturedProductList.vue */
 .brand-banner {
   margin: 40px 0;
   border-radius: 16px;
-  overflow: hidden; /* IMPORTANT so slider respects rounded corners */
-  
+  overflow: hidden;
+
+  font-family: "Abadi MT Condensed Light", "Abadi MT Condensed", "Abadi MT", Abadi,
+    system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-/* Give padding ONLY to header */
+/* ✅ Force every text inside to match FeaturedProductList.vue */
+.brand-banner * {
+  font-family: inherit;
+  letter-spacing: 0.03rem !important;
+}
+
+/* ===== HEADER ===== */
 .brand-banner-header {
   padding: 24px 3px 12px;
-   font-size: 1.2rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--nav-text, #12355a);
-}
 
-
-
-/* Slider has NO side padding */
-.brand-slider-row {
-  padding: 0; /* touches left/right edges */
-}
-
-/* Swiper full width */
-.brand-swiper {
-  width: 100%;
-  padding: 0 0 20px; /* only bottom padding if you want */
-}
-
-/* Header */
-.brand-banner-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 4px;
 }
 
-
 .brand-banner-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #111827;
   margin: 0;
+
+  /* ✅ same title color as CategoryNav */
+  color: var(--nav-text, #12355a);
+
+  font-weight: 700;
+  text-transform: uppercase;
+
+  /* ✅ normal size */
+  font-size: 1.2rem;
+}
+
+/* ✅ 768px size */
+@media (max-width: 768px) {
+  .brand-banner-title {
+    font-size: 1.05rem;
+  }
 }
 
 .brand-banner-controls {
@@ -182,9 +182,14 @@ export default {
   gap: 8px;
 }
 
-/* Swiper wrapper */
+/* ===== SLIDER ===== */
+.brand-slider-row {
+  padding: 0; /* touches left/right edges */
+}
+
 .brand-swiper {
   width: 100%;
+  padding: 0 0 20px; /* only bottom padding */
 }
 
 /* Brand card */
@@ -192,7 +197,6 @@ export default {
   background: #ffffff;
   border-radius: 12px;
   padding: 16px 12px;
-  /* box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06); */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -246,3 +250,4 @@ export default {
   transform: translateY(-1px);
 }
 </style>
+

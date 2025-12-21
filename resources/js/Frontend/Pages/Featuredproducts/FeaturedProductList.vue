@@ -236,6 +236,16 @@ export default {
 .category-products { margin-top: 10px; }
 .empty { padding: 24px 0; font-size: 0.95rem; color: #6b7280; }
 
+.category-products {
+  font-family: "Abadi MT Condensed Light", "Abadi MT Condensed", "Abadi MT", Abadi,
+    system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.category-products * {
+  font-family: inherit;
+   letter-spacing: 0.03rem !important;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

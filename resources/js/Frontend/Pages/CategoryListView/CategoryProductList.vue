@@ -266,8 +266,18 @@ export default {
 </script>
 
 <style scoped>
+/* ✅ SAME FONT as FeaturedProductList.vue */
 .category-products {
   margin-top: 10px;
+
+  font-family: "Abadi MT Condensed Light", "Abadi MT Condensed", "Abadi MT", Abadi,
+    system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* ✅ Force every text inside to match FeaturedProductList.vue */
+.category-products * {
+  font-family: inherit;
+  letter-spacing: 0.03rem !important;
 }
 
 .empty {
@@ -365,7 +375,7 @@ export default {
   justify-content: center;
   background: #d51010;
   color: #ffffff;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 0.78rem;
   z-index: 2;
   box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
@@ -408,7 +418,7 @@ export default {
   color: #9ca3af;
   font-weight: 500;
   font-size: 0.82rem;
-  text-decoration: none; /* important, we use ::after line */
+  text-decoration: none;
 }
 
 .card-old-price::after {
@@ -549,7 +559,7 @@ export default {
   }
 }
 
-/* Pagination (same as your existing) */
+/* Pagination */
 .pagination {
   display: flex;
   flex-wrap: wrap;
@@ -584,3 +594,4 @@ export default {
   cursor: default;
 }
 </style>
+

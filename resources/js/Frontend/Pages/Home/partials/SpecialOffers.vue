@@ -332,12 +332,23 @@ truncateName(name, limit = 20) {
   margin-bottom: 32px;
 }
 
-/* ===== Typography to match TopNavbar (mitem / mtext-btn style) ===== */
+/* ✅ Match FeaturedProductList.vue font setup exactly */
 .special-offers {
-  font-family: inherit; /* same global font as navbar */
+  font-family: "Abadi MT Condensed Light", "Abadi MT Condensed", "Abadi MT", Abadi,
+    system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-/* match navbar vibe: uppercase + tracking + bold */
+.special-offers * {
+  font-family: inherit;
+  letter-spacing: 0.04rem !important;
+}
+
+/* 
+.special-offers {
+  font-family: inherit; 
+}
+
+
 .special-badge,
 .special-cta,
 .offer-name {
@@ -346,33 +357,33 @@ truncateName(name, limit = 20) {
   font-weight: 700;
 }
 
-/* navbar uses smaller uppercase label style */
+
 .special-badge {
   font-size: 11px;
   letter-spacing: 0.06em;
   opacity: 0.85;
 }
 
-/* navbar-like button text */
+
 .special-cta {
   font-size: 13px;
   letter-spacing: 0.06em;
 }
 
-/* product name in navbar style */
+
 .offer-name {
-  font-size: 13px;      /* similar to navbar menu size */
+  font-size: 13px;      
   font-weight: 700;
   letter-spacing: 0.04em;
 }
 
-/* prices: keep your colors, just align weight a bit */
+
 .offer-price .current {
   font-weight: 500;
 }
 .offer-price .old {
   font-weight: 500;
-}
+} */
 
 
 .special-cta {

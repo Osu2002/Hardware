@@ -599,7 +599,7 @@ export default {
   font-size: 1rem;
   font-weight: 600;
   color: var(--filter-text);
-  letter-spacing: -0.01em;
+  letter-spacing: 0.04em;
 }
 
 .filters-actions {
@@ -720,10 +720,10 @@ export default {
 }
 
 .filter-label {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--filter-text);
-  font-size: 0.875rem;
-  letter-spacing: -0.01em;
+  font-size: 1rem;
+  letter-spacing: 0.04rem;
 }
 
 .filter-head-right {
@@ -732,6 +732,18 @@ export default {
   gap: 6px;
   min-width: 0;
 }
+/* Put this near the top, after .filters { ... } starts, or add as a separate rule */
+
+.filters {
+  font-family: "Abadi MT Condensed Light", "Abadi MT Condensed", "Abadi MT", Abadi,
+    system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Optional: ensure every inner element inherits it */
+.filters * {
+  font-family: inherit;
+}
+
 
 .filter-value {
   font-size: 0.8125rem;

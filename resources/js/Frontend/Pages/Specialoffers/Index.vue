@@ -6,8 +6,8 @@
       <OfferBanner title="Special Offers" />
 
       <div class="offers-head">
-        <h2 class="offers-title">{{ page?.title || "Special Offers" }}</h2>
-        <p class="offers-sub">Browse only discounted items.</p>
+        <!-- <h2 class="offers-title">{{ page?.title || "Special Offers" }}</h2>
+        <p class="offers-sub">Browse only discounted items.</p> -->
       </div>
 
       <div class="offers-layout">

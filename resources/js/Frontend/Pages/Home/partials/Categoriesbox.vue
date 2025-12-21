@@ -304,6 +304,16 @@ export default {
   background-color: #fff;
   --nav-text: #12355a;
   --page-gap: 24px; /* must match pageGap in JS */
+
+  /* ✅ SAME FONT as FeaturedProductList.vue */
+  font-family: "Abadi MT Condensed Light", "Abadi MT Condensed", "Abadi MT", Abadi,
+    system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* ✅ Force every text inside to match (same as FeaturedProductList.vue) */
+.shop-categories * {
+  font-family: inherit;
+  letter-spacing: 0.03rem !important;
 }
 
 .container {
@@ -328,7 +338,7 @@ export default {
   font-weight: 700;
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  /* ✅ removed letter-spacing overrides (handled by .shop-categories *) */
   color: var(--nav-text);
 }
 
@@ -340,7 +350,6 @@ export default {
 @media (max-width: 480px) {
   .section-title {
     font-size: 0.95rem;
-    letter-spacing: 0.03em;
   }
 }
 
@@ -524,7 +533,7 @@ export default {
   padding: 1rem;
   text-align: center;
   color: #ffffff;
-  letter-spacing: 0.04em;
+  /* ✅ removed letter-spacing override (handled by .shop-categories *) */
   font-weight: 700;
   font-size: 1.25rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
