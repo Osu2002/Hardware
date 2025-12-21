@@ -7,8 +7,8 @@
       <FeaturedBanner title="Featured Products" />
 
       <div class="featured-head">
-        <h2 class="featured-title">{{ page?.title || "Featured Products" }}</h2>
-        <p class="featured-sub">Browse all featured items.</p>
+        <!-- <h2 class="featured-title">{{ page?.title || "Featured Products" }}</h2>
+        <p class="featured-sub">Browse all featured items.</p> -->
       </div>
 
       <div class="featured-layout">
