@@ -37,39 +37,143 @@
       </div>
 
       <div id="filtersBody" class="filters-body" v-show="!isMobile || isOpen">
-        <!-- Subcategory -->
+        <!-- Subcategory (inner dropdown) -->
         <div class="filter-block" v-if="subcategories?.length">
-          <div class="filter-label">Subcategory</div>
+          <button
+            type="button"
+            class="filter-head"
+            @click="toggleInner('sub')"
+            :aria-expanded="subOpen ? 'true' : 'false'"
+          >
+            <span class="filter-label">Subcategory</span>
+            <svg
+              class="inner-toggle-icon"
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              :style="{ transform: subOpen ? 'rotate(180deg)' : 'rotate(0deg)' }"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
 
-          <label class="opt">
-            <input type="radio" name="sub" :value="null" v-model="subLocal" />
-            <span>All</span>
-          </label>
+          <div class="filter-content" v-show="subOpen">
+            <label class="opt">
+              <input type="radio" name="sub" :value="null" v-model="subLocal" />
+              <span>All</span>
+            </label>
 
-          <label class="opt" v-for="s in subcategories" :key="s.id">
-            <input type="radio" name="sub" :value="s.id" v-model="subLocal" />
-            <span>{{ s.title }}</span>
-          </label>
+            <label class="opt" v-for="s in subcategories" :key="s.id">
+              <input type="radio" name="sub" :value="s.id" v-model="subLocal" />
+              <span>{{ s.title }}</span>
+            </label>
+          </div>
         </div>
 
-        <!-- Brand -->
+        <!-- Brand (inner dropdown) -->
         <div class="filter-block" v-if="brands?.length">
-          <div class="filter-label">Brand</div>
+          <button
+            type="button"
+            class="filter-head"
+            @click="toggleInner('brand')"
+            :aria-expanded="brandOpen ? 'true' : 'false'"
+          >
+            <span class="filter-label">Brand</span>
+            <svg
+              class="inner-toggle-icon"
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              :style="{ transform: brandOpen ? 'rotate(180deg)' : 'rotate(0deg)' }"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
 
-          <label class="opt" v-for="b in brands" :key="b.id">
-            <input type="checkbox" :value="b.id" v-model="brandLocal" />
-            <span>{{ b.title }}</span>
-          </label>
+          <div class="filter-content" v-show="brandOpen">
+            <label class="opt" v-for="b in brands" :key="b.id">
+              <input type="checkbox" :value="b.id" v-model="brandLocal" />
+              <span>{{ b.title }}</span>
+            </label>
+          </div>
         </div>
 
-        <!-- Sort -->
+        <!-- ✅ Sort (NOW matches other dropdowns, no native select popup) -->
         <div class="filter-block">
-          <div class="filter-label">Sort</div>
-          <select class="sort-select" v-model="sortLocal" @change="apply">
-            <option value="latest">Latest</option>
-            <option value="price_asc">Price: Low to High</option>
-            <option value="price_desc">Price: High to Low</option>
-          </select>
+          <button
+            type="button"
+            class="filter-head"
+            @click="toggleInner('sort')"
+            :aria-expanded="sortOpen ? 'true' : 'false'"
+          >
+            <span class="filter-label">Sort</span>
+
+            <span class="filter-head-right">
+              <span class="filter-value" :title="sortLabel">{{ sortLabel }}</span>
+              <svg
+                class="inner-toggle-icon"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                :style="{ transform: sortOpen ? 'rotate(180deg)' : 'rotate(0deg)' }"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+
+          <div class="filter-content" v-show="sortOpen">
+            <label class="opt opt-tight">
+              <input
+                type="radio"
+                name="sort"
+                value="latest"
+                v-model="sortLocal"
+                @change="onSortPick"
+              />
+              <span>Latest</span>
+            </label>
+
+            <label class="opt opt-tight">
+              <input
+                type="radio"
+                name="sort"
+                value="price_asc"
+                v-model="sortLocal"
+                @change="onSortPick"
+              />
+              <span>Price: Low to High</span>
+            </label>
+
+            <label class="opt opt-tight">
+              <input
+                type="radio"
+                name="sort"
+                value="price_desc"
+                v-model="sortLocal"
+                @change="onSortPick"
+              />
+              <span>Price: High to Low</span>
+            </label>
+          </div>
         </div>
       </div>
     </div>
@@ -91,7 +195,12 @@ export default {
       brandLocal: Array.isArray(this.filters?.brands) ? [...this.filters.brands] : [],
       sortLocal: this.filters?.sort ?? "latest",
 
-      // ✅ <= 1024 (iPad Pro and below) treated as non-sticky + mobile dropdown
+      // inner dropdowns (all views)
+      subOpen: false,
+      brandOpen: false,
+      sortOpen: false,
+
+      // ✅ <= 1024 treated as mobile dropdown for main filter
       isMobile: false,
       isOpen: true,
       perPage: 16,
@@ -104,6 +213,12 @@ export default {
       _ro: null,
       _onWinResize: null,
       _onInertiaFinish: null,
+
+      // prevents apply() while syncing props -> local
+      _syncingFromProps: false,
+
+      // prevents per_page auto-fix from running multiple times
+      _perPageInitDone: false,
     };
   },
 
@@ -115,27 +230,47 @@ export default {
         (this.sortLocal && this.sortLocal !== "latest")
       );
     },
+
+    sortLabel() {
+      if (this.sortLocal === "price_asc") return "Price: Low to High";
+      if (this.sortLocal === "price_desc") return "Price: High to Low";
+      return "Latest";
+    },
   },
 
   watch: {
     filters: {
       deep: true,
       handler(f) {
+        this._syncingFromProps = true;
+
         this.subLocal = f?.sub ?? null;
         this.brandLocal = Array.isArray(f?.brands) ? [...f.brands] : [];
         this.sortLocal = f?.sort ?? "latest";
-        this.$nextTick(() => this.syncShellHeight());
+
+        this.$nextTick(() => {
+          this._syncingFromProps = false;
+          this.syncShellHeight();
+        });
       },
     },
 
     subLocal() {
+      if (this._syncingFromProps) return;
       this.apply();
     },
+
     brandLocal: {
       deep: true,
       handler() {
+        if (this._syncingFromProps) return;
         this.apply();
       },
+    },
+
+    sortLocal() {
+      if (this._syncingFromProps) return;
+      this.apply();
     },
   },
 
@@ -143,10 +278,17 @@ export default {
     if (typeof window !== "undefined" && window.matchMedia) {
       this._mql = window.matchMedia("(max-width: 1024px)");
 
-      const applyMode = (matches) => {
-        this.isMobile = !!matches;
+      const applyMode = (matches, force = false) => {
+        const nextMobile = !!matches;
+        const prevMobile = this.isMobile;
+
+        this.isMobile = nextMobile;
         this.perPage = this.isMobile ? 8 : 16;
-        this.isOpen = !this.isMobile;
+
+        // ✅ main filter: default CLOSED on mobile, OPEN on desktop
+        if (force || prevMobile !== nextMobile) {
+          this.isOpen = this.isMobile ? false : true;
+        }
 
         if (this.isMobile) {
           this.teardownStickyHelpers();
@@ -159,11 +301,13 @@ export default {
         }
       };
 
-      applyMode(this._mql.matches);
+      applyMode(this._mql.matches, true);
+
+      this.$nextTick(() => this.ensurePerPageOnce());
 
       this._mqlHandler = (e) => {
         const wasMobile = this.isMobile;
-        applyMode(e.matches);
+        applyMode(e.matches, false);
 
         if (wasMobile !== this.isMobile) {
           this.applyPerPageOnly();
@@ -174,6 +318,7 @@ export default {
       else if (this._mql.addListener) this._mql.addListener(this._mqlHandler);
     } else {
       this.isMobile = false;
+      this.isOpen = true;
       this.$nextTick(() => {
         this.bindStickyToProducts();
         this.syncShellHeight();
@@ -202,6 +347,34 @@ export default {
   methods: {
     toggleOpen() {
       this.isOpen = !this.isOpen;
+    },
+
+    toggleInner(which) {
+      if (which === "sub") this.subOpen = !this.subOpen;
+      if (which === "brand") this.brandOpen = !this.brandOpen;
+      if (which === "sort") this.sortOpen = !this.sortOpen;
+      this.$nextTick(() => this.syncShellHeight());
+    },
+
+    onSortPick() {
+      // close just the Sort dropdown after choosing
+      this.sortOpen = false;
+      this.$nextTick(() => this.syncShellHeight());
+    },
+
+    ensurePerPageOnce() {
+      if (this._perPageInitDone) return;
+      this._perPageInitDone = true;
+
+      if (typeof window === "undefined") return;
+      const desired = this.isMobile ? 8 : 16;
+
+      const url = new URL(window.location.href);
+      const current = Number(url.searchParams.get("per_page") || 0);
+
+      if (!current || current !== desired) {
+        this.applyPerPageOnly();
+      }
     },
 
     // ===== desktop sticky boundary helpers =====
@@ -320,6 +493,10 @@ export default {
       this.brandLocal = [];
       this.sortLocal = "latest";
 
+      this.subOpen = false;
+      this.brandOpen = false;
+      this.sortOpen = false;
+
       this.$inertia.get(
         route("featuredproducts.index"),
         { per_page: this.perPage },
@@ -407,18 +584,65 @@ export default {
   color: #111827;
 }
 
+.filters-body {
+  max-width: 100%;
+}
+
 .filter-block {
   padding: 12px 0;
   border-top: 1px solid #f3f4f6;
+}
+
+/* inner dropdown head */
+.filter-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: left;
 }
 
 .filter-label {
   font-weight: 800;
   color: #111827;
   font-size: 0.9rem;
-  margin-bottom: 8px;
 }
 
+.filter-head-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.filter-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #6b7280;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inner-toggle-icon {
+  transition: transform 0.18s ease;
+  color: #111827;
+  flex: 0 0 auto;
+}
+
+.filter-content {
+  margin-top: 8px;
+  max-width: 100%;
+}
+
+/* options */
 .opt {
   display: flex;
   align-items: center;
@@ -430,17 +654,13 @@ export default {
   user-select: none;
 }
 
-.sort-select {
-  width: 100%;
-  height: 38px;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 0 10px;
-  outline: none;
+.opt-tight {
+  padding: 6px 0;
 }
 
 @media (max-width: 768px) {
   .filters { padding: 12px; }
   .filter-block { padding: 10px 0; }
+  .filter-value { max-width: 120px; }
 }
 </style>

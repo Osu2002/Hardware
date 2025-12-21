@@ -125,13 +125,12 @@ export default {
   },
 
   mounted() {
-    // ✅ ensure desktop loads 16 and mobile loads 8
+    // ✅ keep breakpoint consistent with ProductFilter.vue (<= 1024 considered mobile mode)
     if (typeof window !== "undefined" && window.matchMedia) {
-      this._mql = window.matchMedia("(max-width: 768px)");
+      this._mql = window.matchMedia("(max-width: 1024px)");
 
       const applyMode = (matches) => {
         this.isMobile = !!matches;
-        this.ensurePerPage();
       };
 
       applyMode(this._mql.matches);
@@ -157,24 +156,6 @@ export default {
   },
 
   methods: {
-    ensurePerPage() {
-      const desired = this.isMobile ? 8 : 16;
-
-      const url = new URL(window.location.href);
-      const current = Number(url.searchParams.get("per_page") || 0);
-
-      if (!current || current !== desired) {
-        url.searchParams.set("per_page", String(desired));
-        url.searchParams.delete("page");
-
-        this.$inertia.get(url.toString(), {}, {
-          preserveState: true,
-          preserveScroll: true,
-          replace: true,
-        });
-      }
-    },
-
     truncateName(name) {
       const s = String(name ?? "");
       if (s.length <= 20) return s;
@@ -238,7 +219,9 @@ export default {
     goToPage(link) {
       if (!link.url || link.active) return;
 
+      // ✅ always enforce desired per_page for current viewport
       const desired = this.isMobile ? 8 : 16;
+
       const url = new URL(link.url, window.location.origin);
       url.searchParams.set("per_page", String(desired));
 
