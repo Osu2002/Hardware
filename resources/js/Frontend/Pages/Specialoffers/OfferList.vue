@@ -235,9 +235,25 @@ export default {
 </script>
 
 <style scoped>
-/* ✅ EXACT SAME STYLES as FeaturedProductList.vue */
-.category-products { margin-top: 10px; }
-.empty { padding: 24px 0; font-size: 0.95rem; color: #6b7280; }
+/* ✅ SAME FONT as FeaturedProductList.vue */
+.category-products {
+  margin-top: 10px;
+
+  font-family: "Abadi MT Condensed Light", "Abadi MT Condensed", "Abadi MT", Abadi,
+    system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* ✅ Force every text inside to match FeaturedProductList.vue */
+.category-products * {
+  font-family: inherit;
+  letter-spacing: 0.03rem !important;
+}
+
+.empty {
+  padding: 24px 0;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
 
 .grid {
   display: grid;
@@ -323,6 +339,7 @@ export default {
   line-height: 1.3;
   min-height: 2.8em;
 }
+
 .card-price-row { margin-top: 6px; text-align: center; }
 .card-price-stack {
   display: inline-flex;
@@ -344,7 +361,7 @@ export default {
   left: 0;
   right: 0;
   top: 50%;
-  height: 1.5px;
+  height: 2px; /* ✅ keep same as FeaturedProductList */
   background: currentColor;
   transform: translateY(-50%);
 }
@@ -430,3 +447,4 @@ export default {
 }
 .page-link.disabled { opacity: 0.4; cursor: default; }
 </style>
+
