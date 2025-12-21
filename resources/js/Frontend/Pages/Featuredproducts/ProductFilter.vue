@@ -1,14 +1,17 @@
 <template>
   <aside class="filters-shell" ref="shell">
     <div class="filters" :class="{ 'is-desktop-sticky': !isMobile }">
+      <!-- Header -->
       <div class="filters-header">
         <h3 class="filters-title">Filters</h3>
 
         <div class="filters-actions">
-          <button v-if="hasAny" type="button" class="btn-clear" @click="clearAll">
+          <!-- Match image: always visible; disabled if nothing selected -->
+          <button type="button" class="btn-clear" :disabled="!hasAny" @click="clearAll">
             Clear
           </button>
 
+          <!-- Mobile main collapse toggle (kept from original) -->
           <button
             v-if="isMobile"
             type="button"
@@ -36,9 +39,10 @@
         </div>
       </div>
 
-      <transition name="pf-collapse">
-        <div id="filtersBody" class="filters-body" v-show="!isMobile || isOpen">
-          <!-- Subcategory (inner dropdown) -->
+      <!-- Body -->
+      <div id="filtersBody" class="filters-body" :class="{ 'is-open': !isMobile || isOpen }">
+        <div class="filters-body-inner">
+          <!-- Subcategory -->
           <div class="filter-block" v-if="subcategories?.length">
             <button
               type="button"
@@ -51,8 +55,8 @@
               <svg
                 class="inner-toggle-icon"
                 viewBox="0 0 24 24"
-                width="18"
-                height="18"
+                width="16"
+                height="16"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
@@ -65,22 +69,24 @@
               </svg>
             </button>
 
-            <transition name="pf-accordion">
-              <div id="subPanel" class="filter-content" v-show="subOpen">
+            <div id="subPanel" class="filter-content" :class="{ 'is-open': subOpen }">
+              <div class="filter-content-inner">
                 <label class="opt">
                   <input type="radio" name="sub" :value="null" v-model="subLocal" />
-                  <span class="opt-text">All</span>
+                  <span class="radio-custom"></span>
+                  <span class="opt-label">All</span>
                 </label>
 
                 <label class="opt" v-for="s in subcategories" :key="s.id">
                   <input type="radio" name="sub" :value="s.id" v-model="subLocal" />
-                  <span class="opt-text">{{ s.title }}</span>
+                  <span class="radio-custom"></span>
+                  <span class="opt-label">{{ s.title }}</span>
                 </label>
               </div>
-            </transition>
+            </div>
           </div>
 
-          <!-- Brand (inner dropdown) -->
+          <!-- Brand -->
           <div class="filter-block" v-if="brands?.length">
             <button
               type="button"
@@ -93,8 +99,8 @@
               <svg
                 class="inner-toggle-icon"
                 viewBox="0 0 24 24"
-                width="18"
-                height="18"
+                width="16"
+                height="16"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
@@ -107,17 +113,18 @@
               </svg>
             </button>
 
-            <transition name="pf-accordion">
-              <div id="brandPanel" class="filter-content" v-show="brandOpen">
+            <div id="brandPanel" class="filter-content" :class="{ 'is-open': brandOpen }">
+              <div class="filter-content-inner">
                 <label class="opt" v-for="b in brands" :key="b.id">
                   <input type="checkbox" :value="b.id" v-model="brandLocal" />
-                  <span class="opt-text">{{ b.title }}</span>
+                  <span class="checkbox-custom"></span>
+                  <span class="opt-label">{{ b.title }}</span>
                 </label>
               </div>
-            </transition>
+            </div>
           </div>
 
-          <!-- ✅ Sort (matches other dropdowns, no native select popup) -->
+          <!-- Sort -->
           <div class="filter-block">
             <button
               type="button"
@@ -133,8 +140,8 @@
                 <svg
                   class="inner-toggle-icon"
                   viewBox="0 0 24 24"
-                  width="18"
-                  height="18"
+                  width="16"
+                  height="16"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2"
@@ -148,9 +155,9 @@
               </span>
             </button>
 
-            <transition name="pf-accordion">
-              <div id="sortPanel" class="filter-content" v-show="sortOpen">
-                <label class="opt opt-tight">
+            <div id="sortPanel" class="filter-content" :class="{ 'is-open': sortOpen }">
+              <div class="filter-content-inner">
+                <label class="opt">
                   <input
                     type="radio"
                     name="sort"
@@ -158,10 +165,11 @@
                     v-model="sortLocal"
                     @change="onSortPick"
                   />
-                  <span class="opt-text">Latest</span>
+                  <span class="radio-custom"></span>
+                  <span class="opt-label">Latest</span>
                 </label>
 
-                <label class="opt opt-tight">
+                <label class="opt">
                   <input
                     type="radio"
                     name="sort"
@@ -169,10 +177,11 @@
                     v-model="sortLocal"
                     @change="onSortPick"
                   />
-                  <span class="opt-text">Price: Low to High</span>
+                  <span class="radio-custom"></span>
+                  <span class="opt-label">Price: Low to High</span>
                 </label>
 
-                <label class="opt opt-tight">
+                <label class="opt">
                   <input
                     type="radio"
                     name="sort"
@@ -180,13 +189,16 @@
                     v-model="sortLocal"
                     @change="onSortPick"
                   />
-                  <span class="opt-text">Price: High to Low</span>
+                  <span class="radio-custom"></span>
+                  <span class="opt-label">Price: High to Low</span>
                 </label>
               </div>
-            </transition>
+            </div>
           </div>
+          <!-- /Sort -->
         </div>
-      </transition>
+      </div>
+      <!-- /Body -->
     </div>
   </aside>
 </template>
@@ -206,12 +218,11 @@ export default {
       brandLocal: Array.isArray(this.filters?.brands) ? [...this.filters.brands] : [],
       sortLocal: this.filters?.sort ?? "latest",
 
-      // inner dropdowns (all views)
       subOpen: false,
       brandOpen: false,
       sortOpen: false,
 
-      // ✅ <= 1024 treated as mobile dropdown for main filter
+      // main (mobile) collapse
       isMobile: false,
       isOpen: true,
       perPage: 16,
@@ -219,16 +230,13 @@ export default {
       _mql: null,
       _mqlHandler: null,
 
-      // desktop-only sticky helpers
+      // desktop sticky helpers
       _productsEl: null,
       _ro: null,
       _onWinResize: null,
       _onInertiaFinish: null,
 
-      // prevents apply() while syncing props -> local
       _syncingFromProps: false,
-
-      // prevents per_page auto-fix from running multiple times
       _perPageInitDone: false,
     };
   },
@@ -296,7 +304,7 @@ export default {
         this.isMobile = nextMobile;
         this.perPage = this.isMobile ? 8 : 16;
 
-        // ✅ main filter: default CLOSED on mobile, OPEN on desktop
+        // main filter: default CLOSED on mobile, OPEN on desktop
         if (force || prevMobile !== nextMobile) {
           this.isOpen = this.isMobile ? false : true;
         }
@@ -347,6 +355,7 @@ export default {
   },
 
   beforeDestroy() {
+    // Vue2 compatibility
     this.teardownStickyHelpers();
 
     if (this._mql && this._mqlHandler) {
@@ -358,6 +367,7 @@ export default {
   methods: {
     toggleOpen() {
       this.isOpen = !this.isOpen;
+      this.$nextTick(() => this.syncShellHeight());
     },
 
     toggleInner(which) {
@@ -368,7 +378,7 @@ export default {
     },
 
     onSortPick() {
-      // close just the Sort dropdown after choosing
+      // keep: close only sort accordion
       this.sortOpen = false;
       this.$nextTick(() => this.syncShellHeight());
     },
@@ -490,7 +500,7 @@ export default {
         replace: true,
       });
 
-      // ✅ DO NOT auto-close on mobile after filtering
+      // NOTE: kept consistent with original file => DO NOT auto-close on mobile
     },
 
     applyPerPageOnly() {
@@ -502,7 +512,7 @@ export default {
         replace: true,
       });
 
-      // ✅ DO NOT auto-close on mobile after per_page sync
+      // NOTE: kept consistent with original file => DO NOT auto-close on mobile
     },
 
     clearAll() {
@@ -524,133 +534,166 @@ export default {
         }
       );
 
-      // ✅ DO NOT auto-close on mobile when clearing
+      // NOTE: kept consistent with original file => DO NOT auto-close on mobile
     },
   },
 };
 </script>
 
 <style scoped>
+/* ========== SHELL ========== */
 .filters-shell {
   position: relative;
   align-self: start;
   max-width: 100%;
 }
 
-/* premium card */
+/* ========== MAIN CARD (variables must live on a real element; :root breaks under scoped CSS) ========== */
 .filters {
-  --accent: #071c61;
-  --bg: #ffffff;
-  --muted: #64748b;
-  --text: #0f172a;
-  --border: #e6e8ef;
-  --divider: #eef2f7;
-  --soft: #f8fafc;
+  --filter-accent: #071c61;
+  --filter-bg: #ffffff;
+  --filter-border: #e2e8f0;
+  --filter-border-light: #f1f5f9;
+  --filter-text: #1e293b;
+  --filter-text-muted: #64748b;
+  --filter-text-light: #94a3b8;
+  --filter-hover: #f8fafc;
+  --filter-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --filter-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --filter-radius: 14px;
+  --filter-radius-sm: 8px;
+  --filter-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 14px;
+  background: var(--filter-bg);
+  border: 1px solid var(--filter-border);
+  border-radius: var(--filter-radius);
+  padding: 16px;
   z-index: 20;
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--filter-shadow);
+  transition: box-shadow var(--filter-transition);
   max-width: 100%;
 }
 
-/* ✅ sticky ONLY on large desktop */
-.filters.is-desktop-sticky {
-  position: sticky;
-  top: 12px;
+.filters:hover {
+  box-shadow: var(--filter-shadow-hover);
 }
 
-/* header */
+.filters.is-desktop-sticky {
+  position: sticky;
+  top: 16px;
+}
+
+/* ========== HEADER ========== */
 .filters-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--divider);
-  margin-bottom: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--filter-border-light);
+  margin-bottom: 4px;
 }
 
 .filters-title {
   margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.2;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--filter-text);
   letter-spacing: -0.01em;
-  color: var(--text);
 }
 
 .filters-actions {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-/* clear pill */
+/* Clear: always visible; disabled when empty */
 .btn-clear {
-  border: 1px solid rgba(185, 28, 28, 0.28);
-  background: rgba(185, 28, 28, 0.08);
-  color: #b91c1c;
-  font-weight: 600;
-  font-size: 0.82rem;
-  padding: 6px 10px;
-  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  font-size: 0.8125rem;
+  font-weight: 500;
   cursor: pointer;
-  white-space: nowrap;
-  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+  padding: 6px 10px;
+  border-radius: var(--filter-radius-sm);
+  transition: all var(--filter-transition);
 }
 
-.btn-clear:hover {
-  background: rgba(185, 28, 28, 0.12);
-  border-color: rgba(185, 28, 28, 0.36);
+.btn-clear:hover:not(:disabled) {
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
-.btn-clear:active {
-  transform: translateY(1px);
+.btn-clear:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
+.btn-clear:focus-visible {
+  outline: 2px solid var(--filter-accent);
+  outline-offset: 2px;
+}
+
+/* Mobile toggle */
 .btn-toggle {
-  border: 1px solid var(--border);
-  background: var(--bg);
-  border-radius: 12px;
+  border: 1px solid var(--filter-border);
+  background: var(--filter-bg);
+  border-radius: var(--filter-radius-sm);
   width: 36px;
   height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  transition: all var(--filter-transition);
 }
 
 .btn-toggle:hover {
-  background: var(--soft);
-  border-color: #d7dbe6;
+  background: var(--filter-hover);
+  border-color: var(--filter-text-light);
+}
+
+.btn-toggle:focus-visible {
+  outline: 2px solid var(--filter-accent);
+  outline-offset: 2px;
 }
 
 .toggle-icon {
-  transition: transform 180ms ease;
-  color: var(--text);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--filter-text);
 }
 
-/* body */
+/* ========== BODY (MAIN ACCORDION) ========== */
 .filters-body {
-  max-width: 100%;
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
 }
 
-/* sections */
+.filters-body.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.filters-body-inner {
+  overflow: hidden;
+}
+
+/* ========== FILTER BLOCK ========== */
 .filter-block {
   padding: 12px 0;
-  border-top: 1px solid var(--divider);
+  border-top: 1px solid var(--filter-border-light);
 }
 
-.filter-block:first-of-type {
-  border-top: 0;
-  padding-top: 10px;
+.filter-block:first-child {
+  border-top: none;
+  padding-top: 8px;
 }
 
-/* inner dropdown head */
+/* ========== FILTER HEAD ========== */
 .filter-head {
   width: 100%;
   display: flex;
@@ -658,283 +701,217 @@ export default {
   justify-content: space-between;
   gap: 10px;
   background: transparent;
-  border: 0;
-  padding: 8px 10px;
-  margin: 0;
+  border: none;
+  padding: 6px 8px;
+  margin: -6px -8px;
+  border-radius: var(--filter-radius-sm);
   cursor: pointer;
   text-align: left;
-  border-radius: 12px;
-  transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
-  color: inherit;
+  transition: background var(--filter-transition);
 }
 
 .filter-head:hover {
-  background: rgba(7, 28, 97, 0.04);
+  background: var(--filter-hover);
 }
 
-.filter-head:active {
-  transform: translateY(1px);
+.filter-head:focus-visible {
+  outline: 2px solid var(--filter-accent);
+  outline-offset: 2px;
 }
 
 .filter-label {
   font-weight: 600;
-  color: var(--text);
-  font-size: 0.92rem;
-  line-height: 1.25;
+  color: var(--filter-text);
+  font-size: 0.875rem;
   letter-spacing: -0.01em;
 }
 
 .filter-head-right {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 }
 
 .filter-value {
-  font-size: 0.85rem;
+  font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--muted);
-  max-width: 170px;
+  color: var(--filter-text-muted);
+  max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .inner-toggle-icon {
-  transition: transform 180ms ease;
-  color: var(--muted);
-  flex: 0 0 auto;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--filter-text-light);
+  flex-shrink: 0;
 }
 
-/* dropdown content panel */
+/* ========== FILTER CONTENT (INNER ACCORDION) ========== */
 .filter-content {
-  margin-top: 8px;
-  padding: 6px 10px 2px;
-  max-width: 100%;
-  overflow: hidden;
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
 }
 
-/* options */
+.filter-content.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.filter-content-inner {
+  overflow: hidden;
+  padding-top: 8px;
+}
+
+/* ========== OPTION ROWS ========== */
 .opt {
+  position: relative; /* important: keeps hidden input from floating to page corner */
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
-  font-size: 0.92rem;
-  line-height: 1.35;
-  color: #334155;
-  margin: 6px 0;
+  font-size: 0.875rem;
+  color: var(--filter-text);
+  padding: 8px 10px;
+  margin: 2px -10px;
+  border-radius: var(--filter-radius-sm);
   cursor: pointer;
   user-select: none;
-  padding: 8px 10px;
-  border-radius: 12px;
-  transition: background 160ms ease, border-color 160ms ease;
-  max-width: 100%;
+  transition: background var(--filter-transition);
 }
 
 .opt:hover {
-  background: rgba(2, 6, 23, 0.03);
+  background: var(--filter-hover);
 }
 
-.opt-tight {
-  padding: 7px 10px;
-}
-
-.opt-text {
-  font-weight: 450;
+.opt-label {
+  flex: 1;
   min-width: 0;
-  word-break: break-word;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 400;
+  color: var(--filter-text);
 }
 
-/* custom controls */
-.opt input[type="checkbox"],
-.opt input[type="radio"] {
-  appearance: none;
-  -webkit-appearance: none;
+/* ========== HIDE NATIVE INPUTS SAFELY ========== */
+.opt input[type="radio"],
+.opt input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ========== CUSTOM RADIO ========== */
+.radio-custom {
   width: 18px;
   height: 18px;
-  flex: 0 0 18px;
-  margin: 2px 0 0;
-  border: 1.5px solid #cbd5e1;
-  background: #ffffff;
-  display: inline-grid;
-  place-content: center;
-  cursor: pointer;
-  position: relative;
-  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  border: 2px solid var(--filter-border);
+  border-radius: 50%;
+  background: var(--filter-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--filter-transition);
 }
 
-.opt input[type="radio"] {
-  border-radius: 999px;
-}
-
-.opt input[type="checkbox"] {
-  border-radius: 6px;
-}
-
-.opt input[type="radio"]::after {
+.radio-custom::after {
   content: "";
   width: 8px;
   height: 8px;
-  border-radius: 999px;
-  background: #ffffff;
+  border-radius: 50%;
+  background: transparent;
   transform: scale(0);
-  transition: transform 160ms ease;
+  transition: background var(--filter-transition), transform var(--filter-transition);
 }
 
-.opt input[type="checkbox"]::after {
-  content: "";
-  width: 9px;
-  height: 5px;
-  border-left: 2px solid #ffffff;
-  border-bottom: 2px solid #ffffff;
-  transform: rotate(-45deg) scale(0);
-  transition: transform 160ms ease;
-  margin-top: -1px;
+.opt input[type="radio"]:checked + .radio-custom {
+  border-color: var(--filter-accent);
 }
 
-/* checked state */
-.opt input[type="checkbox"]:checked,
-.opt input[type="radio"]:checked {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
-.opt input[type="radio"]:checked::after {
+.opt input[type="radio"]:checked + .radio-custom::after {
+  background: var(--filter-accent);
   transform: scale(1);
 }
 
-.opt input[type="checkbox"]:checked::after {
-  transform: rotate(-45deg) scale(1);
+/* ========== CUSTOM CHECKBOX ========== */
+.checkbox-custom {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--filter-border);
+  border-radius: 4px;
+  background: var(--filter-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--filter-transition);
 }
 
-/* hover/focus polish */
-.opt input[type="checkbox"]:hover,
-.opt input[type="radio"]:hover {
-  border-color: rgba(7, 28, 97, 0.55);
-}
-
-.btn-toggle:focus-visible,
-.btn-clear:focus-visible,
-.filter-head:focus-visible,
-.opt input[type="checkbox"]:focus-visible,
-.opt input[type="radio"]:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(7, 28, 97, 0.18);
-  border-color: rgba(7, 28, 97, 0.7);
-}
-
-/* ===== transitions (mobile main + inner accordions) ===== */
-.pf-collapse-enter-active,
-.pf-collapse-leave-active,
-.pf-accordion-enter-active,
-.pf-accordion-leave-active {
-  overflow: hidden;
-  will-change: max-height, opacity, transform;
-}
-
-.pf-collapse-enter-active,
-.pf-collapse-leave-active {
-  transition: max-height 280ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease,
-    transform 220ms ease;
-}
-
-.pf-collapse-enter-from,
-.pf-collapse-leave-to {
-  max-height: 0;
+.checkbox-custom::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 3L4.5 8.5L2 6' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
   opacity: 0;
-  transform: translateY(-6px);
+  transform: scale(0.5);
+  transition: opacity var(--filter-transition), transform var(--filter-transition);
 }
 
-.pf-collapse-enter-to,
-.pf-collapse-leave-from {
-  max-height: 1400px;
+.opt input[type="checkbox"]:checked + .checkbox-custom {
+  border-color: var(--filter-accent);
+  background: var(--filter-accent);
+}
+
+.opt input[type="checkbox"]:checked + .checkbox-custom::after {
   opacity: 1;
-  transform: translateY(0);
+  transform: scale(1);
 }
 
-.pf-accordion-enter-active,
-.pf-accordion-leave-active {
-  transition: max-height 240ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms ease,
-    transform 180ms ease;
-}
-
-.pf-accordion-enter-from,
-.pf-accordion-leave-to {
-  max-height: 0;
-  opacity: 0;
-  transform: translateY(-4px);
-}
-
-.pf-accordion-enter-to,
-.pf-accordion-leave-from {
-  max-height: 900px;
-  opacity: 1;
-  transform: translateY(0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .toggle-icon,
-  .inner-toggle-icon,
-  .pf-collapse-enter-active,
-  .pf-collapse-leave-active,
-  .pf-accordion-enter-active,
-  .pf-accordion-leave-active {
-    transition: none !important;
-  }
-
-  .btn-clear,
-  .btn-toggle,
-  .filter-head,
-  .opt,
-  .opt input[type="checkbox"],
-  .opt input[type="radio"] {
-    transition: none !important;
-  }
-}
-
-/* responsive polish */
-@media (max-width: 1024px) {
-  .filters {
-    padding: 12px;
-    border-radius: 16px;
-  }
-}
-
+/* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
   .filters {
-    padding: 12px;
-  }
-
-  .filters-title {
-    font-size: 1rem;
+    padding: 14px;
   }
 
   .filter-block {
     padding: 10px 0;
   }
 
-  .filter-head {
-    padding: 8px 8px;
-  }
-
-  .filter-content {
-    padding: 6px 8px 2px;
-  }
-
   .filter-value {
-    max-width: 140px;
+    max-width: 100px;
+  }
+
+  .opt {
+    padding: 10px 8px;
+    margin: 2px -8px;
   }
 }
 
-@media (max-width: 360px) {
-  .filters-actions {
-    gap: 8px;
+@media (max-width: 400px) {
+  .filters {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .filters-header {
+    padding-bottom: 10px;
+  }
+
+  .filters-title {
+    font-size: 0.9375rem;
   }
 
   .filter-value {
-    max-width: 110px;
+    max-width: 80px;
+    font-size: 0.75rem;
   }
 }
 </style>
