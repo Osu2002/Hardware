@@ -300,7 +300,7 @@ export default {
   justify-content: center;
   background: #d51010;
   color: #ffffff;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 0.78rem;
   z-index: 2;
   box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);

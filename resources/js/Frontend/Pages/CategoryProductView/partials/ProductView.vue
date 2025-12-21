@@ -1233,11 +1233,12 @@ export default {
   white-space: nowrap;
 
   border: 1px solid rgba(239, 68, 68, 0.25);
-  background: rgba(239, 68, 68, 0.12);
-  color: #b91c1c;
-  font-weight: 800;
+ background: #d51010;
+  color: #ffffff;
+  font-weight: 600;
   font-size: 0.78rem;
   z-index: 2;
+   box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
 }
 /* === Typography: match TopNavbar feel === */
 .product-page {
