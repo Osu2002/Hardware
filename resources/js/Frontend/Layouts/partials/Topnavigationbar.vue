@@ -22,7 +22,7 @@
 
                     <!-- quick actions (desktop) -->
                     <ul class="mh-quick">
-                        <li>
+                        <!-- <li>
                             <Link href="#" class="mh-quick-item">
                                 <i class="fa-regular fa-heart"></i>
                                 <div class="t">
@@ -30,7 +30,7 @@
                                     <strong>WISH LIST</strong>
                                 </div>
                             </Link>
-                        </li>
+                        </li> -->
                         <li>
                             <Link
                                 :href="
@@ -47,7 +47,7 @@
                                 </div>
                             </Link>
                         </li>
-                        <li>
+                        <!-- <li>
                             <Link href="#" class="mh-quick-item">
                                 <i class="fa-solid fa-cart-shopping"></i>
                                 <div class="t">
@@ -55,7 +55,7 @@
                                     <strong>Rs. {{ formatMoney(cartTotal) }}</strong>
                                 </div>
                             </Link>
-                        </li>
+                        </li> -->
                     </ul>
 
                     <!-- mobile burger -->
@@ -434,9 +434,9 @@
                     </form>
 
                     <div class="mh-compact-actions">
-                        <Link href="#" class="icon-btn" aria-label="Cart">
+                        <!-- <Link href="#" class="icon-btn" aria-label="Cart">
                             <i class="fa-solid fa-cart-shopping"></i>
-                        </Link>
+                        </Link> -->
                         <Link
                             :href="
                                 loggedIn

@@ -1,7 +1,7 @@
 <template>
   <AppLayout>
 
-  <Banner />
+  <!-- <Banner /> -->
 
     <Form />
 

@@ -124,7 +124,7 @@
             <h3 class="mh-footer-heading">Find Us</h3>
             <div class="mh-footer-map">
             <iframe
-  src="https://www.google.com/maps?q=135/A%2C%20Rathnapura%20Rd%2C%20Hinguraara%2C%20Embilipitiya&output=embed"
+  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4703.697073463813!2d80.84065749999999!3d6.347923499999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae401adf6ae3a4b%3A0x1595096ba73b5242!2sMahinda%20Hardware!5e1!3m2!1sen!2slk!4v1766386294385!5m2!1sen!2slk"
   loading="lazy"
   referrerpolicy="no-referrer-when-downgrade"
   allowfullscreen

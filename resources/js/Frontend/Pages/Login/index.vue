@@ -1,6 +1,5 @@
 <template>
   <AppLayout>
-    <Banner />
 
     <div class="container">
       <div
@@ -18,7 +17,8 @@
             <div class="card-body mb-4">
               <div class="header text-center py-4">
                 <img
-                  src="/images/new_logo (1).png"
+
+                  src="/images/mahindalogo.png"
                   alt="Hiru Cars Logo"
                   class="login-logo mx-auto d-block"
                 />
@@ -92,13 +92,13 @@
                   </div>
                 </div>
                 <div class="col-6 text-end">
-                  <Link
+                  <!-- <Link
                     class="text-gradient"
                     style="font-size: small;"
                     :href="route('forgotpassword')"
                   >
                     Forgot Password
-                  </Link>
+                  </Link> -->
                 </div>
 
                 <input type="hidden" name="redirect" v-model="form.redirect" />
@@ -126,12 +126,12 @@
                     </Link>
                   </small>
                 </div>
-                <div class="col-12 text-center py-3">
+                <!-- <div class="col-12 text-center py-3">
                   Or Sign Up using
-                </div>
+                </div> -->
                 <div class="col-12 d-flex justify-content-center">
                   <!-- <a :href="route('social.oauth', 'google')"> -->
-                  <a :href="route('social.oauth', ['google', { redirect: form.redirect }])">
+                  <!-- <a :href="route('social.oauth', ['google', { redirect: form.redirect }])">
                     <div class="google px-3">
                       <img
                         src="/images/icons/search (1).png"
@@ -139,7 +139,7 @@
                         alt="Google"
                       />
                     </div>
-                  </a>
+                  </a> -->
                   <!-- <a :href="route('social.oauth', 'facebook')"> -->
                     <!-- <a :href="route('social.oauth', ['facebook', { redirect: form.redirect }])">
                     <div class="facebook px-3">
@@ -243,7 +243,6 @@ export default {
 
 };
 </script>
-
 
 <style scoped>
 

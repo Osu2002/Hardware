@@ -1,6 +1,6 @@
 <template>
   <AppLayout>
-    <Banner />
+    <!-- <Banner /> -->
     <div class="container">
       <div
         class="row justify-content-center align-items-center py-5"
@@ -12,7 +12,7 @@
             <div class="card-body mb-4">
               <div class="header text-center py-4">
                 <img
-                  src="/images/new_logo (1).png"
+                  src="/images/mahindalogo.png"
                   alt="Hiru Cars Logo"
                   class="login-logo mx-auto d-block"
                 />

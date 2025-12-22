@@ -54,7 +54,7 @@
                                     aria-controls="v-pills-password" aria-selected="false">
                                     Manage Password
                                 </button>
-                                <button class="nav-link fs-6" id="v-pills-messages-tab" data-bs-toggle="pill"
+                                <!-- <button class="nav-link fs-6" id="v-pills-messages-tab" data-bs-toggle="pill"
                                     data-bs-target="#v-pills-messages" type="button" role="tab"
                                     aria-controls="v-pills-messages" aria-selected="false">
                                     Inquiries
@@ -63,7 +63,7 @@
                                     data-bs-target="#v-pills-affiliate" type="button" role="tab"
                                     aria-controls="v-pills-affiliate" aria-selected="false">
                                     Affiliate
-                                </button>
+                                </button> -->
                                 <!-- <button class="nav-link fs-6" id="v-pills-wishlist-tab" data-bs-toggle="pill"
                                     data-bs-target="#v-pills-wishlist" type="button" role="tab"
                                     aria-controls="v-pills-sedocumentsttings" aria-selected="false">

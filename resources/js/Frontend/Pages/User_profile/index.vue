@@ -1,6 +1,6 @@
 <template>
 <AppLayout>
-<Banner/>
+<!-- <Banner/> -->
     <UserLayout />
 
 
