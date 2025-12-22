@@ -419,8 +419,18 @@ export default {
 </script>
 
 <style scoped>
+/* ✅ SAME FONT as FeaturedProductList.vue */
 .catnav-section {
   margin: 50px 0;
+
+  font-family: "Abadi MT Condensed Light", "Abadi MT Condensed", "Abadi MT", Abadi,
+    system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* ✅ Force every text inside to match FeaturedProductList.vue */
+.catnav-section * {
+  font-family: inherit;
+  letter-spacing: 0.04rem !important;
 }
 
 .catnav-block {
@@ -433,11 +443,12 @@ export default {
   justify-content: space-between;
   margin-bottom: 18px;
 }
-/* EXACT same style as CategoryBox .section-title */
+
+/* Header title */
 .catnav-heading {
   font-size: 1.2rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  /* letter-spacing handled globally by .catnav-section * */
   text-transform: uppercase;
   color: var(--nav-text, #12355a);
 }
@@ -489,7 +500,7 @@ export default {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  touch-action: pan-x;
+  touch-action: pan-x pan-y;
   overscroll-behavior-x: contain;
 
   /* makes end-of-list fully reachable + nicer snap offsets */
@@ -556,19 +567,6 @@ export default {
   transform: scale(1.08);
 }
 
-.badge-new {
-  position: absolute;
-  left: 8px;
-  top: 8px;
-  background: #1d4ed8;
-  color: #ffffff;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 3px 7px;
-  border-radius: 4px;
-  z-index: 2;
-}
-
 /* discount badge (circle) */
 .badge-discount {
   position: absolute;
@@ -582,7 +580,7 @@ export default {
   justify-content: center;
   background: #d51010;
   color: #ffffff;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 0.78rem;
   z-index: 2;
   box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
@@ -594,50 +592,6 @@ export default {
   display: flex;
   flex-direction: column;
 }
-
-/* ===== Typography to match SpecialOffers / TopNavbar (mitem style) ===== */
-.catnav-section {
-  font-family: inherit;
-}
-
-/* headings + key text use navbar vibe */
-.catnav-heading,
-.card-title,
-.btn-buy {
-  /* text-transform: uppercase; */
-  letter-spacing: 0.04em;
-  font-weight: 500;
-}
-
-/* heading a bit more premium */
-.catnav-heading {
-  letter-spacing: 0.06em;
-  font-weight: 500;
-}
-
-/* EXACT same style as CategoryBox .section-title */
-.catnav-heading {
-  font-size: 1.2rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--nav-text, #12355a);
-}
-
-
-/* product title like menu text */
-.card-title {
-  font-size: 13px; /* similar to navbar */
-}
-
-/* price weights consistent */
-.card-price {
-  font-weight: 500;
-}
-.card-old-price {
-  font-weight: 500;
-}
-
 
 .card-title {
   font-size: 0.85rem;
@@ -706,6 +660,7 @@ export default {
   justify-content: center;
   cursor: pointer;
   transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  color: #9ca3af;
 }
 
 .btn-heart:hover {
@@ -717,28 +672,16 @@ export default {
 .btn-heart.active {
   border-color: #ef4444;
   background: #fee2e2;
+  color: #ef4444;
 }
 
 .heart-icon {
   width: 18px;
   height: 18px;
   display: block;
-}
-
-/* default = outline heart */
-.btn-heart {
-  color: #9ca3af;
-}
-
-.btn-heart .heart-icon {
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
-}
-
-/* active = filled heart */
-.btn-heart.active {
-  color: #ef4444;
 }
 
 .btn-heart.active .heart-icon {
@@ -776,6 +719,15 @@ export default {
     display: none !important;
   }
 
+  .catnav-heading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  /* letter-spacing handled globally by .catnav-section * */
+  text-transform: uppercase;
+  color: var(--nav-text, #12355a);
+}
+
+
   .catnav-slider {
     --gap: 10px;
     --card-basis: calc((100% - var(--gap)) / 2); /* ~2 visible */
@@ -798,6 +750,7 @@ export default {
   .catnav-arrows {
     display: none !important;
   }
+  
 
   .catnav-slider {
     --gap: 8px;
@@ -822,6 +775,8 @@ export default {
   .card-body {
     padding: 8px 8px 4px;
   }
+
+
 
   .card-title {
     font-size: 0.78rem;
@@ -873,5 +828,5 @@ export default {
     --card-basis: clamp(180px, 78vw, 260px);
   }
 }
-
 </style>
+

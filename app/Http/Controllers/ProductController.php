@@ -191,87 +191,147 @@ class ProductController extends Controller
         ]);
     }
 
-    public function store(Request $r)
-    {
-        $r->validate([
-            'name' => ['required', 'max:180'],
-            'sku'  => ['nullable', 'max:120', Rule::unique('products', 'sku')], // ✅ allow auto
-            'status' => ['required', 'in:0,1'],
-            'brand_id' => ['nullable', 'exists:brands,id'],
-            'uom_id' => ['nullable', 'exists:uoms,id'],
-            'attribute_set_id' => ['nullable', 'exists:attribute_sets,id'],
-           
-            'price' => ['nullable', 'numeric', 'min:0'],
-            'sale_price' => ['nullable', 'numeric', 'min:0'],
-            'short_description' => ['nullable', 'max:500'],
-            'description' => ['nullable'],
-            'attributes_map' => ['nullable', 'array'],
-            'images.*' => ['nullable', 'mimes:jpeg,jpg,png,webp', 'max:20480'],
-            'discount_status' => ['required', 'in:0,1'],
-            'discount_type' => ['required_if:discount_status,1', 'nullable', 'in:percent,amount'],
-            'discounted_amount' => ['required_if:discount_status,1', 'nullable', 'numeric', 'min:0'],
+   public function store(Request $r)
+{
+    $r->validate([
+        'name' => ['required', 'max:180'],
+        'sku'  => ['nullable', 'max:120', Rule::unique('products', 'sku')],
 
-            'category_id' => ['nullable', 'exists:categories,id'],
-'subcategory_id' => [
-    'nullable',
-    Rule::exists('subcategories', 'id')
-        ->where(fn($q) => $q->where('category_id', $r->category_id)),
-],
+        'status' => ['required', 'in:0,1'],
+        'brand_id' => ['nullable', 'exists:brands,id'],
+        'uom_id' => ['nullable', 'exists:uoms,id'],
+
+        // ✅ optional
+        'attribute_set_id' => ['nullable', 'exists:attribute_sets,id'],
+
+        'price' => ['nullable', 'numeric', 'min:0'],
+        'sale_price' => ['nullable', 'numeric', 'min:0'],
+
+        'short_description' => ['nullable', 'max:500'],
+        'description' => ['nullable'],
+
+        'attributes_map' => ['nullable', 'array'],
+
+        'images.*' => ['nullable', 'mimes:jpeg,jpg,png,webp', 'max:20480'],
+
+        'discount_status' => ['required', 'in:0,1'],
+        'discount_type' => ['required_if:discount_status,1', 'nullable', 'in:percent,amount'],
+        'discounted_amount' => ['required_if:discount_status,1', 'nullable', 'numeric', 'min:0'],
+
+        'in_stock' => ['nullable', 'in:0,1'],
+        'stock_count' => ['nullable', 'integer', 'min:0'],
+
+        // ✅ warranty_period is TEXT now (you can type "1 year", "12 months", etc.)
+        'warranty_period' => ['nullable', 'max:120'],
+        'warranty_type'   => ['nullable', 'max:120'],
+        'isfeatured' => ['nullable', 'in:0,1'],
+
+
+        // category is optional
+        'category_id' => ['nullable', 'exists:categories,id'],
+
+        // ✅ subcategory optional, but if given must belong to selected category
+        'subcategory_id' => [
+            'nullable',
+            Rule::exists('subcategories', 'id')
+                ->where(fn($q) => $q->where('category_id', $r->category_id)),
+        ],
+    ]);
+
+    DB::beginTransaction();
+    try {
+        // slug
+        $slug = Str::slug($r->name);
+        if (Product::where('slug', $slug)->exists()) {
+            $slug .= '-' . Str::random(5);
+        }
+
+        // sku (auto)
+        $sku = $r->sku ?: $this->generateUniqueSku();
+
+        // normalize optional IDs
+        $categoryId = $r->input('category_id');
+        $categoryId = ($categoryId === '' || $categoryId === null) ? null : (int)$categoryId;
+
+        $subcategoryId = $r->input('subcategory_id');
+        $subcategoryId = ($subcategoryId === '' || $subcategoryId === null) ? null : (int)$subcategoryId;
+
+        $attributeSetId = $r->input('attribute_set_id');
+        $attributeSetId = ($attributeSetId === '' || $attributeSetId === null) ? null : (int)$attributeSetId;
+        $isFeatured = $r->input('isfeatured');
+$isFeatured = ($isFeatured === '' || $isFeatured === null) ? null : (int)$isFeatured;
+
+
+        // build attributes JSON (returns [] if no set)
+        $attributesJson = $this->buildAttributesJsonOrFail(
+            $attributeSetId,
+            $r->attributes_map ?? []
+        );
+
+        // normalize stock / warranty (optional)
+        $inStock = $r->input('in_stock');
+        $inStock = ($inStock === '' || $inStock === null) ? null : (int)$inStock;
+
+        $stockCount = $r->input('stock_count');
+        $stockCount = ($stockCount === '' || $stockCount === null) ? null : (int)$stockCount;
+
+        $warrantyPeriod = $r->input('warranty_period');
+        $warrantyPeriod = ($warrantyPeriod === '' || $warrantyPeriod === null) ? null : (string)$warrantyPeriod;
+
+        $warrantyType = $r->input('warranty_type');
+        $warrantyType = ($warrantyType === '' || $warrantyType === null) ? null : (string)$warrantyType;
+
+        $product = Product::create([
+            'name' => $r->name,
+            'slug' => $slug,
+            'sku'  => $sku,
+            'status' => $r->status,
+            'sort_order' => (int)($r->sort_order ?? 0),
+
+            'brand_id' => $r->brand_id,
+            'uom_id' => $r->uom_id,
+
+            'attribute_set_id' => $attributeSetId,
+            'attributes_json'  => $attributesJson,
+
+            'price' => $r->price,
+            'sale_price' => $r->sale_price,
+
+            'short_description' => $r->short_description,
+            'description' => $r->description,
+
+            'discount_status'   => (int)($r->discount_status ?? 0),
+            'discount_type'     => $r->discount_status ? $r->discount_type : null,
+            'discounted_amount' => $r->discount_status ? $r->discounted_amount : null,
+
+            'subcategory_id'   => $subcategoryId,
+
+            'in_stock'        => $inStock,
+            'stock_count'     => $stockCount,
+            'warranty_period' => $warrantyPeriod,
+            'warranty_type'   => $warrantyType,
+            'isfeatured' => $isFeatured,
 
         ]);
 
-        DB::beginTransaction();
-        try {
-            $slug = Str::slug($r->name);
-            if (Product::where('slug', $slug)->exists()) {
-                $slug .= '-' . Str::random(5);
+        // categories sync (optional)
+        $product->categories()->sync($categoryId ? [$categoryId] : []);
+
+        // images
+        if ($r->hasFile('images')) {
+            foreach ($r->file('images', []) as $img) {
+                $product->addMedia($img)->toMediaCollection('product_images');
             }
-
-            $sku = $r->sku ?: $this->generateUniqueSku(); // ✅ server side auto SKU
-
-            $attributesJson = $this->buildAttributesJsonOrFail(
-                $r->attribute_set_id ? (int)$r->attribute_set_id : null,
-                $r->attributes_map ?? []
-            );
-
-            $product = Product::create([
-                'name' => $r->name,
-                'slug' => $slug,
-                'sku'  => $sku,
-                'status' => $r->status,
-                'sort_order' => (int)($r->sort_order ?? 0),
-                'brand_id' => $r->brand_id,
-                'uom_id' => $r->uom_id,
-                'attribute_set_id' => $r->attribute_set_id,
-                'attributes_json'  => $attributesJson, // ✅ {code:value}
-                // 'primary_category_id' => $r->primary_category_id,
-                'price' => $r->price,
-                'sale_price' => $r->sale_price,
-                'short_description' => $r->short_description,
-                'description' => $r->description,
-                'discount_status'   => (int)($r->discount_status ?? 0),
-                'discount_type'     => $r->discount_status ? $r->discount_type : null,
-                'discounted_amount' => $r->discount_status ? $r->discounted_amount : null,
-                'subcategory_id' => $r->subcategory_id,
-
-            ]);
-
-           $product->categories()->sync($r->category_id ? [(int)$r->category_id] : []);
-
-
-            if ($r->hasFile('images')) {
-                foreach ($r->file('images', []) as $img) {
-                    $product->addMedia($img)->toMediaCollection('product_images');
-                }
-            }
-
-            DB::commit();
-            return redirect()->route('product.index');
-        } catch (Exception $ex) {
-            DB::rollBack();
-            throw $ex;
         }
+
+        DB::commit();
+        return redirect()->route('product.index');
+    } catch (Exception $ex) {
+        DB::rollBack();
+        throw $ex;
     }
+}
+
 public function edit(Request $r, $id)
 {
     $product = Product::with(['categories:id,title'])->findOrFail($id);
@@ -307,83 +367,137 @@ public function destroyImage(Product $product, $media)
 
     return back(); // Inertia will refresh the edit page
 }
-    public function update(Request $r)
-    {
-        $r->validate([
-            'id' => ['required', 'exists:products,id'],
-            'name' => ['required', 'max:180'],
-            'sku'  => ['nullable', 'max:120', Rule::unique('products', 'sku')->ignore($r->id)], // ✅ allow auto
-            'status' => ['required', 'in:0,1'],
-            'brand_id' => ['nullable', 'exists:brands,id'],
-            'uom_id' => ['nullable', 'exists:uoms,id'],
-            'attribute_set_id' => ['nullable', 'exists:attribute_sets,id'],
-           
-            'price' => ['nullable', 'numeric', 'min:0'],
-            'sale_price' => ['nullable', 'numeric', 'min:0'],
-            'short_description' => ['nullable', 'max:500'],
-            'description' => ['nullable'],
-            'attributes_map' => ['nullable', 'array'],
-            'images.*' => ['nullable', 'mimes:jpeg,jpg,png,webp', 'max:20480'],
-            'discount_status' => ['required', 'in:0,1'],
-            'discount_type' => ['required_if:discount_status,1', 'nullable', 'in:percent,amount'],
-            'discounted_amount' => ['required_if:discount_status,1', 'nullable', 'numeric', 'min:0'],
-            'category_id' => ['nullable', 'exists:categories,id'],
-'subcategory_id' => [
-    'nullable',
-    Rule::exists('subcategories', 'id')
-        ->where(fn($q) => $q->where('category_id', $r->category_id)),
-],
+public function update(Request $r)
+{
+    $r->validate([
+        'id' => ['required', 'exists:products,id'],
+        'name' => ['required', 'max:180'],
+        'sku'  => ['nullable', 'max:120', Rule::unique('products', 'sku')->ignore($r->id)],
 
+        'status' => ['required', 'in:0,1'],
+        'brand_id' => ['nullable', 'exists:brands,id'],
+        'uom_id' => ['nullable', 'exists:uoms,id'],
+
+        // ✅ optional
+        'attribute_set_id' => ['nullable', 'exists:attribute_sets,id'],
+
+        'price' => ['nullable', 'numeric', 'min:0'],
+        'sale_price' => ['nullable', 'numeric', 'min:0'],
+
+        'short_description' => ['nullable', 'max:500'],
+        'description' => ['nullable'],
+
+        'attributes_map' => ['nullable', 'array'],
+
+        'images.*' => ['nullable', 'mimes:jpeg,jpg,png,webp', 'max:20480'],
+
+        'discount_status' => ['required', 'in:0,1'],
+        'discount_type' => ['required_if:discount_status,1', 'nullable', 'in:percent,amount'],
+        'discounted_amount' => ['required_if:discount_status,1', 'nullable', 'numeric', 'min:0'],
+
+        'in_stock' => ['nullable', 'in:0,1'],
+        'stock_count' => ['nullable', 'integer', 'min:0'],
+
+        // ✅ warranty_period is TEXT now
+        'warranty_period' => ['nullable', 'max:120'],
+        'warranty_type'   => ['nullable', 'max:120'],
+
+        'category_id' => ['nullable', 'exists:categories,id'],
+
+        'isfeatured' => ['nullable', 'in:0,1'],
+        'subcategory_id' => [
+            'nullable',
+            Rule::exists('subcategories', 'id')
+                ->where(fn($q) => $q->where('category_id', $r->category_id)),
+        ],
+    ]);
+
+    DB::beginTransaction();
+    try {
+        $product = Product::findOrFail($r->id);
+        $isFeatured = $r->input('isfeatured');
+$isFeatured = ($isFeatured === '' || $isFeatured === null) ? null : (int)$isFeatured;
+
+
+        $sku = $r->sku ?: ($product->sku ?: $this->generateUniqueSku());
+
+        // normalize optional IDs
+        $categoryId = $r->input('category_id');
+        $categoryId = ($categoryId === '' || $categoryId === null) ? null : (int)$categoryId;
+
+        $subcategoryId = $r->input('subcategory_id');
+        $subcategoryId = ($subcategoryId === '' || $subcategoryId === null) ? null : (int)$subcategoryId;
+
+        $attributeSetId = $r->input('attribute_set_id');
+        $attributeSetId = ($attributeSetId === '' || $attributeSetId === null) ? null : (int)$attributeSetId;
+
+        // attributes JSON (clears to [] if set removed)
+        $attributesJson = $this->buildAttributesJsonOrFail(
+            $attributeSetId,
+            $r->attributes_map ?? []
+        );
+
+        // normalize stock / warranty
+        $inStock = $r->input('in_stock');
+        $inStock = ($inStock === '' || $inStock === null) ? null : (int)$inStock;
+
+        $stockCount = $r->input('stock_count');
+        $stockCount = ($stockCount === '' || $stockCount === null) ? null : (int)$stockCount;
+
+        $warrantyPeriod = $r->input('warranty_period');
+        $warrantyPeriod = ($warrantyPeriod === '' || $warrantyPeriod === null) ? null : (string)$warrantyPeriod;
+
+        $warrantyType = $r->input('warranty_type');
+        $warrantyType = ($warrantyType === '' || $warrantyType === null) ? null : (string)$warrantyType;
+
+        $product->update([
+            'name' => $r->name,
+            'sku'  => $sku,
+            'status' => $r->status,
+            'sort_order' => (int)($r->sort_order ?? 0),
+
+            'brand_id' => $r->brand_id,
+            'uom_id' => $r->uom_id,
+
+            'attribute_set_id' => $attributeSetId,
+            'attributes_json'  => $attributesJson,
+            'isfeatured' => $isFeatured,
+
+
+            'price' => $r->price,
+            'sale_price' => $r->sale_price,
+
+            'short_description' => $r->short_description,
+            'description' => $r->description,
+
+            'discount_status'   => (int)($r->discount_status ?? 0),
+            'discount_type'     => $r->discount_status ? $r->discount_type : null,
+            'discounted_amount' => $r->discount_status ? $r->discounted_amount : null,
+
+            'subcategory_id'   => $subcategoryId,
+
+            'in_stock'        => $inStock,
+            'stock_count'     => $stockCount,
+            'warranty_period' => $warrantyPeriod,
+            'warranty_type'   => $warrantyType,
         ]);
 
-        DB::beginTransaction();
-        try {
-            $product = Product::findOrFail($r->id);
+        $product->categories()->sync($categoryId ? [$categoryId] : []);
 
-            $sku = $r->sku ?: ($product->sku ?: $this->generateUniqueSku());
-
-            $attributesJson = $this->buildAttributesJsonOrFail(
-                $r->attribute_set_id ? (int)$r->attribute_set_id : null,
-                $r->attributes_map ?? []
-            );
-
-            $product->update([
-                'name' => $r->name,
-                'sku'  => $sku,
-                'status' => $r->status,
-                'sort_order' => (int)($r->sort_order ?? 0),
-                'brand_id' => $r->brand_id,
-                'uom_id' => $r->uom_id,
-                'attribute_set_id' => $r->attribute_set_id,
-                'attributes_json'  => $attributesJson, // ✅ {code:value}
-                // 'primary_category_id' => $r->primary_category_id,
-                'price' => $r->price,
-                'sale_price' => $r->sale_price,
-                'short_description' => $r->short_description,
-                'description' => $r->description,
-                'discount_status'   => (int)($r->discount_status ?? 0),
-                'discount_type'     => $r->discount_status ? $r->discount_type : null,
-                'discounted_amount' => $r->discount_status ? $r->discounted_amount : null,
-                'subcategory_id' => $r->subcategory_id,
-
-            ]);
-
-          $product->categories()->sync($r->category_id ? [(int)$r->category_id] : []);
-
-
-            if ($r->hasFile('images')) {
-                foreach ($r->file('images', []) as $img) {
-                    $product->addMedia($img)->toMediaCollection('product_images');
-                }
+        if ($r->hasFile('images')) {
+            foreach ($r->file('images', []) as $img) {
+                $product->addMedia($img)->toMediaCollection('product_images');
             }
-
-            DB::commit();
-            return redirect()->route('product.index');
-        } catch (Exception $ex) {
-            DB::rollBack();
-            throw $ex;
         }
+
+        DB::commit();
+        return redirect()->route('product.index');
+    } catch (Exception $ex) {
+        DB::rollBack();
+        throw $ex;
     }
+}
+
 
     public function destroy(Request $r)
     {
