@@ -137,11 +137,26 @@
         </div>
 
         <!-- bottom line + text -->
-        <div class="mh-footer-bottom">
-          <div class="mh-footer-bottom-inner">
-            © 2025 Mahinda Hardware & Electrical. All rights reserved.
-          </div>
-        </div>
+     <div class="mh-footer-bottom">
+  <div class="mh-footer-bottom-inner">
+    <div class="mh-footer-bottom-left">
+      © 2025 Mahinda Hardware &amp; Electrical. All rights reserved.
+    </div>
+
+    <div class="mh-footer-bottom-right mh-footer-credit">
+      Web design &amp; developed by
+      <a
+        href="https://scalar7solutions.com"
+        target="_blank"
+        rel="noopener"
+        class="mh-footer-credit-link"
+      >
+        Scalar7 Solutions
+      </a>
+    </div>
+  </div>
+</div>
+
       </div>
     </div>
   </footer>
@@ -450,9 +465,48 @@ export default {
 .mh-footer-bottom-inner {
   max-width: 1200px;
   margin: 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.45rem;
   text-align: center;
+
   font-size: 0.78rem;
   color: rgba(248, 250, 252, 0.65);
+}
+
+.mh-footer-credit {
+  margin-top: 0; /* important (remove the top margin for flex layout) */
+  font-size: 0.75rem;
+  color: rgba(248, 250, 252, 0.55);
+}
+
+@media (min-width: 640px) {
+  .mh-footer-bottom-inner {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+  }
+
+  .mh-footer-bottom-right {
+    text-align: right;
+  }
+}
+
+.mh-footer-credit-link {
+  color: rgba(248, 250, 252, 0.75);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.mh-footer-credit-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
 }
 
 @media (min-width: 640px) {
