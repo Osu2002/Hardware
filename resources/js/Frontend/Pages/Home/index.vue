@@ -2,7 +2,7 @@
   <AppLayout>
     <br><br>
     <div class="home-container">
-      <BannerSlider :banners="banners" />
+  <BannerSlider :banners="banners" fitMode="contain-blur" />
 
     <!-- <ImageSlider :images="banners" /> -->
 

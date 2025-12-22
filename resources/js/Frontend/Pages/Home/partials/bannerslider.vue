@@ -23,6 +23,14 @@
         aria-roledescription="slide"
         :aria-label="`Slide ${i + 1} of ${safeBanners.length}`"
       >
+        <!-- Option C: blurred background behind a contain image -->
+        <div
+          v-if="fitMode === 'contain-blur'"
+          class="img-bg"
+          :style="bgStyle(b.src)"
+          aria-hidden="true"
+        />
+
         <img
           class="slide-img"
           :src="b.src"
@@ -31,6 +39,7 @@
           :loading="i === 0 ? 'eager' : 'lazy'"
           decoding="async"
           draggable="false"
+          :style="imgInlineStyle"
         />
       </div>
     </div>
@@ -53,9 +62,9 @@
           stroke-linejoin="round"
         />
       </svg>
-    </button> -->
+    </button>
 
-    <!-- <button
+    <button
       v-if="showArrows && safeBanners.length > 1"
       class="arrow arrow--next"
       type="button"
@@ -101,23 +110,58 @@ export default {
   name: "BannerSlider",
   props: {
     banners: { type: Array, default: () => [] },
+
+    /**
+     * FIT OPTIONS:
+     * - "cover"        => fills container, MAY CROP (no empty space)
+     * - "contain"      => NO CROP, may letterbox (empty space)
+     * - "contain-blur" => NO CROP, letterbox replaced by blurred background
+     */
+    fitMode: {
+      type: String,
+      default: "contain-blur",
+      validator: (v) => ["cover", "contain", "contain-blur"].includes(v),
+    },
+
+    /**
+     * ASPECT OPTIONS:
+     * - forceAspect = true  => container uses CSS aspect-ratio (best for “true 16:9”)
+     * - forceAspect = false => JS height calc + clamp (can break 16:9 when clamped)
+     */
+    forceAspect: { type: Boolean, default: true },
+    aspectW: { type: Number, default: 16 },
+    aspectH: { type: Number, default: 9 },
+
+    // Only used when forceAspect = false (JS clamp mode)
+    maxHeight: { type: Number, default: 520 },
+    minHeight: { type: Number, default: 260 },
+
+    // Letterbox background (shows for "contain", also used under blur layer)
+    letterboxColor: { type: String, default: "#ffffff" },
+
+    // Blur controls (only for "contain-blur")
+    blurPx: { type: Number, default: 16 },
+    blurScale: { type: Number, default: 1.08 },
+
     autoplay: { type: Boolean, default: true },
     intervalMs: { type: Number, default: 4500 },
     pauseOnHover: { type: Boolean, default: true },
     showArrows: { type: Boolean, default: true },
     showDots: { type: Boolean, default: true },
-    maxHeight: { type: Number, default: 520 },
-    minHeight: { type: Number, default: 260 },
   },
   data() {
     return {
       currentIndex: 0,
       timer: null,
       isHovering: false,
+
+      // only needed for JS clamp mode
       viewportWidth: 0,
       resizeObserver: null,
+
       reducedMotion: false,
       _mq: null,
+      _mqChange: null,
     };
   },
   computed: {
@@ -130,10 +174,31 @@ export default {
       const x = this.currentIndex * 100;
       return { transform: `translateX(-${x}%)` };
     },
+
+    // image fit behavior
+    imgFit() {
+      return this.fitMode === "cover" ? "cover" : "contain";
+    },
+    imgInlineStyle() {
+      return {
+        objectFit: this.imgFit,
+      };
+    },
+
     viewportInlineStyle() {
-      // Match TSX behavior: fixed 16:9 responsive height with min/max clamp.
+      // Always include CSS vars (letterbox + aspect ratio)
+      const vars = {
+        "--letterbox": this.letterboxColor,
+        "--aspect-w": String(this.aspectW),
+        "--aspect-h": String(this.aspectH),
+      };
+
+      // If CSS aspect-ratio is enabled, do NOT force height inline.
+      if (this.forceAspect) return vars;
+
+      // JS clamp mode (may break 16:9 when clamped)
       const width = this.viewportWidth || 0;
-      const aspectRatio = 16 / 9;
+      const aspectRatio = this.aspectW / this.aspectH;
 
       let h = this.maxHeight;
       if (width > 0) {
@@ -143,7 +208,7 @@ export default {
         h = Math.max(this.minHeight, Math.min(this.maxHeight, this.maxHeight));
       }
 
-      return { height: `${Math.round(h)}px` };
+      return { ...vars, height: `${Math.round(h)}px` };
     },
   },
   watch: {
@@ -157,10 +222,18 @@ export default {
     intervalMs() {
       this.restartAutoplay();
     },
+    reducedMotion() {
+      this.restartAutoplay();
+    },
+    forceAspect(newVal) {
+      // toggle resize observer depending on mode
+      if (newVal) this.teardownResizeObserver();
+      else this.setupResizeObserver();
+    },
   },
   mounted() {
     this.setupReducedMotion();
-    this.setupResizeObserver();
+    if (!this.forceAspect) this.setupResizeObserver();
     this.startAutoplay();
   },
   beforeUnmount() {
@@ -169,6 +242,15 @@ export default {
     this.teardownReducedMotion();
   },
   methods: {
+    // background blur style for contain-blur
+    bgStyle(src) {
+      return {
+        backgroundImage: `url("${src}")`,
+        filter: `blur(${this.blurPx}px)`,
+        transform: `scale(${this.blurScale})`,
+      };
+    },
+
     setupReducedMotion() {
       if (typeof window === "undefined" || !window.matchMedia) return;
       const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -177,7 +259,6 @@ export default {
 
       const onChange = (e) => {
         this.reducedMotion = !!e.matches;
-        this.restartAutoplay();
       };
 
       if (mq.addEventListener) mq.addEventListener("change", onChange);
@@ -196,6 +277,7 @@ export default {
       this._mq = null;
       this._mqChange = null;
     },
+
     setupResizeObserver() {
       this.$nextTick(() => {
         const el = this.$refs.viewport;
@@ -217,6 +299,7 @@ export default {
         this.resizeObserver = null;
       }
     },
+
     startAutoplay() {
       if (!this.autoplay) return;
       if (this.reducedMotion) return;
@@ -238,12 +321,14 @@ export default {
       this.stopAutoplay();
       this.startAutoplay();
     },
+
     onMouseEnter() {
       if (this.pauseOnHover) this.isHovering = true;
     },
     onMouseLeave() {
       if (this.pauseOnHover) this.isHovering = false;
     },
+
     next() {
       const n = this.safeBanners.length;
       if (n <= 1) return;
@@ -268,9 +353,15 @@ export default {
   width: 100%;
   overflow: hidden;
   border-radius: 18px;
-  background: #ffffff;
+  background: var(--letterbox, #ffffff);
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.14);
   outline: none;
+
+  /* Aspect option (enabled by forceAspect=true) */
+  aspect-ratio: calc(var(--aspect-w, 16) / var(--aspect-h, 9));
+
+  /* You can keep this if you want it not too tall on large screens */
+  max-height: 520px;
 }
 
 .banner-slider:focus-visible {
@@ -295,15 +386,28 @@ export default {
   height: 100%;
   position: relative;
   user-select: none;
+  background: var(--letterbox, #ffffff);
 }
 
+/* Option C: blur background */
+.img-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+/* Foreground image */
 .slide-img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* matches screenshot */
+  /* object-fit is controlled inline via :style for all modes */
   -webkit-user-drag: none;
   user-select: none;
   display: block;
+  position: relative; /* keep above blur */
 }
 
 .arrow {
@@ -320,7 +424,7 @@ export default {
   background: rgba(255, 255, 255, 0.95);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
   transition: transform 140ms ease, background 140ms ease;
-  color: #111827; /* icon color */
+  color: #111827;
 }
 
 .arrow svg {
@@ -368,11 +472,10 @@ export default {
 }
 
 .dot.active {
-  width: 34px;              /* pill like the screenshot */
+  width: 34px;
   background: rgba(255, 255, 255, 0.95);
   transform: scale(1.02);
 }
-
 
 .dot:focus-visible {
   outline: none;
