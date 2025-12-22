@@ -504,6 +504,7 @@ export default {
   transition: color 0.2s ease;
 }
 
+
 .mh-footer-credit-link:hover {
   color: #ffffff;
   text-decoration: underline;
