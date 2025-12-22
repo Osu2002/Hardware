@@ -606,6 +606,7 @@ export default {
    VARIABLES & BASE
 ======================================== */
 
+
 :root{
   --app-font: "Abadi MT Condensed Light","Abadi MT Condensed","Abadi MT",Abadi,
     system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
